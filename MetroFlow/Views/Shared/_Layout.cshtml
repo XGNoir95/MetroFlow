@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MetroFlow</title>
+
+    <!-- Tailwind build output -->
+    <link rel="stylesheet" href="~/css/tailwind.css" asp-append-version="true" />
+
+    <!-- Keep MetroFlow.styles.css if you’re using scoped CSS; it will override Tailwind where needed -->
+    <link rel="stylesheet" href="~/MetroFlow.styles.css" asp-append-version="true" />
+
+    <!-- Your site overrides last -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="min-h-screen bg-gray-50 text-slate-800">
+    <!-- Header / Nav -->
+    <header class="border-b bg-white">
+        <nav class="container">
+            <div class="flex items-center justify-between py-3">
+                <a class="font-semibold text-xl" asp-area="" asp-controller="Home" asp-action="Index">MetroFlow</a>
+
+                <!-- Mobile menu button -->
+                <button id="navToggle" class="inline-flex items-center justify-center rounded-md p-2 hover:bg-gray-100 lg:hidden" aria-label="Toggle navigation">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+
+                <!-- Desktop links -->
+                <ul class="hidden gap-6 lg:flex">
+                    <li><a class="hover:text-slate-900" asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li><a class="hover:text-slate-900" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a></li>
+                </ul>
+            </div>
+
+            <!-- Mobile links -->
+            <div id="mobileNav" class="hidden pb-3 lg:hidden">
+                <ul class="flex flex-col gap-2">
+                    <li><a class="block rounded-md px-3 py-2 hover:bg-gray-100" asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li><a class="block rounded-md px-3 py-2 hover:bg-gray-100" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main -->
+    <div class="container">
+        <main role="main" class="pb-6 pt-6">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t bg-white text-sm text-slate-600">
+        <div class="container py-4">
+            &copy; 2025 - MetroFlow -
+            <a class="underline hover:text-slate-800" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+
+    <!-- (Optional) jQuery if you use MVC validation/unobtrusive scripts elsewhere -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <!-- Your site JS -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- Tiny script to toggle mobile nav -->
+    <script>
+        (function () {
+            const btn = document.getElementById('navToggle');
+            const panel = document.getElementById('mobileNav');
+            if (btn && panel) {
+                btn.addEventListener('click', () => panel.classList.toggle('hidden'));
+            }
+        })();
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
