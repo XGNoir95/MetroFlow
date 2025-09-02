@@ -19,10 +19,7 @@ namespace MetroFlow.Controllers
 
         // =================== Signup (GET) ===================
         [HttpGet]
-        public IActionResult Signup()
-        {
-            return View();
-        }
+        public IActionResult Signup() => View();
 
         // =================== Signup (POST) ===================
         [HttpPost]
@@ -31,35 +28,42 @@ namespace MetroFlow.Controllers
             if (!ModelState.IsValid)
             {
                 ViewBag.Message = "Invalid data. Please check your inputs.";
-                ViewBag.Users = await _context.Users.ToListAsync();
                 return View(user);
             }
 
-            // check duplicate email
-            var exists = await _context.Users.AnyAsync(u => u.Email == user.Email);
-            if (exists)
+            // Check if user already exists
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
+            if (existingUser != null)
             {
-                ViewBag.Message = "Email already registered!";
-                ViewBag.Users = await _context.Users.ToListAsync();
-                return View(user);
+                if (existingUser.IsVerified)
+                {
+                    ViewBag.Message = "Email already registered!";
+                    return View(user);
+                }
+                else
+                {
+                    ViewBag.Message = "Your account is not verified.";
+                    ViewBag.ShowVerifyButton = true;
+                    ViewBag.Email = existingUser.Email;
+                    return View(user);
+                }
             }
 
-            user.CreatedAt = DateTime.UtcNow;
-
-            // ✅ Hash password
+            // Hash password
             var hasher = new PasswordHasher<User>();
             user.Password = hasher.HashPassword(user, user.Password);
 
-            // Generate OTP
+            // Set timestamps and OTP
+            user.CreatedAt = DateTime.UtcNow;
+            user.IsVerified = false;
             var rnd = new Random();
             user.Otp = rnd.Next(100000, 999999).ToString();
-            user.OtpExpiry = DateTime.UtcNow.AddMinutes(3);
-            user.IsVerified = false;
+            user.OtpExpiry = DateTime.UtcNow.AddMinutes(5);
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            // Send OTP via email
+            // Send OTP
             _mail.SendOtp(user.Email, user.Otp!);
 
             TempData["Flash"] = "We emailed you an OTP. Please verify.";
@@ -98,6 +102,8 @@ namespace MetroFlow.Controllers
 
             await _context.SaveChangesAsync();
 
+            _mail.SendConfirmation(user.Email, user.Name);
+
             TempData["Flash"] = "Your account has been verified. Please log in.";
             return RedirectToAction("Login");
         }
@@ -109,28 +115,30 @@ namespace MetroFlow.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
             {
-                ViewBag.Message = "User not found!";
+                TempData["Flash"] = "User not found!";
                 return RedirectToAction("Signup");
+            }
+
+            if (user.IsVerified)
+            {
+                TempData["Flash"] = "Account already verified. Please login.";
+                return RedirectToAction("Login");
             }
 
             var rnd = new Random();
             user.Otp = rnd.Next(100000, 999999).ToString();
-            user.OtpExpiry = DateTime.UtcNow.AddMinutes(3);
+            user.OtpExpiry = DateTime.UtcNow.AddMinutes(5);
 
             await _context.SaveChangesAsync();
-
             _mail.SendOtp(user.Email, user.Otp!);
 
-            TempData["Flash"] = "A new OTP has been sent.";
+            TempData["Flash"] = "A new OTP has been sent to your email.";
             return RedirectToAction("VerifyOtp", new { email = user.Email });
         }
 
         // =================== Login (GET) ===================
         [HttpGet]
-        public IActionResult Login()
-        {
-            return View();
-        }
+        public IActionResult Login() => View();
 
         // =================== Login (POST) ===================
         [HttpPost]
@@ -144,9 +152,7 @@ namespace MetroFlow.Controllers
             }
 
             var hasher = new PasswordHasher<User>();
-            var result = hasher.VerifyHashedPassword(user, user.Password, password);
-
-            if (result == PasswordVerificationResult.Failed)
+            if (hasher.VerifyHashedPassword(user, user.Password, password) == PasswordVerificationResult.Failed)
             {
                 ViewBag.Message = "Invalid email or password!";
                 return View();
