@@ -1,5 +1,6 @@
 ﻿using MetroFlow.Models;
 using MetroFlow.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,14 +17,14 @@ namespace MetroFlow.Controllers
             _mail = mail;
         }
 
-        // ----------------- SIGNUP -----------------
+        // =================== Signup (GET) ===================
         [HttpGet]
         public IActionResult Signup()
         {
-            ViewBag.Users = _context.Users.ToList();
             return View();
         }
 
+        // =================== Signup (POST) ===================
         [HttpPost]
         public async Task<IActionResult> Signup(User user)
         {
@@ -34,6 +35,7 @@ namespace MetroFlow.Controllers
                 return View(user);
             }
 
+            // check duplicate email
             var exists = await _context.Users.AnyAsync(u => u.Email == user.Email);
             if (exists)
             {
@@ -44,115 +46,107 @@ namespace MetroFlow.Controllers
 
             user.CreatedAt = DateTime.UtcNow;
 
-            // Generate a 6-digit OTP
+            // ✅ Hash password
+            var hasher = new PasswordHasher<User>();
+            user.Password = hasher.HashPassword(user, user.Password);
+
+            // Generate OTP
             var rnd = new Random();
             user.Otp = rnd.Next(100000, 999999).ToString();
-            user.OtpExpiry = DateTime.UtcNow.AddMinutes(5);
+            user.OtpExpiry = DateTime.UtcNow.AddMinutes(3);
             user.IsVerified = false;
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            // Send OTP
+            // Send OTP via email
             _mail.SendOtp(user.Email, user.Otp!);
 
             TempData["Flash"] = "We emailed you an OTP. Please verify.";
             return RedirectToAction("VerifyOtp", new { email = user.Email });
         }
 
-        // ----------------- VERIFY OTP -----------------
+        // =================== Verify OTP (GET) ===================
         [HttpGet]
         public IActionResult VerifyOtp(string email)
         {
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                TempData["Flash"] = "Missing email. Please signup again.";
-                return RedirectToAction("Signup");
-            }
             ViewBag.Email = email;
             return View();
         }
 
+        // =================== Verify OTP (POST) ===================
         [HttpPost]
         public async Task<IActionResult> VerifyOtp(string email, string otp)
         {
-            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(otp))
-            {
-                ViewBag.Message = "Email and OTP are required.";
-                ViewBag.Email = email;
-                return View();
-            }
-
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
             {
-                ViewBag.Message = "User not found.";
+                ViewBag.Message = "User not found!";
+                return View();
+            }
+
+            if (user.Otp != otp || user.OtpExpiry < DateTime.UtcNow)
+            {
+                ViewBag.Message = "Invalid or expired OTP!";
                 ViewBag.Email = email;
                 return View();
             }
 
-            if (user.IsVerified)
-            {
-                TempData["Flash"] = "Your account is already verified. Please login.";
-                return RedirectToAction("Login");
-            }
+            user.IsVerified = true;
+            user.Otp = null;
+            user.OtpExpiry = null;
 
-            if (user.Otp == otp && user.OtpExpiry.HasValue && user.OtpExpiry > DateTime.UtcNow)
-            {
-                user.IsVerified = true;
-                user.Otp = null;
-                user.OtpExpiry = null;
-                await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
-                TempData["Flash"] = "Account verified! Please login.";
-                return RedirectToAction("Login");
-            }
-
-            ViewBag.Message = "Invalid or expired OTP.";
-            ViewBag.Email = email;
-            return View();
+            TempData["Flash"] = "Your account has been verified. Please log in.";
+            return RedirectToAction("Login");
         }
 
-        // ----------------- RESEND OTP (optional but useful) -----------------
+        // =================== Resend OTP ===================
         [HttpPost]
         public async Task<IActionResult> ResendOtp(string email)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
             {
-                TempData["Flash"] = "User not found.";
+                ViewBag.Message = "User not found!";
                 return RedirectToAction("Signup");
-            }
-
-            if (user.IsVerified)
-            {
-                TempData["Flash"] = "Account already verified. Please login.";
-                return RedirectToAction("Login");
             }
 
             var rnd = new Random();
             user.Otp = rnd.Next(100000, 999999).ToString();
-            user.OtpExpiry = DateTime.UtcNow.AddMinutes(5);
+            user.OtpExpiry = DateTime.UtcNow.AddMinutes(3);
+
             await _context.SaveChangesAsync();
 
             _mail.SendOtp(user.Email, user.Otp!);
 
-            TempData["Flash"] = "A new OTP has been sent to your email.";
+            TempData["Flash"] = "A new OTP has been sent.";
             return RedirectToAction("VerifyOtp", new { email = user.Email });
         }
 
-        // ----------------- LOGIN -----------------
+        // =================== Login (GET) ===================
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
 
+        // =================== Login (POST) ===================
         [HttpPost]
         public async Task<IActionResult> Login(string email, string password)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
+            {
+                ViewBag.Message = "Invalid email or password!";
+                return View();
+            }
+
+            var hasher = new PasswordHasher<User>();
+            var result = hasher.VerifyHashedPassword(user, user.Password, password);
+
+            if (result == PasswordVerificationResult.Failed)
             {
                 ViewBag.Message = "Invalid email or password!";
                 return View();
