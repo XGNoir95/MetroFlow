@@ -1,0 +1,19 @@
+﻿@{
+    ViewBag.Title = "Signup";
+}
+<h2>Signup</h2>
+@if (TempData["Flash"] != null)
+{
+    <p>@TempData["Flash"]</p>
+}
+@if (ViewBag.Message != null)
+{
+    <p>@ViewBag.Message</p>
+}
+
+<form asp-action="Signup" method="post">
+    <input name="Name" placeholder="Name" required />
+    <input name="Email" type="email" placeholder="Email" required />
+    <input name="Password" type="password" placeholder="Password" required />
+    <button type="submit">Create Account</button>
+</form>
