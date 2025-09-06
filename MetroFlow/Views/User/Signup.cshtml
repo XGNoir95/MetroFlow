@@ -1,0 +1,36 @@
+﻿@{
+    ViewBag.Title = "Signup";
+}
+
+<h2>Signup</h2>
+
+@if (TempData["Flash"] != null)
+{
+    <div style="padding:10px; background-color:#d4edda; color:#155724; border-radius:5px; margin-bottom:15px;">
+        @TempData["Flash"]
+    </div>
+}
+
+@if (ViewBag.Message != null)
+{
+    <div style="padding:10px; background-color:#f8d7da; color:#721c24; border-radius:5px; margin-bottom:15px;">
+        @ViewBag.Message
+    </div>
+}
+
+@if (ViewBag.ShowVerifyButton != null && ViewBag.ShowVerifyButton == true)
+{
+    <form asp-action="ResendOtp" method="post" style="margin-bottom:15px;">
+        <input type="hidden" name="email" value="@ViewBag.Email" />
+        <button type="submit" style="padding:10px 20px; background-color:#4CAF50; color:white; border:none; border-radius:5px;">
+            Verify Account
+        </button>
+    </form>
+}
+
+<form asp-action="Signup" method="post" style="display:flex; flex-direction:column; max-width:400px;">
+    <input name="Name" placeholder="Name" required style="margin-bottom:10px; padding:10px; border-radius:5px; border:1px solid #ccc;" />
+    <input name="Email" type="email" placeholder="Email" required style="margin-bottom:10px; padding:10px; border-radius:5px; border:1px solid #ccc;" />
+    <input name="Password" type="password" placeholder="Password" required style="margin-bottom:15px; padding:10px; border-radius:5px; border:1px solid #ccc;" />
+    <button type="submit" style="padding:10px 20px; background-color:#007bff; color:white; border:none; border-radius:5px;">Create Account</button>
+</form>

@@ -1,0 +1,17 @@
+﻿@model MetroFlow.Models.User
+
+<h2>Login</h2>
+
+<form asp-action="Login" method="post">
+    <div>
+        <label asp-for="Email"></label>
+        <input asp-for="Email" placeholder="Email" />
+    </div>
+    <div>
+        <label asp-for="Password"></label>
+        <input asp-for="Password" placeholder="Password" type="password" />
+    </div>
+    <button type="submit">Login</button>
+</form>
+
+<p>@ViewBag.Message</p>
