@@ -1,17 +1,54 @@
-﻿@model MetroFlow.Models.User
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Login - MetroFlow";
+    ViewData["HideLayoutParts"] = true; // hide navbar & footer
+}
 
-<h2>Login</h2>
+<head>
+    <!-- Import Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet">
+</head>
 
-<form asp-action="Login" method="post">
-    <div>
-        <label asp-for="Email"></label>
-        <input asp-for="Email" placeholder="Email" />
+<div class="flex min-h-screen bg-gray-100">
+    <!-- Left side - Background Image -->
+    <div class="w-2/3 relative">
+        <div class="absolute inset-0 bg-cover bg-center"
+             style="background-image: url('/Auth.png'); background-size: cover;">
+        </div>
     </div>
-    <div>
-        <label asp-for="Password"></label>
-        <input asp-for="Password" placeholder="Password" type="password" />
-    </div>
-    <button type="submit">Login</button>
-</form>
 
-<p>@ViewBag.Message</p>
+    <!-- Right side - Login Form -->
+    <div class="w-1/3 flex flex-col justify-center items-center bg-gray-50 p-8 relative z-10">
+        <div class="max-w-8xl w-full">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-green-800 mb-2">Welcome Back</h2>
+                <p class="text-gray-600">Sign in to your account</p>
+            </div>
+
+            <form method="post" asp-action="Login">
+                <div class="mb-6">
+                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-lg">📧</span>
+                        <input type="email" id="email" name="Email" class="w-full px-12 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-300" placeholder="Enter your email address" required>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-lg">🔒</span>
+                        <input type="password" id="password" name="Password" class="w-full px-12 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-300" placeholder="Enter your password" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-gradient-to-br from-red-600 to-red-800 text-white rounded-lg text-lg font-semibold uppercase tracking-wide hover:from-red-800 hover:to-red-600 transform hover:translate-y-1 transition-all">Sign In</button>
+            </form>
+
+            <div class="text-center mt-8">
+                <p>Don't have an account? <a href="@Url.Action("Register", "Account")" class="text-green-700 font-semibold">Create new account</a></p>
+                <p class="mt-4"><a href="@Url.Action("ForgotPassword", "Account")" class="text-green-700 font-semibold">Forgot your password?</a></p>
+            </div>
+        </div>
+    </div>
+</div>
