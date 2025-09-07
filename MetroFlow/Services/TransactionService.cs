@@ -21,11 +21,11 @@ namespace MetroFlow.Services
             {
                 _context.Transactions.Add(transaction);
                 await _context.SaveChangesAsync();
-                _logger.LogInformation("Transaction added successfully: {Id}", transaction.Id);
+                _logger.LogInformation("Transaction added successfully: {Id}", transaction.TransactionId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error adding transaction: {Id}", transaction.Id);
+                _logger.LogError(ex, "Error adding transaction: {Id}", transaction.TransactionId);
                 throw;
             }
         }
