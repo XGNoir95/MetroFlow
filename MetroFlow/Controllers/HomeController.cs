@@ -1,6 +1,6 @@
-using System.Diagnostics;
 using MetroFlow.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace MetroFlow.Controllers
 {

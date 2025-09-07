@@ -1,0 +1,682 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metro Train Schedule - MetroFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%);
+        }
+
+        .schedule-card {
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+            .schedule-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            }
+
+        .tab-active {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(22, 163, 74, 0.39);
+        }
+
+        .tab-inactive {
+            background: rgba(255, 255, 255, 0.8);
+            color: #374151;
+            backdrop-filter: blur(10px);
+        }
+
+            .tab-inactive:hover {
+                background: rgba(240, 253, 244, 0.9);
+                color: #16a34a;
+            }
+
+        .route-indicator {
+            position: relative;
+            overflow: hidden;
+        }
+
+            .route-indicator::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 4px;
+                height: 100%;
+                background: linear-gradient(180deg, #16a34a, #22c55e);
+                border-radius: 2px;
+            }
+
+        @@keyframes pulse-green {
+            0%, 100%
+
+        {
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+            transform: scale(1);
+        }
+
+        70% {
+            box-shadow: 0 0 0 12px rgba(34, 197, 94, 0);
+            transform: scale(1.05);
+        }
+
+        }
+
+        .pulse-animation {
+            animation: pulse-green 3s infinite;
+        }
+
+        @@keyframes float-gentle {
+            0%, 100%
+
+        {
+            transform: translateY(0px) rotate(0deg);
+        }
+
+        33% {
+            transform: translateY(-10px) rotate(1deg);
+        }
+
+        66% {
+            transform: translateY(-5px) rotate(-1deg);
+        }
+
+        }
+
+        .float-animation {
+            animation: float-gentle 4s ease-in-out infinite;
+        }
+
+        @@keyframes shimmer {
+            0%
+
+        {
+            background-position: -200% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
+
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .neon-border {
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+            border: 1px solid rgba(34, 197, 94, 0.5);
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+            .schedule-table th {
+                background: linear-gradient(135deg, #16a34a, #15803d);
+                color: white;
+                padding: 0.75rem;
+                text-align: left;
+            }
+
+            .schedule-table td {
+                padding: 0.75rem;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .schedule-table tr:nth-child(even) {
+                background-color: #f9fafb;
+            }
+
+            .schedule-table tr:hover {
+                background-color: #f0fdf4;
+            }
+
+        .peak-time {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .off-peak-time {
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        .payment-method {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            background: linear-gradient(to right, #f9fafb, #f3f4f6);
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .payment-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 8px;
+            margin-right: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: #16a34a;
+            font-size: 18px;
+        }
+
+        .info-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: #dbeafe;
+            color: #1e40af;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        .section-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: 12px;
+            font-size: 16px;
+            color: white;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen relative overflow-hidden">
+    <!-- Animated Background Elements -->
+    <div class="absolute top-20 left-10 w-20 h-20 bg-green-200 rounded-full opacity-20 float-animation"></div>
+    <div class="absolute top-40 right-16 w-16 h-16 bg-green-300 rounded-full opacity-25 float-animation" style="animation-delay: 1.5s;"></div>
+    <div class="absolute bottom-40 left-20 w-24 h-24 bg-green-100 rounded-full opacity-20 float-animation" style="animation-delay: 2.5s;"></div>
+    <div class="absolute top-60 right-32 w-12 h-12 bg-emerald-200 rounded-full opacity-30 float-animation" style="animation-delay: 0.5s;"></div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-12">
+        <!-- Enhanced Header Section -->
+        <div class="text-center mb-12">
+            <div class="w-24 h-24 bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-6 pulse-animation shadow-2xl">
+                <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h1 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-700 via-green-800 to-emerald-800 mb-4">
+                Metro Train Schedule
+            </h1>
+            <p class="text-xl text-gray-700 font-medium">Weekday and Friday service timings</p>
+        </div>
+
+        <!-- Toggle Buttons -->
+        <div class="flex justify-center mb-12">
+            <div class="glass-effect rounded-2xl p-3 shadow-2xl neon-border">
+                <div class="flex space-x-3">
+                    <button id="allDaysTab" class="tab-active px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105">
+                        All Days
+                    </button>
+                    <button id="weekdaysTab" class="tab-inactive px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105">
+                        Weekdays
+                    </button>
+                    <button id="fridayTab" class="tab-inactive px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105">
+                        Friday
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="glass-effect rounded-3xl shadow-2xl p-8 border border-white/30 neon-border mb-10">
+            <!-- All Days Content -->
+            <div id="allDaysContent">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">All Days Schedule</h2>
+                <p class="text-gray-600 mb-6">Below is the complete metro schedule for all days of the week</p>
+
+                <!-- Weekday Service -->
+                <div class="schedule-card glass-effect rounded-3xl shadow-xl p-6 border border-white/30 mb-8">
+                    <div class="flex items-center mb-6">
+                        <div class="section-icon bg-gradient-to-r from-blue-500 to-blue-600">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800">Weekday Service</h2>
+                    </div>
+                    <p class="text-gray-600 mb-6">Operates Saturday to Thursday</p>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Uttara to Motijheel -->
+                        <div class="route-indicator pl-6 py-4 bg-gradient-to-r from-white/40 to-white/20 rounded-2xl backdrop-blur-sm border border-white/30">
+                            <h4 class="font-bold text-green-700 mb-3 text-lg flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                </svg>
+                                Uttara to Motijheel
+                            </h4>
+                            <div class="space-y-2 pl-7">
+                                <div class="text-gray-700">
+                                    <span class="font-semibold">First train:</span>&nbsp;<span class="font-bold text-green-700">7:10 AM</span>
+                                </div>
+                                <div class="text-gray-700">
+                                    <span class="font-semibold">Last train:</span>&nbsp;<span class="font-bold text-green-700">9:00 PM</span>
+                                </div>
+                                <div class="info-badge">
+                                    <i class="fas fa-info-circle mr-1"></i> Peak hours: Every 8 minutes
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Motijheel to Uttara -->
+                        <div class="route-indicator pl-6 py-4 bg-gradient-to-r from-white/40 to-white/20 rounded-2xl backdrop-blur-sm border border-white/30">
+                            <h4 class="font-bold text-green-700 mb-3 text-lg flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"></path>
+                                </svg>
+                                Motijheel to Uttara
+                            </h4>
+                            <div class="space-y-2 pl-7">
+                                <div class="text-gray-700">
+                                    <span class="font-semibold">First train:</span>&nbsp;<span class="font-bold text-green-700">7:30 AM</span>
+                                </div>
+                                <div class="text-gray-700">
+                                    <span class="font-semibold">Last train:</span>&nbsp;<span class="font-bold text-green-700">9:40 PM</span>
+                                </div>
+                                <div class="info-badge">
+                                    <i class="fas fa-info-circle mr-1"></i> Peak hours: Every 8 minutes
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Friday Service -->
+                <div class="schedule-card glass-effect rounded-3xl shadow-xl p-6 border border-white/30">
+                    <div class="flex items-center mb-6">
+                        <div class="section-icon bg-gradient-to-r from-red-500 to-red-600">
+                            <i class="fas fa-mosque"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800">Friday Service</h2>
+                    </div>
+                    <p class="text-gray-600 mb-6">Limited service on Fridays</p>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Uttara to Motijheel -->
+                        <div class="route-indicator pl-6 py-4 bg-gradient-to-r from-white/40 to-white/20 rounded-2xl backdrop-blur-sm border border-white/30">
+                            <h4 class="font-bold text-green-700 mb-3 text-lg flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                </svg>
+                                Uttara to Motijheel
+                            </h4>
+                            <div class="space-y-2 pl-7">
+                                <div class="text-gray-700">
+                                    <span class="font-semibold">Service:</span>&nbsp;<span class="font-bold text-green-700">3:00 PM – 10:00 PM</span>
+                                </div>
+                                <div class="text-gray-700">
+                                    <span class="font-semibold">Frequency:</span>&nbsp;<span class="font-bold text-green-700">Every 12 minutes</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Motijheel to Uttara -->
+                        <div class="route-indicator pl-6 py-4 bg-gradient-to-r from-white/40 to-white/20 rounded-2xl backdrop-blur-sm border border-white/30">
+                            <h4 class="font-bold text-green-700 mb-3 text-lg flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"></path>
+                                </svg>
+                                Motijheel to Uttara
+                            </h4>
+                            <div class="space-y-2 pl-7">
+                                <div class="text-gray-700">
+                                    <span class="font-semibold">Service:</span>&nbsp;<span class="font-bold text-green-700">3:20 PM – 10:20 PM</span>
+                                </div>
+                                <div class="text-gray-700">
+                                    <span class="font-semibold">Frequency:</span>&nbsp;<span class="font-bold text-green-700">Every 12 minutes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weekdays Content (Hidden by default) -->
+            <div id="weekdaysContent" class="hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Weekday Service</h2>
+                <p class="text-gray-600 mb-8">Operates Saturday to Thursday</p>
+
+                <!-- Uttara to Motijheel -->
+                <div class="mb-10">
+                    <h3 class="text-xl font-bold text-green-700 mb-4 flex items-center">
+                        <span class="w-4 h-4 bg-green-500 rounded-full mr-3"></span>
+                        Uttara to Motijheel
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>Period</th>
+                                    <th>Service Type</th>
+                                    <th>Frequency</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>7:10 AM - 7:30 AM</td>
+                                    <td class="off-peak-time">Off-Peak</td>
+                                    <td>Every 10 minutes</td>
+                                </tr>
+                                <tr>
+                                    <td>7:31 AM - 6:50 PM</td>
+                                    <td class="peak-time">Peak</td>
+                                    <td>Every 8 minutes</td>
+                                </tr>
+                                <tr>
+                                    <td>6:51 PM - 9:00 PM</td>
+                                    <td class="off-peak-time">Off-Peak</td>
+                                    <td>Every 10 minutes</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Motijheel to Uttara -->
+                <div>
+                    <h3 class="text-xl font-bold text-green-700 mb-4 flex items-center">
+                        <span class="w-4 h-4 bg-green-500 rounded-full mr-3"></span>
+                        Motijheel to Uttara
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>Period</th>
+                                    <th>Service Type</th>
+                                    <th>Frequency</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>7:30 AM - 8:00 AM</td>
+                                    <td class="off-peak-time">Off-Peak</td>
+                                    <td>Every 10 minutes</td>
+                                </tr>
+                                <tr>
+                                    <td>8:01 AM - 7:30 PM</td>
+                                    <td class="peak-time">Peak</td>
+                                    <td>Every 8 minutes</td>
+                                </tr>
+                                <tr>
+                                    <td>7:31 PM - 9:40 PM</td>
+                                    <td class="off-peak-time">Off-Peak</td>
+                                    <td>Every 10 minutes</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Friday Content (Hidden by default) -->
+            <div id="fridayContent" class="hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Friday Service</h2>
+                <p class="text-gray-600 mb-8">Limited service on Fridays</p>
+
+                <!-- Uttara to Motijheel -->
+                <div class="mb-10">
+                    <h3 class="text-xl font-bold text-green-700 mb-4 flex items-center">
+                        <span class="w-4 h-4 bg-green-500 rounded-full mr-3"></span>
+                        Uttara to Motijheel
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>Period</th>
+                                    <th>Service Type</th>
+                                    <th>Frequency</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>3:00 PM - 9:00 PM</td>
+                                    <td>All Hours</td>
+                                    <td>Every 10 minutes</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Motijheel to Uttara -->
+                <div>
+                    <h3 class="text-xl font-bold text-green-700 mb-4 flex items-center">
+                        <span class="w-4 h-4 bg-green-500 rounded-full mr-3"></span>
+                        Motijheel to Uttara
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>Period</th>
+                                    <th>Service Type</th>
+                                    <th>Frequency</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>3:20 PM - 9:40 PM</td>
+                                    <td>All Hours</td>
+                                    <td>Every 10 minutes</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="border-t border-gray-200 my-8"></div>
+
+            <!-- Ticket Information -->
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Single Journey Ticket -->
+                <div class="schedule-card glass-effect rounded-3xl shadow-xl p-6 border border-white/30">
+                    <div class="flex items-center mb-6">
+                        <div class="section-icon bg-gradient-to-r from-orange-500 to-orange-600">
+                            <i class="fas fa-ticket-alt"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800">Single Journey Ticket</h3>
+                    </div>
+                    <p class="text-gray-700 mb-6">Valid for a one-time trip between two stations.</p>
+
+                    <div class="mb-6">
+                        <h4 class="font-bold text-gray-800 mb-4">Purchase Methods:</h4>
+
+
+                        <div class="payment-method">
+                            <div class="payment-icon">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Bank Transfer</p>
+                                <p class="text-sm text-gray-600">Link your bank account</p>
+                            </div>
+                        </div>
+
+                        <div class="payment-method">
+                            <div class="payment-icon">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Online Portal</p>
+                                <p class="text-sm text-gray-600">Book tickets at metroflow.com</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="w-full py-3 bg-gradient-to-r from-green-600 via-green-700 to-emerald-700 text-white rounded-2xl font-bold hover:from-green-700 hover:via-green-800 hover:to-emerald-800 transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-green-500/25">
+                        🎟️ Purchase Single Ticket
+                    </button>
+                </div>
+
+                <!-- MRT Pass -->
+                <div class="schedule-card glass-effect rounded-3xl shadow-xl p-6 border border-white/30">
+                    <div class="flex items-center mb-6">
+                        <div class="section-icon bg-gradient-to-r from-purple-500 to-purple-600">
+                            <i class="fas fa-id-card-alt"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800">MRT Pass</h3>
+                    </div>
+                    <p class="text-gray-700 mb-6">
+                        A contactless smart card offering a 10% discount on fares.
+                        Costs $500, including a refundable deposit of $200 and a usable balance of $300. Valid for 10 years.
+                    </p>
+
+                    <div class="mb-6">
+                        <h4 class="font-bold text-gray-800 mb-4">Purchase & Recharge Methods:</h4>
+
+
+
+
+                        <div class="payment-method">
+                            <div class="payment-icon">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Mobile App</p>
+                                <p class="text-sm text-gray-600">Recharge via MetroFlow </p>
+                            </div>
+                        </div>
+
+                        <div class="payment-method">
+                            <div class="payment-icon">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Bank Transfer</p>
+                                <p class="text-sm text-gray-600">Link your bank account</p>
+                            </div>
+                        </div>
+
+                        <div class="payment-method">
+                            <div class="payment-icon">
+                                <i class="fab fa-cc-paypal"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Online Payment</p>
+                                <p class="text-sm text-gray-600">PayPal, Credit/Debit cards</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="w-full py-3 bg-gradient-to-r from-green-600 via-green-700 to-emerald-700 text-white rounded-2xl font-bold hover:from-green-700 hover:via-green-800 hover:to-emerald-800 transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-green-500/25">
+                        💳 Register for MRT Pass
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab functionality
+        const tabs = {
+            allDaysTab: document.getElementById('allDaysTab'),
+            weekdaysTab: document.getElementById('weekdaysTab'),
+            fridayTab: document.getElementById('fridayTab')
+        };
+
+        const contents = {
+            allDaysContent: document.getElementById('allDaysContent'),
+            weekdaysContent: document.getElementById('weekdaysContent'),
+            fridayContent: document.getElementById('fridayContent')
+        };
+
+        function activateTab(tabName) {
+            // Reset all tabs
+            Object.values(tabs).forEach(tab => {
+                tab.classList.remove('tab-active');
+                tab.classList.add('tab-inactive');
+            });
+
+            // Hide all contents
+            Object.values(contents).forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // Activate selected tab
+            tabs[tabName].classList.remove('tab-inactive');
+            tabs[tabName].classList.add('tab-active');
+
+            // Show selected content
+            const contentId = tabName.replace('Tab', 'Content');
+            contents[contentId].classList.remove('hidden');
+        }
+
+        // Event listeners
+        tabs.allDaysTab.addEventListener('click', () => {
+            activateTab('allDaysTab');
+            tabs.allDaysTab.style.transform = 'scale(0.95)';
+            setTimeout(() => tabs.allDaysTab.style.transform = 'scale(1)', 100);
+        });
+
+        tabs.weekdaysTab.addEventListener('click', () => {
+            activateTab('weekdaysTab');
+            tabs.weekdaysTab.style.transform = 'scale(0.95)';
+            setTimeout(() => tabs.weekdaysTab.style.transform = 'scale(1)', 100);
+        });
+
+        tabs.fridayTab.addEventListener('click', () => {
+            activateTab('fridayTab');
+            tabs.fridayTab.style.transform = 'scale(0.95)';
+            setTimeout(() => tabs.fridayTab.style.transform = 'scale(1)', 100);
+        });
+
+        // Initialize with All Days tab active
+        activateTab('allDaysTab');
+
+        // Add intersection observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all cards for scroll animation
+        document.querySelectorAll('.schedule-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,842 @@
+﻿@model MetroFlow.Models.RoutePlannerViewModel
+@{
+    ViewData["Title"] = "Route Planner - MetroFlow";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #map {
+            border-radius: 16px;
+            overflow: hidden;
+            height: 500px; /* Default height */
+        }
+
+        .suggestions-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .suggestions-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 0 0 12px 12px;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .suggestion-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+            background: white;
+            transition: background-color 0.2s;
+        }
+
+            .suggestion-item:hover {
+                background: #388E3C !important;
+                color: white;
+            }
+
+            .suggestion-item:last-child {
+                border-bottom: none;
+            }
+
+        /* Ensure the right section takes full available height */
+        .right-section {
+            display: flex;
+            flex-direction: column;
+            height: auto;
+            min-height: 600px;
+        }
+
+        .map-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 400px;
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Messages -->
+        @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+        {
+            <div class="bg-green-600 text-white text-lg px-4 py-4 rounded-lg mb-6 shadow-md">
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="font-medium">@Model.SuccessMessage</span>
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="bg-red-500 text-white px-4 py-3 rounded-lg mb-6 shadow-md">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="font-medium">@Model.ErrorMessage</span>
+                </div>
+            </div>
+        }
+
+
+
+        <!-- Main Content Grid -->
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Left Side - Route Planner Card -->
+            <div class="bg-white rounded-2xl p-8 shadow-2xl">
+                <!-- Header -->
+                <div class="mt-8 flex items-center justify-center mb-10">
+                    <div class="bg-green-600 rounded-full p-3 mr-4">
+                        <svg class="w-8 h-8 text-green-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <h1 class="text-4xl font-bold text-gray-800 text-center">Plan Your Journey Now!</h1>
+                </div>
+
+                <!-- Origin Section -->
+                <div class="space-y-6 mb-8">
+                    <div>
+                        <label class="block text-gray-700 text-lg font-medium mb-3">Your Origin</label>
+
+                        <!-- Current Location Option -->
+                        @if (!Model.HasOrigin)
+                        {
+                            <div class="mb-4">
+                                <button type="button" onclick="getCurrentLocation()" class=" text-lg w-full bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-3 flex items-center justify-center space-x-2 transition-all duration-200 shadow-md">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                    <span id="locationButtonText">Use My Current Location</span>
+                                </button>
+                            </div>
+
+                            <div class="text-center text-gray-500 text-SM font-medium mb-4">- OR -</div>
+                        }
+
+                        <!-- Search Origin Option -->
+                        <div class="suggestions-container">
+                            <input type="text"
+                                   id="originInput"
+                                   value="@Model.OriginQuery"
+                                   class="bg-gray-200 w-full rounded-xl px-5 py-4 text-gray-800 placeholder-gray-600"
+                                   placeholder="Search for origin location..."
+                                   autocomplete="off"
+                                   oninput="searchOrigin(this.value)" />
+                            <div id="originSuggestionsDropdown" class="suggestions-dropdown">
+                                <!-- Origin suggestions will be populated here by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Origin -->
+                    @if (Model.SelectedOrigin != null)
+                    {
+                        <div>
+                            <label class="block text-gray-700 text-lg font-medium mb-3">Selected Origin</label>
+                            <div class="bg-gray-100 rounded-xl px-4 py-4 shadow-sm">
+                                <div class="flex items-center justify-between text-gray-800">
+                                    <div class="flex items-center space-x-3">
+                                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                        <div>
+                                            <div class="font-medium">@Model.SelectedOrigin.DisplayName</div>
+                                        </div>
+                                    </div>
+                                    @* <button type="button" onclick="clearOrigin()" class="text-gray-500 hover:text-gray-700">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button> *@
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Current Location Display -->
+                    @if (Model.HasCurrentLocation && !Model.HasOrigin)
+                    {
+                        <div>
+                            <label class="block text-gray-700 text-lg font-medium mb-3">Current Location</label>
+                            <div class="text-lg bg-red-600 text-white rounded-xl px-5 py-3 flex items-center justify-center space-x-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>@Model.CurrentLocationText</span>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Nearest Origin Station -->
+                    @if (Model.NearestOriginStation != null || Model.NearestCurrentStation != null)
+                    {
+                        <div>
+                            <label class="block text-gray-700 text-lg font-medium mb-3">Nearest Station to Your Origin</label>
+                            <div class="bg-green-100 text-lg rounded-xl px-4 py-6 text-center shadow-sm">
+                                <div class="text-gray-800">
+                                    <svg class="w-6 h-6 mx-auto mb-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <div class="font-semibold">@(Model.NearestOriginStation?.Name ?? Model.NearestCurrentStation?.Name)</div>
+                                    <div class="text-sm text-gray-600">@((Model.NearestOriginStation?.Distance ?? Model.NearestCurrentStation?.Distance)?.ToString("F2")) km away</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else if (Model.HasCurrentLocation || Model.HasOrigin)
+                    {
+                        <div>
+                            <label class="block text-gray-700 text-sm font-medium mb-3">Nearest Station to Your Origin</label>
+                            <div class="bg-gray-100 rounded-xl px-4 py-6 text-center shadow-sm">
+                                <div class="text-gray-800">
+                                    <svg class="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 11111.314 0z"></path>
+                                    </svg>
+                                    <span class="text-sm text-gray-500">Finding nearest station...</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Destination Section -->
+                <div class="space-y-6 mb-8">
+                    <div>
+                        <label class="block text-gray-700 text-lg font-medium mb-3">Your Destination</label>
+                        <div class="suggestions-container">
+                            <input type="text"
+                                   id="destinationInput"
+                                   value="@Model.DestinationQuery"
+                                   class="bg-gray-200 w-full rounded-xl px-5 py-4 text-gray-800 placeholder-gray-600"
+                                   placeholder="Search for destination..."
+                                   autocomplete="off"
+                                   oninput="searchDestination(this.value)" />
+                            <div id="suggestionsDropdown" class="suggestions-dropdown">
+                                <!-- Suggestions will be populated here by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Destination -->
+                    @if (Model.SelectedDestination != null)
+                    {
+                        <div>
+                            <label class="block text-gray-700 text-lg font-medium mb-3">Selected Destination</label>
+                            <div class="bg-gray-100 rounded-xl px-4 py-4 shadow-sm">
+                                <div class="flex items-center justify-between text-gray-800">
+                                    <div class="flex items-center space-x-3">
+                                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                        <div>
+                                            <div class="font-medium">@Model.SelectedDestination.DisplayName</div>
+                                        </div>
+                                    </div>
+                                    @* <button type="button" onclick="clearDestination()" class="text-gray-500 hover:text-gray-700">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button> *@
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Nearest Destination Station -->
+                    @if (Model.NearestDestinationStation != null)
+                    {
+                        <div>
+                            <label class="block text-gray-700 text-lg font-medium mb-3">Nearest Station to Your Destination</label>
+                            <div class="bg-green-100 text-lg rounded-xl px-4 py-6 text-center shadow-sm">
+                                <div class="text-gray-800">
+                                    <svg class="w-6 h-6 mx-auto mb-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <div class="font-semibold">@Model.NearestDestinationStation.Name</div>
+                                    <div class="text-sm text-gray-600">@(Model.NearestDestinationStation.Distance?.ToString("F2")) km away</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else if (Model.HasDestination)
+                    {
+                        <div>
+                            <label class="block text-gray-700 text-sm font-medium mb-3">Nearest Station to Your Destination</label>
+                            <div class="bg-gray-100 rounded-xl px-4 py-6 text-center shadow-sm">
+                                <div class="text-gray-800">
+                                    <svg class="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 11111.314 0z"></path>
+                                    </svg>
+                                    <span class="text-sm text-gray-500">Finding nearest station...</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Plan Trip Button -->
+                @if (Model.CanPlanRoute)
+                {
+                    <form asp-action="PlanTrip" method="post">
+                        <button type="submit" class="text-lg w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-md">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7"></path>
+                            </svg>
+                            <span>Plan My Trip</span>
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <div class="text-lg w-full bg-gray-200 text-gray-500 font-semibold py-4 rounded-xl flex items-center justify-center space-x-2 cursor-not-allowed shadow-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7"></path>
+                        </svg>
+                        <span>Complete Origin & Destination First</span>
+                    </div>
+                }
+                <div class="flex mt-5 mb-6 w-full bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-2 flex items-center justify-center space-x-2 transition-all duration-200 shadow-md">
+                    <form asp-action="ClearRoute" method="post">
+                        <button type="submit" class="w-full text-white font-semibold py-2 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 text-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            <span>Plan New Journey</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Side - Map Container -->
+            <div class="right-section bg-white rounded-2xl p-6 shadow-2xl">
+                <div class="mt-4 flex items-center justify-center mb-5">
+                    <div class="bg-green-600 rounded-full p-2 mr-3">
+                        <svg class="w-8 h-8 text-lg text-green-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-4xl text-center ml-1 font-bold text-gray-800">Metro Route Map</h2>
+                </div>
+
+                <div class="map-container">
+                    <div id="map"></div>
+                </div>
+
+                @if (Model.RouteInfo != null)
+                {
+                    <div class="mt-4 p-4 bg-gray-50 rounded-xl text-gray-800">
+                        <div class="grid grid-cols-2 gap-4 text-center mb-4">
+                            <div class="space-y-1">
+                                <div class="text-3xl font-bold text-green-600">@Model.RouteInfo.Stations</div>
+                                <div class="text-lg font-medium">Stations</div>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="text-3xl font-bold text-red-600">@Model.RouteInfo.MetroTime</div>
+                                <div class="text-lg font-medium">Metro (mins)</div>
+                            </div>
+                        </div>
+
+                        <div class="p-6 bg-gray-100 rounded-lg shadow-sm mb-4">
+                            <div class="text-xl text-green-800 font-bold mb-2">Trip Briefing:</div>
+                            <div class="text-lg font-medium">
+                                Take a vehicle/walk to <strong class="text-green-600">@Model.RouteInfo.OriginStation?.Name</strong> →
+                                Take Metro to <strong class="text-green-600">@Model.RouteInfo.DestinationStation?.Name</strong> →
+                                Take a vehicle/walk to Destination
+                            </div>
+                        </div>
+
+                        @if (Model.RouteInfo.RouteStations.Any())
+                        {
+                            <div class="p-6 bg-gray-100 rounded-lg shadow-sm">
+                                <div class="text-xl font-bold mb-2 text-green-800">Metro Stations Route:</div>
+                                <div class="text-lg font-semibold">
+                                    @string.Join(" → ", Model.RouteInfo.RouteStations.Select(s => s.Name))
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        @* <!-- New Journey Button (Top Right) -->
+        <div class="flex justify-end mt-6 mb-6">
+            <form asp-action="ClearRoute" method="post">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 flex items-center space-x-2 shadow-md">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    <span>Plan New Journey</span>
+                </button>
+            </form>
+        </div> *@
+    </div>
+
+    <!-- Hidden form for setting current location -->
+    <form id="locationForm" asp-action="SetCurrentLocation" method="post" style="display: none;">
+        <input type="hidden" name="latitude" id="currentLat" />
+        <input type="hidden" name="longitude" id="currentLng" />
+    </form>
+
+    <!-- Hidden form for selecting origin -->
+    <form id="selectOriginForm" asp-action="SelectOrigin" method="post" style="display: none;">
+        <input type="hidden" name="name" id="selectedOriginName" />
+        <input type="hidden" name="displayName" id="selectedOriginDisplayName" />
+        <input type="hidden" name="latitude" id="selectedOriginLatitude" />
+        <input type="hidden" name="longitude" id="selectedOriginLongitude" />
+    </form>
+
+    <!-- Hidden form for selecting destination -->
+    <form id="selectDestinationForm" asp-action="SelectDestination" method="post" style="display: none;">
+        <input type="hidden" name="name" id="selectedName" />
+        <input type="hidden" name="displayName" id="selectedDisplayName" />
+        <input type="hidden" name="latitude" id="selectedLatitude" />
+        <input type="hidden" name="longitude" id="selectedLongitude" />
+    </form>
+
+    <script>
+        let map = null;
+        let searchTimeout = null;
+        let originSearchTimeout = null;
+
+        // Initialize map
+        function initializeMap() {
+            // Ensure Leaflet is loaded
+            if (typeof L === 'undefined') {
+                console.error('Leaflet library not loaded');
+                return;
+            }
+
+            map = L.map('map').setView([23.8103, 90.4125], 12); // Center on Dhaka
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add all metro stations
+            @foreach (var station in Model.AllStations)
+            {
+                        @:L.marker([@station.Latitude, @station.Longitude])
+                        @:  .addTo(map)
+                        @:  .bindPopup('<b>@Html.Raw(station.Name)</b><br>Metro Station');
+            }
+
+            // Add origin marker if available
+            @if (Model.SelectedOrigin != null)
+            {
+                        @:L.marker([@Model.SelectedOrigin.Latitude, @Model.SelectedOrigin.Longitude])
+                        @:  .addTo(map)
+                        @:  .bindPopup('<b>Your Origin</b><br>@Html.Raw(Model.SelectedOrigin.DisplayName)');
+            }
+            else if (Model.HasCurrentLocation)
+            {
+                        @:L.marker([@Model.CurrentLatitude, @Model.CurrentLongitude])
+                        @:  .addTo(map)
+                        @:  .bindPopup('<b>Your Current Location</b>');
+            }
+
+            // Add destination marker if available
+            @if (Model.SelectedDestination != null)
+            {
+                        @:L.marker([@Model.SelectedDestination.Latitude, @Model.SelectedDestination.Longitude])
+                        @:  .addTo(map)
+                        @:  .bindPopup('<b>Your Destination</b><br>@Html.Raw(Model.SelectedDestination.DisplayName)');
+            }
+
+            // Add route line if available
+            @if (Model.RouteInfo?.RouteStations.Any() == true)
+            {
+                        @:var routeCoordinates = [
+                        @foreach (var station in Model.RouteInfo.RouteStations)
+                        {
+                                    @:[@station.Latitude, @station.Longitude],
+                        }
+                                                                @:];
+
+                        @:if (routeCoordinates.length > 0) {
+                        @:    L.polyline(routeCoordinates, {
+                        @:        color: '#6366F1',
+                        @:        weight: 4,
+                        @:        opacity: 0.8
+                        @:    }).addTo(map);
+                        @:}
+
+                        // Add connection lines
+                        @if (Model.SelectedOrigin != null && Model.NearestOriginStation != null)
+                        {
+                                    @:L.polyline([
+                                    @:    [@Model.SelectedOrigin.Latitude, @Model.SelectedOrigin.Longitude],
+                                    @:    [@Model.NearestOriginStation.Latitude, @Model.NearestOriginStation.Longitude]
+                                    @:], {
+                                    @:    color: '#10B981',
+                                    @:    weight: 2,
+                                    @:    opacity: 0.6,
+                                    @:    dashArray: '5, 5'
+                                    @:}).addTo(map);
+                        }
+                        else if (Model.HasCurrentLocation && Model.NearestCurrentStation != null)
+                        {
+                                    @:L.polyline([
+                                    @:    [@Model.CurrentLatitude, @Model.CurrentLongitude],
+                                    @:    [@Model.NearestCurrentStation.Latitude, @Model.NearestCurrentStation.Longitude]
+                                    @:], {
+                                    @:    color: '#10B981',
+                                    @:    weight: 2,
+                                    @:    opacity: 0.6,
+                                    @:    dashArray: '5, 5'
+                                    @:}).addTo(map);
+                        }
+
+                        @if (Model.SelectedDestination != null && Model.NearestDestinationStation != null)
+                        {
+                                    @:L.polyline([
+                                    @:    [@Model.NearestDestinationStation.Latitude, @Model.NearestDestinationStation.Longitude],
+                                    @:    [@Model.SelectedDestination.Latitude, @Model.SelectedDestination.Longitude]
+                                    @:], {
+                                    @:    color: '#EF4444',
+                                    @:    weight: 2,
+                                    @:    opacity: 0.6,
+                                    @:    dashArray: '5, 5'
+                                    @:}).addTo(map);
+                        }
+
+                        // Fit map to show all points
+                                                                @:try {
+                        @:    var bounds = L.latLngBounds();
+                        @:    var hasPoints = false;
+
+                        @if (Model.SelectedOrigin != null)
+                        {
+                                    @:    bounds.extend([@Model.SelectedOrigin.Latitude, @Model.SelectedOrigin.Longitude]);
+                                    @:    hasPoints = true;
+                        }
+                        else if (Model.HasCurrentLocation)
+                        {
+                                    @:    bounds.extend([@Model.CurrentLatitude, @Model.CurrentLongitude]);
+                                    @:    hasPoints = true;
+                        }
+                        @if (Model.SelectedDestination != null)
+                        {
+                                    @:    bounds.extend([@Model.SelectedDestination.Latitude, @Model.SelectedDestination.Longitude]);
+                                    @:    hasPoints = true;
+                        }
+                        @foreach (var station in Model.RouteInfo.RouteStations)
+                        {
+                                    @:    bounds.extend([@station.Latitude, @station.Longitude]);
+                                    @:    hasPoints = true;
+                        }
+
+                                                                @:    if (hasPoints && bounds.isValid()) {
+                        @:        map.fitBounds(bounds, { padding: [20, 20] });
+                        @:    }
+                        @:} catch (e) {
+                        @:    console.warn('Error fitting map bounds:', e);
+                        @:}
+            }
+
+            // Adjust map height dynamically based on content
+            adjustMapHeight();
+        }
+
+        // Adjust map height dynamically
+        function adjustMapHeight() {
+            const mapElement = document.getElementById('map');
+            const rightSection = document.querySelector('.right-section');
+            const routeInfo = document.querySelector('.bg-gray-50.rounded-xl');
+
+            if (mapElement && rightSection) {
+                // Calculate available height
+                const rightSectionHeight = rightSection.offsetHeight;
+                const otherElementsHeight = rightSection.querySelector('div.flex.items-center').offsetHeight + 32; // header + padding
+
+                let routeInfoHeight = 0;
+                if (routeInfo) {
+                    routeInfoHeight = routeInfo.offsetHeight + 16; // + margin
+                }
+
+                // Set map height to fill available space
+                const availableHeight = rightSectionHeight - otherElementsHeight - routeInfoHeight;
+                mapElement.style.height = Math.max(400, availableHeight) + 'px'; // Minimum 400px
+
+                // Trigger map resize if map is already initialized
+                if (map) {
+                    setTimeout(() => {
+                        map.invalidateSize();
+                    }, 100);
+                }
+            }
+        }
+
+        // Get current location using geolocation API
+        function getCurrentLocation() {
+            const buttonText = document.getElementById('locationButtonText');
+
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by this browser.');
+                return;
+            }
+
+            buttonText.textContent = 'Getting location...';
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    document.getElementById('currentLat').value = position.coords.latitude;
+                    document.getElementById('currentLng').value = position.coords.longitude;
+                    document.getElementById('locationForm').submit();
+                },
+                function(error) {
+                    buttonText.textContent = 'Use My Current Location';
+
+                    let errorMessage = 'Unable to access your location. ';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage += 'Please allow location access and try again.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage += 'Location information is unavailable.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage += 'Location request timed out.';
+                            break;
+                        default:
+                            errorMessage += 'An unknown error occurred.';
+                            break;
+                    }
+                    alert(errorMessage);
+                }
+            );
+        }
+
+        // Search origin with debouncing
+                function searchOrigin(query) {
+            clearTimeout(originSearchTimeout);
+
+            if (query.length < 2) {
+                hideOriginSuggestions();
+                return;
+            }
+
+            originSearchTimeout = setTimeout(() => {
+                // FIXED: Changed from /Home/ to /Route/
+                fetch(`/Route/SearchOriginAjax?query=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(suggestions => {
+                        displayOriginSuggestions(suggestions);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching origin suggestions:', error);
+                        hideOriginSuggestions();
+                    });
+            }, 300);
+        }
+
+        // Display origin search suggestions
+        function displayOriginSuggestions(suggestions) {
+            const dropdown = document.getElementById('originSuggestionsDropdown');
+
+            if (!suggestions || suggestions.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            dropdown.innerHTML = '';
+
+            suggestions.forEach(place => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <svg class="w-4 h-4 mt-1 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium truncate">${place.name}</div>
+                            <div class="text-xs opacity-70 truncate">${place.displayName}</div>
+                        </div>
+                    </div>
+                `;
+
+                item.addEventListener('click', () => {
+                    selectOrigin(place);
+                });
+
+                dropdown.appendChild(item);
+            });
+
+            dropdown.style.display = 'block';
+        }
+
+        // Hide origin suggestions dropdown
+        function hideOriginSuggestions() {
+            const dropdown = document.getElementById('originSuggestionsDropdown');
+            if (dropdown) {
+                dropdown.style.display = 'none';
+            }
+        }
+
+        // Select an origin from suggestions
+        function selectOrigin(place) {
+            document.getElementById('selectedOriginName').value = place.name;
+            document.getElementById('selectedOriginDisplayName').value = place.displayName;
+            document.getElementById('selectedOriginLatitude').value = place.latitude;
+            document.getElementById('selectedOriginLongitude').value = place.longitude;
+            document.getElementById('selectOriginForm').submit();
+        }
+
+        // Clear selected origin
+        function clearOrigin() {
+            // This will redirect to the same page without the origin
+            window.location.href = window.location.href;
+        }
+
+        // Search destination with debouncing
+                function searchDestination(query) {
+            clearTimeout(searchTimeout);
+
+            if (query.length < 2) {
+                hideSuggestions();
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                // FIXED: Changed from /Home/ to /Route/
+                fetch(`/Route/SearchDestinationAjax?query=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(suggestions => {
+                        displaySuggestions(suggestions);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching destination suggestions:', error);
+                        hideSuggestions();
+                    });
+            }, 300);
+        }
+
+        // Display search suggestions
+        function displaySuggestions(suggestions) {
+            const dropdown = document.getElementById('suggestionsDropdown');
+
+            if (!suggestions || suggestions.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            dropdown.innerHTML = '';
+
+            suggestions.forEach(place => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <svg class="w-4 h-4 mt-1  text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium truncate">${place.name}</div>
+                            <div class="text-xs opacity-70 truncate">${place.displayName}</div>
+                        </div>
+                    </div>
+                `;
+
+                item.addEventListener('click', () => {
+                    selectDestination(place);
+                });
+
+                dropdown.appendChild(item);
+            });
+
+            dropdown.style.display = 'block';
+        }
+
+        // Hide suggestions dropdown
+        function hideSuggestions() {
+            const dropdown = document.getElementById('suggestionsDropdown');
+            if (dropdown) {
+                dropdown.style.display = 'none';
+            }
+        }
+
+        // Select a destination from suggestions
+        function selectDestination(place) {
+            document.getElementById('selectedName').value = place.name;
+            document.getElementById('selectedDisplayName').value = place.displayName;
+            document.getElementById('selectedLatitude').value = place.latitude;
+            document.getElementById('selectedLongitude').value = place.longitude;
+            document.getElementById('selectDestinationForm').submit();
+        }
+
+        // Clear selected destination
+        function clearDestination() {
+            // This will redirect to the same page without the destination
+            window.location.href = window.location.href;
+        }
+
+        // Initialize the map when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add a small delay to ensure Leaflet is fully loaded
+            setTimeout(function() {
+                initializeMap();
+            }, 100);
+
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', function(e) {
+                const originInput = document.getElementById('originInput');
+                const originSuggestionsDropdown = document.getElementById('originSuggestionsDropdown');
+                const destinationInput = document.getElementById('destinationInput');
+                const suggestionsDropdown = document.getElementById('suggestionsDropdown');
+
+                if (e.target !== originInput && originSuggestionsDropdown && !originSuggestionsDropdown.contains(e.target)) {
+                    hideOriginSuggestions();
+                }
+
+                if (e.target !== destinationInput && suggestionsDropdown && !suggestionsDropdown.contains(e.target)) {
+                    hideSuggestions();
+                }
+            });
+
+            // Adjust map height on window resize
+            window.addEventListener('resize', function() {
+                adjustMapHeight();
+            });
+        });
+
+        // Fallback: Also try to initialize when window loads
+        window.addEventListener('load', function() {
+            if (!map) {
+                setTimeout(function() {
+                    initializeMap();
+                }, 200);
+            }
+        });
+    </script>
+</body>
+</html>

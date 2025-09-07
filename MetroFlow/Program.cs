@@ -15,15 +15,34 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString);
 });
 
+// Add HttpClient for external API calls
+builder.Services.AddHttpClient<ILocationService, LocationService>();
+
+// Register the LocationService
+builder.Services.AddScoped<ILocationService, LocationService>();
+
+// Add session services (MUST be before AddControllersWithViews)
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// Add HttpContextAccessor to access HttpContext in services
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddSingleton<MetroFlow.Services.MailService>();
 
 builder.Services.AddScoped<TokenService>();
 
+// JWT Authentication
 var jwt = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwt["Key"]!);
 
 builder.Services
-    .AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -49,9 +68,9 @@ builder.Services
         };
     });
 
-
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -62,9 +81,12 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-app.UseAuthentication();
 
+app.UseAuthentication();
 app.UseAuthorization();
+
+// Add session middleware (MUST be after UseRouting and before MapControllerRoute)
+app.UseSession();
 
 app.MapControllerRoute(
     name: "default",
