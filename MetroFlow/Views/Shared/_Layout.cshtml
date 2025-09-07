@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@* _Layout.cshtml *@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -25,10 +26,24 @@
                         </svg>
                     </button>
                     <!-- Desktop links -->
-                    <ul class="hidden gap-6 lg:flex">
+                    <ul class="hidden gap-6 lg:flex items-center">
                         <li><a class="text-2xl font-semibold text-white hover:text-red-200" asp-controller="Home" asp-action="Index">Home</a></li>
-                        <li><a class="text-2xl font-semibold text-white hover:text-red-200" asp-controller="User" asp-action="Login">Login</a></li>
-                        <li><a class="text-2xl font-semibold text-white hover:text-red-200" asp-controller="User" asp-action="Signup">Register</a></li>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li>
+                                <form asp-controller="User" asp-action="Logout" method="post" class="inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="text-2xl font-semibold text-white hover:text-red-200 underline">
+                                        Logout
+                                    </button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li><a class="text-2xl font-semibold text-white hover:text-red-200" asp-controller="User" asp-action="Login">Login</a></li>
+                            <li><a class="text-2xl font-semibold text-white hover:text-red-200" asp-controller="User" asp-action="Signup">Register</a></li>
+                        }
                     </ul>
                 </div>
                 <!-- Mobile links (same fonts/colors + glassy panel) -->
@@ -36,9 +51,23 @@
                     <div class="rounded-2xl border border-white/15 bg-white/5 backdrop-blur-xl text-white shadow-md">
                         <ul class="flex flex-col gap-2 p-2">
                             <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="Home" asp-action="Index">Home</a></li>
-                            <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="User" asp-action="Login">Login</a></li>
-                            <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="User" asp-action="Register">Register</a></li>
 
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <li>
+                                    <form asp-controller="User" asp-action="Logout" method="post" class="px-3 py-2">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="text-2xl font-semibold underline hover:bg-white/10 rounded-md w-full text-left">
+                                            Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            }
+                            else
+                            {
+                                <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="User" asp-action="Login">Login</a></li>
+                                <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="User" asp-action="Signup">Register</a></li>
+                            }
                         </ul>
                     </div>
                 </div>
