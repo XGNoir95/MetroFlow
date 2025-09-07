@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace MetroFlow.Controllers
 {
@@ -14,12 +15,14 @@ namespace MetroFlow.Controllers
         private readonly ApplicationDbContext _context;
         private readonly MailService _mail;
         private readonly TokenService _tokens;
+        private readonly IMemoryCache _cache;
 
-        public UserController(ApplicationDbContext context, MailService mail, TokenService tokens)
+        public UserController(ApplicationDbContext context, MailService mail, TokenService tokens, IMemoryCache cache)
         {
             _context = context;
             _mail = mail;
             _tokens = tokens;
+            _cache = cache;
         }
 
         // =================== Signup (GET) ===================
@@ -186,6 +189,96 @@ namespace MetroFlow.Controllers
         {
             Response.Cookies.Delete("AuthToken");
             TempData["Flash"] = "Logged out.";
+            return RedirectToAction("Login");
+        }
+
+         // =================== Forgot Password (GET) ===================
+        [HttpGet, AllowAnonymous]
+        public IActionResult ForgotPassword() => View();
+
+        // =================== Forgot Password (POST) ===================
+        // UserController.cs
+
+        [HttpPost, AllowAnonymous, ValidateAntiForgeryToken]
+        public IActionResult ForgotPassword(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                ViewBag.Message = "Please provide your email.";
+                return View();
+            }
+
+            // Check if the email exists in the database
+            var user = _context.Users.FirstOrDefault(u => u.Email == email);
+            if (user == null || !user.IsVerified)
+            { 
+                TempData["Flash"] = "Wrong Email or Email not registered.";
+                return RedirectToAction("ForgotPassword");
+            }
+
+            // Generate a random token
+            var token = Guid.NewGuid().ToString("N"); // Raw token
+
+            // Cache the token with an expiration of 30 minutes
+            _cache.Set($"passwordReset:{email}:{token}", email, TimeSpan.FromMinutes(5));
+
+            // Generate the reset link
+            var resetLink = Url.Action("ResetPassword", "User", new { email = email, token = token }, Request.Scheme);
+
+            // Send the reset link via email
+            _mail.SendPasswordReset(email, resetLink);
+
+            TempData["Flash"] = "Password reset mail is sent.";
+            return RedirectToAction("ForgotPassword");
+        }
+
+
+        // =================== Reset Password (GET) ===================
+        [HttpGet, AllowAnonymous]
+        public IActionResult ResetPassword(string email, string token)
+        {
+            ViewBag.Email = email;
+            ViewBag.Token = token;
+            return View();
+        }
+
+        // =================== Reset Password (POST) ===================
+        [HttpPost, AllowAnonymous, ValidateAntiForgeryToken]
+        public IActionResult ResetPassword(string email, string token, string newPassword, string confirmPassword)
+        {
+            if (newPassword != confirmPassword)
+            {
+                ViewBag.Message = "Passwords do not match.";
+                return View();
+            }
+
+            // Check if the token exists in the cache
+            var cacheKey = $"passwordReset:{email}:{token}";
+            if (!_cache.TryGetValue(cacheKey, out string cachedEmail) || cachedEmail != email)
+            {
+                ViewBag.Message = "Invalid or expired reset link.";
+                return View();
+            }
+
+            // Find the user and update password
+            var user = _context.Users.FirstOrDefault(u => u.Email == email);
+            if (user == null)
+            {
+                ViewBag.Message = "User not found.";
+                return View();
+            }
+
+            // Hash the new password
+            var hasher = new PasswordHasher<User>();
+            user.Password = hasher.HashPassword(user, newPassword);
+
+            // Remove the token from the cache (single-use)
+            _cache.Remove(cacheKey);
+
+            // Save the changes
+            _context.SaveChanges();
+
+            TempData["Flash"] = "Your password has been reset. Please log in.";
             return RedirectToAction("Login");
         }
     }
