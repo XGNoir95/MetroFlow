@@ -1,9 +1,12 @@
-// Models/Station.cs
+using System.ComponentModel.DataAnnotations;
+
 namespace MetroFlow.Models
 {
     public class Station
     {
-        public string Name { get; set; } = string.Empty;
+        [Key]
+        public string Name { get; set; } = string.Empty; 
+
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public double? Distance { get; set; }
