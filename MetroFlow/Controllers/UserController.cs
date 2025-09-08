@@ -1,5 +1,8 @@
-﻿using MetroFlow.Models;
+﻿using Azure;
+using MetroFlow.Controllers;
+using MetroFlow.Models;
 using MetroFlow.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,19 +13,21 @@ namespace MetroFlow.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly MailService _mail;
+        private readonly TokenService _tokens;
 
-        public UserController(ApplicationDbContext context, MailService mail)
+        public UserController(ApplicationDbContext context, MailService mail, TokenService tokens)
         {
             _context = context;
             _mail = mail;
+            _tokens = tokens;
         }
 
         // =================== Signup (GET) ===================
-        [HttpGet]
+        [HttpGet, AllowAnonymous]
         public IActionResult Signup() => View();
 
         // =================== Signup (POST) ===================
-        [HttpPost]
+        [HttpPost, AllowAnonymous, ValidateAntiForgeryToken]
         public async Task<IActionResult> Signup(User user)
         {
             if (!ModelState.IsValid)
@@ -31,7 +36,6 @@ namespace MetroFlow.Controllers
                 return View(user);
             }
 
-            // Check if user already exists
             var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
             if (existingUser != null)
             {
@@ -49,11 +53,9 @@ namespace MetroFlow.Controllers
                 }
             }
 
-            // Hash password
             var hasher = new PasswordHasher<User>();
             user.Password = hasher.HashPassword(user, user.Password);
 
-            // Set timestamps and OTP
             user.CreatedAt = DateTime.UtcNow;
             user.IsVerified = false;
             var rnd = new Random();
@@ -63,7 +65,6 @@ namespace MetroFlow.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            // Send OTP
             _mail.SendOtp(user.Email, user.Otp!);
 
             TempData["Flash"] = "We emailed you an OTP. Please verify.";
@@ -71,7 +72,7 @@ namespace MetroFlow.Controllers
         }
 
         // =================== Verify OTP (GET) ===================
-        [HttpGet]
+        [HttpGet, AllowAnonymous]
         public IActionResult VerifyOtp(string email)
         {
             ViewBag.Email = email;
@@ -79,7 +80,7 @@ namespace MetroFlow.Controllers
         }
 
         // =================== Verify OTP (POST) ===================
-        [HttpPost]
+        [HttpPost, AllowAnonymous, ValidateAntiForgeryToken]
         public async Task<IActionResult> VerifyOtp(string email, string otp)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
@@ -101,7 +102,6 @@ namespace MetroFlow.Controllers
             user.OtpExpiry = null;
 
             await _context.SaveChangesAsync();
-
             _mail.SendConfirmation(user.Email, user.Name);
 
             TempData["Flash"] = "Your account has been verified. Please log in.";
@@ -109,7 +109,7 @@ namespace MetroFlow.Controllers
         }
 
         // =================== Resend OTP ===================
-        [HttpPost]
+        [HttpPost, AllowAnonymous, ValidateAntiForgeryToken]
         public async Task<IActionResult> ResendOtp(string email)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
@@ -137,11 +137,11 @@ namespace MetroFlow.Controllers
         }
 
         // =================== Login (GET) ===================
-        [HttpGet]
+        [HttpGet, AllowAnonymous]
         public IActionResult Login() => View();
 
-        // =================== Login (POST) ===================
-        [HttpPost]
+        // =================== Login (POST) -> set HttpOnly cookie and REDIRECT ===================
+        [HttpPost, AllowAnonymous, ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(string email, string password)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
@@ -165,8 +165,28 @@ namespace MetroFlow.Controllers
                 return View();
             }
 
+            // Create JWT and store in HttpOnly cookie
+            var jwt = _tokens.CreateToken(user);
+            Response.Cookies.Append("AuthToken", jwt, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,                 // true in production (HTTPS)
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddHours(12),
+                IsEssential = true
+            });
+
             TempData["Flash"] = "Login successful!";
             return RedirectToAction("Index", "Home");
+        }
+
+        // =================== Logout -> delete cookie and REDIRECT ===================
+        [HttpPost, Authorize, ValidateAntiForgeryToken]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("AuthToken");
+            TempData["Flash"] = "Logged out.";
+            return RedirectToAction("Login");
         }
     }
 }
