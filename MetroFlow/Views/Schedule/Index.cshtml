@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@model MetroFlow.Controllers.ScheduleViewModel
+@using MetroFlow.Models
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,6 +10,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Your existing CSS styles remain the same */
         .tab-active {
             background-color: #16a34a;
             color: white;
@@ -116,6 +120,11 @@
                     </div>
                     <p class="text-gray-700 text-lg font-base mb-6">Operates Saturday to Thursday</p>
 
+                    @{
+                        var weekdayUttaraToMotijheel = Model.Schedules.FirstOrDefault(s => s.DayType == "Weekday" && s.Direction == "UttaraToMotijheel");
+                        var weekdayMotijheelToUttara = Model.Schedules.FirstOrDefault(s => s.DayType == "Weekday" && s.Direction == "MotijheelToUttara");
+                    }
+
                     <!-- Uttara to Motijheel -->
                     <div class="mb-6">
                         <div class="flex items-center mb-2">
@@ -125,38 +134,38 @@
                         <div class="ml-6 space-y-3">
                             <div class="flex justify-between">
                                 <span class="text-gray-600 text-lg">First train:</span>
-                                <span class="font-medium text-lg">7:10 AM</span>
+                                <span class="font-medium text-lg">@weekdayUttaraToMotijheel?.FirstTrain.ToString(@"hh\:mm") AM</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600 text-lg">Last train:</span>
-                                <span class="font-medium text-lg">9:00 PM</span>
+                                <span class="font-medium text-lg">@weekdayUttaraToMotijheel?.LastTrain.ToString(@"hh\:mm") PM</span>
                             </div>
                             <div class="flex justify-end mt-2">
                                 <div class="text-green-700 bg-green-100 px-4 py-1 rounded">
-                                    Peak hours: Every 8 minutes
+                                    Peak hours: @weekdayUttaraToMotijheel?.PeakFrequency
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Motijheel to Uttara -->
-                    <div mb-6>
+                    <div class="mb-6">
                         <div class="flex items-center mb-2">
                             <div class="w-3 h-3 bg-green-500 rounded-full mr-3 mt-1"></div>
                             <h4 class="font-medium text-2xl text-gray-900">Motijheel to Uttara</h4>
                         </div>
-                        <div class="ml-4 space-y-1ml-6 space-y-3">
+                        <div class="ml-6 space-y-3">
                             <div class="flex justify-between">
                                 <span class="text-gray-600 text-lg">First train:</span>
-                                <span class="font-medium text-lg">7:30 AM</span>
+                                <span class="font-medium text-lg">@weekdayMotijheelToUttara?.FirstTrain.ToString(@"hh\:mm") AM</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600 text-lg">Last train:</span>
-                                <span class="font-medium text-lg">9:40 PM</span>
+                                <span class="font-medium text-lg">@weekdayMotijheelToUttara?.LastTrain.ToString(@"hh\:mm") PM</span>
                             </div>
                             <div class="flex justify-end mt-2">
                                 <div class="text-green-700 bg-green-100 px-4 py-1 rounded">
-                                    Peak hours: Every 8 minutes
+                                    Peak hours: @weekdayMotijheelToUttara?.PeakFrequency
                                 </div>
                             </div>
                         </div>
@@ -173,6 +182,11 @@
                     </div>
                     <p class="text-gray-700 text-lg mb-6">Limited service on Fridays</p>
 
+                    @{
+                        var fridayUttaraToMotijheel = Model.Schedules.FirstOrDefault(s => s.DayType == "Friday" && s.Direction == "UttaraToMotijheel");
+                        var fridayMotijheelToUttara = Model.Schedules.FirstOrDefault(s => s.DayType == "Friday" && s.Direction == "MotijheelToUttara");
+                    }
+
                     <!-- Uttara to Motijheel -->
                     <div class="mb-6">
                         <div class="flex items-center mb-2">
@@ -182,38 +196,38 @@
                         <div class="ml-6 space-y-3">
                             <div class="flex justify-between">
                                 <span class="text-gray-600 text-lg">First train:</span>
-                                <span class="font-medium text-lg">3:00 PM</span>
+                                <span class="font-medium text-lg">@fridayUttaraToMotijheel?.FirstTrain.ToString(@"hh\:mm") PM</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600 text-lg">Last train:</span>
-                                <span class="font-medium text-lg">10:00 PM</span>
+                                <span class="font-medium text-lg">@fridayUttaraToMotijheel?.LastTrain.ToString(@"hh\:mm") PM</span>
                             </div>
                             <div class="flex justify-end mt-2">
                                 <div class="text-red-700 bg-red-100 px-4 py-1 rounded">
-                                    Peak hours: Every 12 minutes
+                                    Peak hours: @fridayUttaraToMotijheel?.PeakFrequency
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Motijheel to Uttara -->
-                    <div mb-6>
+                    <div class="mb-6">
                         <div class="flex items-center mb-2">
                             <div class="w-3 h-3 bg-green-500 rounded-full mr-3 mt-1"></div>
                             <h4 class="font-medium text-2xl text-gray-900">Motijheel to Uttara</h4>
                         </div>
-                        <div class="ml-4 space-y-1ml-6 space-y-3">
+                        <div class="ml-6 space-y-3">
                             <div class="flex justify-between">
                                 <span class="text-gray-600 text-lg">First train:</span>
-                                <span class="font-medium text-lg">3:30 PM</span>
+                                <span class="font-medium text-lg">@fridayMotijheelToUttara?.FirstTrain.ToString(@"hh\:mm") PM</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600 text-lg">Last train:</span>
-                                <span class="font-medium text-lg">10:20 PM</span>
+                                <span class="font-medium text-lg">@fridayMotijheelToUttara?.LastTrain.ToString(@"hh\:mm") PM</span>
                             </div>
                             <div class="flex justify-end mt-2">
                                 <div class="text-red-700 bg-red-100 px-4 py-1 rounded">
-                                    Peak hours: Every 12 minutes
+                                    Peak hours: @fridayMotijheelToUttara?.PeakFrequency
                                 </div>
                             </div>
                         </div>
@@ -223,93 +237,45 @@
 
             <!-- Ticket Information -->
             <div class="grid lg:grid-cols-2 gap-6">
-                <!-- Single Journey Ticket -->
-                <div class="bg-white rounded-lg border border-gray-200 p-8 route-card">
-                    <div class="flex items-center mb-4">
-                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                            <i class="fas fa-ticket-alt text-green-600 text-lg"></i>
-                        </div>
-                        <h3 class="text-3xl font-bold text-gray-900">Single Journey Ticket</h3>
-                    </div>
-                    <p class="text-gray-700 text-lg mb-6">Valid for a one-time trip between two stations.</p>
-
-                    <div class="mb-6">
-                        <h4 class="font-medium text-xl text-gray-900 mb-4">Purchase Methods:</h4>
-
-                        <div class="space-y-3">
-                            <div class="flex items-center border-b border-gray-200 last:border-b-0 py-4 bg-gray-100 hover hover:bg-green-100 text-green-900 rounded-xl">
-                                <div class="w-12 h-12 flex items-center justify-center rounded-lg text-green-600 hover  text-base">
-                                    <i class="fas fa-university"></i>
-                                </div>
-                                <div>
-                                    <p class="font-medium text-lg">Physical Purchase</p>
-                                    <p class="text-sm text-gray-500">Go to a counter and book a ticket</p>
-                                </div>
+                @foreach (var ticketOption in Model.TicketOptions)
+                {
+                    <div class="bg-white rounded-lg border border-gray-200 p-8 route-card">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                <i class="@(ticketOption.Type == "SingleJourney" ? "fas fa-ticket-alt text-green-600" : "fas fa-id-card-alt text-green-700") text-lg"></i>
                             </div>
+                            <h3 class="text-3xl font-bold text-gray-900">@ticketOption.Title</h3>
+                        </div>
+                        <p class="text-gray-700 text-lg mb-6">@ticketOption.Description</p>
 
-                            <div class="flex items-center border-b border-gray-200 last:border-b-0 py-5 bg-gray-100 hover hover:bg-green-100 text-green-900 rounded-xl">
-                                <div class="w-12 h-12 flex items-center justify-center rounded-lg text-green-600 hover  text-base">
-                                    <i class="fas fa-globe"></i>
-                                </div>
-                                <div>
-                                    <p class="font-medium text-lg">Online Portal</p>
-                                    <p class="text-sm text-gray-500">Book tickets at metroflow.com</p>
-                                </div>
+                        <div class="mb-6">
+                            <h4 class="font-medium text-xl text-gray-900 mb-4">@(ticketOption.Type == "SingleJourney" ? "Purchase Methods:" : "Purchase & Recharge Methods:")</h4>
+
+                            <div class="space-y-3">
+                                @foreach (var method in ticketOption.PurchaseMethods)
+                                {
+                                    <div class="flex items-center border-b border-gray-200 last:border-b-0 py-4 bg-gray-100 hover hover:bg-green-100 text-green-900 rounded-xl">
+                                        <div class="w-12 h-12 flex items-center justify-center rounded-lg text-green-600 hover text-base">
+                                            <i class="@method.IconClass"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-lg">@method.Name</p>
+                                            <p class="text-sm text-gray-500">@method.Description</p>
+                                        </div>
+                                    </div>
+                                }
                             </div>
                         </div>
+
+                        <button class="w-full py-3 bg-green-600 text-lg text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
+                            @(ticketOption.Type == "SingleJourney" ? "Purchase Single Ticket" : "Register for MRT Pass")
+                        </button>
                     </div>
-
-                    <button class="w-full py-3 bg-green-600 text-lg text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
-                        Purchase Single Ticket
-                    </button>
-                </div>
-
-                <!-- MRT Pass -->
-                <div class="bg-white rounded-lg border border-gray-200 p-8 route-card">
-                    <div class="flex items-center mb-4">
-                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                            <i class="fas fa-id-card-alt text-green-700 text-lg"></i>
-                        </div>
-                        <h3 class="text-3xl font-bold text-gray-900">MRT Pass</h3>
-                    </div>
-                    <p class="text-gray-700 text-lg mb-6">
-                        A contactless smart card offering a 10% discount on fares. Valid for 10 years.
-                    </p>
-
-                    <div class="mb-6">
-                        <h4 class="font-medium text-xl text-gray-900 mb-4">Purchase & Recharge Methods:</h4>
-
-                        <div class="space-y-3">
-                            <div class="flex items-center border-b border-gray-200 last:border-b-0 py-4 bg-gray-100 hover hover:bg-green-100 text-green-900 rounded-xl">
-                                <div class="w-12 h-12 flex items-center justify-center rounded-lg text-green-600 hover  text-base">
-                                    <i class="fas fa-university"></i>
-                                </div>
-                                <div>
-                                    <p class="font-medium text-lg">Physical Purchase</p>
-                                    <p class="text-sm text-gray-500">Go to a counter and register for your pass</p>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center border-b border-gray-200 last:border-b-0 py-5 bg-gray-100 hover hover:bg-green-100 text-green-900 rounded-xl">
-                                <div class="w-12 h-12 flex items-center justify-center rounded-lg text-green-600 hover  text-base">
-                                    <i class="fas fa-globe"></i>
-                                </div>
-                                <div>
-                                    <p class="font-medium text-lg">Online Portal</p>
-                                    <p class="text-sm text-gray-500">Register for your card on Metroflow</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button class="w-full py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors text-lg">
-                        Register for MRT Pass
-                    </button>
-                </div>
+                }
             </div>
         </div>
 
-        <!-- Weekdays Content (Updated to match new design) -->
+        <!-- Weekdays Content -->
         <div id="weekdaysContent" class="hidden">
             <div class="bg-white rounded-lg border border-gray-200 p-8 transition-all duration-200 hover:shadow-lg">
                 <div class="flex items-center mb-6">
@@ -337,22 +303,8 @@
                                     <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Frequency</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr class="hover:bg-gray-200">
-                                    <td class="px-5 py-4 border-b border-gray-100 text-lg font-medium">7:10 AM - 7:30 AM</td>
-                                    <td class="px-5 py-4 border-b border-gray-100 text-green-600 font-semibold text-lg">Off-Peak</td>
-                                    <td class="px-5 py-4 border-b border-gray-100 text-lg">Every 10 minutes</td>
-                                </tr>
-                                <tr class="hover:bg-gray-200">
-                                    <td class="px-5 py-4 border-b border-gray-100 text-lg font-medium">7:31 AM - 6:50 PM</td>
-                                    <td class="px-5 py-4 border-b border-gray-100 text-red-600 font-semibold text-lg">Peak</td>
-                                    <td class="px-5 py-4 border-b border-gray-100 text-lg">Every 8 minutes</td>
-                                </tr>
-                                <tr class="hover:bg-gray-200">
-                                    <td class="px-5 py-4 border-b border-gray-100 text-lg font-medium">6:51 PM - 9:00 PM</td>
-                                    <td class="px-5 py-4 border-b border-gray-100 text-green-600 font-semibold text-lg">Off-Peak</td>
-                                    <td class="px-5 py-4 border-b border-gray-100 text-lg">Every 10 minutes</td>
-                                </tr>
+                            <tbody id="weekdayUttaraToMotijheelPeriods">
+                                <!-- This will be populated via JavaScript -->
                             </tbody>
                         </table>
                     </div>
@@ -373,22 +325,8 @@
                                     <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Frequency</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr class="hover:bg-gray-200">
-                                    <td class="px-5 py-4 border-b border-gray-100 text-lg font-medium">7:30 AM - 8:00 AM</td>
-                                    <td class="px-5 py-4 border-b border-gray-100 text-green-600 font-semibold text-lg">Off-Peak</td>
-                                    <td class="px-5 py-4 border-b border-gray-100 text-lg">Every 10 minutes</td>
-                                </tr>
-                                <tr class="hover:bg-gray-200">
-                                    <td class="px-5 py-4 border-b border-gray-100 text-lg font-medium">8:01 AM - 7:30 PM</td>
-                                    <td class="px-5 py-4 border-b border-gray-100 text-red-600 font-semibold text-lg">Peak</td>
-                                    <td class="px-5 py-4 border-b border-gray-100 text-lg">Every 8 minutes</td>
-                                </tr>
-                                <tr class="hover:bg-gray-200">
-                                    <td class="px-5 py-4 border-b border-gray-100 text-lg font-medium">7:31 PM - 9:40 PM</td>
-                                    <td class="px-5 py-4 border-b border-gray-100 text-green-600 font-semibold text-lg">Off-Peak</td>
-                                    <td class="px-5 py-4 border-b border-gray-100 text-lg">Every 10 minutes</td>
-                                </tr>
+                            <tbody id="weekdayMotijheelToUttaraPeriods">
+                                <!-- This will be populated via JavaScript -->
                             </tbody>
                         </table>
                     </div>
@@ -396,7 +334,7 @@
             </div>
         </div>
 
-        <!-- Friday Content (Updated to match new design) -->
+        <!-- Friday Content -->
         <div id="fridayContent" class="hidden">
             <div class="bg-white rounded-lg border border-gray-200 p-8 transition-all duration-200 hover:shadow-lg">
                 <div class="flex items-center mb-6">
@@ -424,12 +362,8 @@
                                     <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Frequency</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr class="hover:bg-gray-200">
-                                    <td class="px-5 py-4 border-b border-gray-100 text-lg font-medium">3:00 PM - 10:00 PM</td>
-                                    <td class="px-5 py-4 border-b border-gray-100 text-gray-700 font-medium text-lg">All Hours</td>
-                                    <td class="px-5 py-4 border-b border-gray-100 text-lg">Every 12 minutes</td>
-                                </tr>
+                            <tbody id="fridayUttaraToMotijheelPeriods">
+                                <!-- This will be populated via JavaScript -->
                             </tbody>
                         </table>
                     </div>
@@ -450,12 +384,8 @@
                                     <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Frequency</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr class="hover:bg-gray-200">
-                                    <td class="px-5 py-4 border-b border-gray-100 text-lg font-medium">3:20 PM - 10:20 PM</td>
-                                    <td class="px-5 py-4 border-b border-gray-100 text-gray-700 font-medium text-lg">All Hours</td>
-                                    <td class="px-5 py-4 border-b border-gray-100 text-lg">Every 12 minutes</td>
-                                </tr>
+                            <tbody id="fridayMotijheelToUttaraPeriods">
+                                <!-- This will be populated via JavaScript -->
                             </tbody>
                         </table>
                     </div>
@@ -497,6 +427,69 @@
             // Show selected content
             const contentId = tabName.replace('Tab', 'Content');
             contents[contentId].classList.remove('hidden');
+
+            // Load schedule periods if needed
+            if (tabName === 'weekdaysTab') {
+                loadSchedulePeriods(1, 'weekdayUttaraToMotijheelPeriods');
+                loadSchedulePeriods(2, 'weekdayMotijheelToUttaraPeriods');
+            } else if (tabName === 'fridayTab') {
+                loadSchedulePeriods(3, 'fridayUttaraToMotijheelPeriods');
+                loadSchedulePeriods(4, 'fridayMotijheelToUttaraPeriods');
+            }
+        }
+
+        // Function to load schedule periods via AJAX
+        function loadSchedulePeriods(scheduleId, targetElementId) {
+            fetch(`/Schedule/GetSchedulePeriods?scheduleId=${scheduleId}`)
+                .then(response => response.json())
+                .then(periods => {
+                    const tableBody = document.getElementById(targetElementId);
+                    tableBody.innerHTML = '';
+
+                    periods.forEach(period => {
+                        const row = document.createElement('tr');
+                        row.className = 'hover:bg-gray-200';
+
+                        const timeCell = document.createElement('td');
+                        timeCell.className = 'px-5 py-4 border-b border-gray-100 text-lg font-medium';
+                        timeCell.textContent = `${formatTime(period.startTime)} - ${formatTime(period.endTime)}`;
+
+                        const typeCell = document.createElement('td');
+                        typeCell.className = `px-5 py-4 border-b border-gray-100 font-semibold text-lg ${getPeriodTypeClass(period.periodType)}`;
+                        typeCell.textContent = period.periodType;
+
+                        const frequencyCell = document.createElement('td');
+                        frequencyCell.className = 'px-5 py-4 border-b border-gray-100 text-lg';
+                        frequencyCell.textContent = period.frequency;
+
+                        row.appendChild(timeCell);
+                        row.appendChild(typeCell);
+                        row.appendChild(frequencyCell);
+
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error loading schedule periods:', error));
+        }
+
+        // Helper function to format time
+        function formatTime(timeString) {
+            const timeParts = timeString.split(':');
+            const hours = parseInt(timeParts[0]);
+            const minutes = timeParts[1];
+            const period = hours >= 12 ? 'PM' : 'AM';
+            const formattedHours = hours % 12 || 12;
+
+            return `${formattedHours}:${minutes} ${period}`;
+        }
+
+        // Helper function to get CSS class based on period type
+        function getPeriodTypeClass(periodType) {
+            switch (periodType) {
+                case 'Peak': return 'text-red-600';
+                case 'Off-Peak': return 'text-green-600';
+                default: return 'text-gray-700';
+            }
         }
 
         // Event listeners
