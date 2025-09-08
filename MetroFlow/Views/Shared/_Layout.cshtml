@@ -1,5 +1,4 @@
-﻿@* _Layout.cshtml *@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -8,6 +7,7 @@
     <link rel="stylesheet" href="~/css/tailwind.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/MetroFlow.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="min-h-screen flex flex-col bg-gray-50 text-slate-800 m-0">
     <!-- Header / Nav (gradient + glass) -->
@@ -17,6 +17,7 @@
             <nav class="max-w-8xl lg:mx-40 px-6">
                 <div class="flex items-center justify-between py-8">
                     <a class="font-extrabold text-5xl text-white" asp-area="" asp-controller="Home" asp-action="Index">MetroFlow</a>
+
                     <!-- Mobile menu button -->
                     <button id="navToggle"
                             class="inline-flex items-center justify-center rounded-md p-2 hover:bg-white/10 lg:hidden"
@@ -25,10 +26,12 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
+
                     <!-- Desktop links -->
                     <ul class="hidden gap-6 lg:flex items-center">
                         <li><a class="text-2xl font-semibold text-white hover:text-red-200" asp-controller="Home" asp-action="Index">Home</a></li>
                         <li><a class="text-2xl font-semibold text-white hover:text-red-200" asp-controller="Route" asp-action="RoutePlanner">Routes</a></li>
+                        <li><a class="text-2xl font-semibold text-white hover:text-red-200" asp-controller="Metro" asp-action="Schedule">Schedule</a></li>
 
                         @if (User.Identity?.IsAuthenticated == true)
                         {
@@ -47,14 +50,15 @@
                             <li><a class="text-2xl font-semibold text-white hover:text-red-200" asp-controller="User" asp-action="Signup">Register</a></li>
                         }
                     </ul>
-
                 </div>
-                <!-- Mobile links (same fonts/colors + glassy panel) -->
+
+                <!-- Mobile links -->
                 <div id="mobileNav" class="hidden pb-3 lg:hidden">
                     <div class="rounded-2xl border border-white/15 bg-white/5 backdrop-blur-xl text-white shadow-md">
                         <ul class="flex flex-col gap-2 p-2">
                             <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="Home" asp-action="Index">Home</a></li>
                             <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="Route" asp-action="RoutePlanner">Routes</a></li>
+                            <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="Metro" asp-action="Schedule">Schedule</a></li>
 
                             @if (User.Identity?.IsAuthenticated == true)
                             {
@@ -73,7 +77,6 @@
                                 <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="User" asp-action="Signup">Register</a></li>
                             }
                         </ul>
-
                     </div>
                 </div>
             </nav>
@@ -93,6 +96,12 @@
                 &copy; 2025 - MetroFlow
             </div>
         </footer>
+    }
+
+    <!-- Include the chatbot partial view -->
+    @if (ViewData["HideLayoutParts"] == null || (bool)ViewData["HideLayoutParts"] == false)
+    {
+        @await Html.PartialAsync("Chatbot")
     }
 
     <!-- (Optional) jQuery if you use MVC validation/unobtrusive scripts elsewhere -->
