@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="~/MetroFlow.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 </head>
 <body class="min-h-screen flex flex-col bg-gray-50 text-slate-800 m-0">
     <!-- Header / Nav (gradient + glass) -->
@@ -29,9 +30,9 @@
 
                     <!-- Desktop links -->
                     <ul class="hidden gap-6 lg:flex items-center">
-                        <li><a class="text-2xl font-semibold text-white hover:text-red-200" asp-controller="Home" asp-action="Index">Home</a></li>
-                        <li><a class="text-2xl font-semibold text-white hover:text-red-200" asp-controller="Route" asp-action="RoutePlanner">Routes</a></li>
-                        <li><a class="text-2xl font-semibold text-white hover:text-red-200" asp-controller="Metro" asp-action="Schedule">Schedule</a></li>
+                        <li><a class="text-2xl font-semibold text-white hover:text-green-300" asp-controller="Home" asp-action="Index">Home</a></li>
+                        <li><a class="text-2xl font-semibold text-white hover:text-green-300" asp-controller="Route" asp-action="RoutePlanner">Routes</a></li>
+                        <li><a class="text-2xl font-semibold text-white hover:text-green-300" asp-controller="Schedule" asp-action="Index">Schedule</a></li>
 
                         @if (User.Identity?.IsAuthenticated == true)
                         {
@@ -58,7 +59,7 @@
                         <ul class="flex flex-col gap-2 p-2">
                             <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="Home" asp-action="Index">Home</a></li>
                             <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="Route" asp-action="RoutePlanner">Routes</a></li>
-                            <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="Metro" asp-action="Schedule">Schedule</a></li>
+                            <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="Schedule" asp-action="Index">Schedule</a></li>
 
                             @if (User.Identity?.IsAuthenticated == true)
                             {
@@ -87,16 +88,133 @@
     <main role="main" class="flex-1 p-0 m-0">
         @RenderBody()
     </main>
-
-    <!-- Footer (same gradient as navbar) -->
     @if (ViewData["HideLayoutParts"] == null || (bool)ViewData["HideLayoutParts"] == false)
     {
-        <footer class="text-white backdrop-blur-sm shadow-md bg-gradient-to-b from-green-900 to-green-600">
-            <div class="max-w-8xl mx-40 px-6 py-8 text-2xl">
-                &copy; 2025 - MetroFlow
+        <footer class="bg-gradient-to-b from-green-900 to-green-600 text-white">
+            <!-- Main Footer Content -->
+            <div class="max-w-8xl lg:mx-40 px-6 py-12">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                    <!-- Brand Column -->
+                    <div class="md:col-span-1">
+                        <div class="flex items-center mb-6">
+                            <i class="fas fa-train text-4xl mr-5 text-green-400"></i>
+                            <span class="text-4xl font-extrabold text-white">MetroFlow</span>
+                        </div>
+                        <p class="text-green-100 text-xl mb-8 leading-relaxed">
+                            Connecting your city with efficient, reliable, and sustainable metro transportation.
+                        </p>
+                        <div class="flex space-x-5">
+                            <a href="#" class="w-12 h-12 rounded-full bg-green-800 flex items-center justify-center group transition-all duration-300 hover:bg-blue-700 hover:text-white">
+                                <i class="fab fa-facebook-f text-xl text-white group-hover:text-white"></i>
+                            </a>
+                            <a href="#" class="w-12 h-12 rounded-full bg-green-800 flex items-center justify-center group transition-all duration-300 hover:bg-gray-900">
+                                <i class="fab fa-twitter text-xl text-white group-hover:text-white"></i>
+                            </a>
+                            <a href="#" class="w-12 h-12 rounded-full bg-green-800 flex items-center justify-center group transition-all duration-300 hover:bg-pink-600">
+                                <i class="fab fa-instagram text-xl text-white group-hover:text-white"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Explore Section -->
+                    <div class="md:col-span-1">
+                        <h3 class="text-4xl font-bold mb-4 text-white text-center border-b border-green-600 pb-4">Explore</h3>
+                        <div class="flex justify-center">
+                            <ul class="space-y-4">
+                                <li>
+                                    <a href="#" class="flex items-center justify-center group transition-colors duration-300">
+                                        <i class="fas fa-route mr-3 text-lg text-white group-hover:text-green-300"></i>
+                                        <span class="text-xl text-white group-hover:text-red-200">Routes &amp; Schedules</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="flex items-center justify-center group transition-colors duration-300">
+                                        <i class="fas fa-ticket-alt mr-3 text-lg text-white group-hover:text-green-300"></i>
+                                        <span class="text-xl text-white group-hover:text-red-300">Fare Information</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="flex items-center justify-center group transition-colors duration-300">
+                                        <i class="fas fa-map-marked-alt mr-3 text-lg text-white group-hover:text-green-300"></i>
+                                        <span class="text-xl text-white group-hover:text-red-300">Station Maps</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="flex items-center justify-center group transition-colors duration-300">
+                                        <i class="fas fa-mobile-alt mr-3 text-lg text-white group-hover:text-green-300"></i>
+                                        <span class="text-xl text-white group-hover:text-red-300">Mobile App</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+
+                    <!-- Support Section -->
+                    <div class="md:col-span-1">
+                        <h3 class="text-4xl font-bold text-right mb-4 text-white border-b border-green-600 pb-4">Support</h3>
+                        <div class="flex justify-end">
+                            <ul class="space-y-4">
+                                <li>
+                                    <a href="#" class="flex items-center justify-end group transition-colors duration-300">
+                                        <i class="fas fa-headset mr-3 text-lg text-white group-hover:text-green-300"></i>
+                                        <span class="text-xl text-white group-hover:text-red-300">Help Center</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="flex items-center justify-center group transition-colors duration-300">
+                                        <i class="fas fa-envelope mr-3 text-lg text-white group-hover:text-green-300"></i>
+                                        <span class="text-xl text-white group-hover:text-red-300">Contact Us</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="flex items-center justify-center group transition-colors duration-300">
+                                        <i class="fas fa-comment-dots mr-3 text-lg text-white group-hover:text-green-300"></i>
+                                        <span class="text-xl text-white group-hover:text-red-300">Feedback</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="flex items-center justify-center group transition-colors duration-300">
+                                        <i class="fas fa-universal-access mr-3 text-lg text-white group-hover:text-green-300"></i>
+                                        <span class="text-xl text-white group-hover:text-red-300">Accessibility</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
             </div>
+
+            <!-- Bottom Bar -->
+            <div class="border-t border-green-600 pt-8 pb-10">
+                <div class="max-w-8xl lg:mx-40 px-6">
+                    <div class="flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
+                        <p class="text-white text-lg flex items-center font-bold">
+                            <i class="fas fa-copyright mr-2 text-white"></i>
+                            2025 MetroFlow. All rights reserved.
+                        </p>
+
+                        <div class="flex space-x-8">
+                            <!-- Privacy Policy -->
+                            <a href="#" class="flex items-center group transition-colors duration-300">
+                                <i class="fas fa-shield-alt mr-2 text-white group-hover:text-green-300"></i>
+                                <span class="text-white group-hover:text-amber-400 text-lg font-bold">Privacy Policy</span>
+                            </a>
+
+                            <!-- Terms of Service -->
+                            <a href="#" class="flex items-center group transition-colors duration-300">
+                                <i class="fas fa-file-contract mr-2 text-white group-hover:text-green-300"></i>
+                                <span class="text-white group-hover:text-amber-400 text-lg font-bold">Terms of Service</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </footer>
     }
+
 
     <!-- Include the chatbot partial view -->
     @if (ViewData["HideLayoutParts"] == null || (bool)ViewData["HideLayoutParts"] == false)

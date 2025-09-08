@@ -1,4 +1,3 @@
-// Models/Place.cs
 namespace MetroFlow.Models
 {
     public class Place

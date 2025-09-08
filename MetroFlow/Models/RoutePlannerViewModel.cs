@@ -1,4 +1,3 @@
-// Models/RoutePlannerViewModel.cs
 namespace MetroFlow.Models
 {
     public class RoutePlannerViewModel

@@ -68,8 +68,9 @@
         </div>
 
         <!-- CTA Button -->
+
         <div class="mt-6 flex justify-center md:justify-end">
-            <a href="#plan"
+            <a href="@Url.Action("RoutePlanner", "Route")"
                class="text-xl inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-900 to-green-600 px-9 py-3 font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black/50">
                 Plan your trip now!
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5">
@@ -228,7 +229,7 @@
                     </a>
 
                     <!-- Card: Tour Guide -->
-                    <a href="#" data-route="tour-guide"
+                    <a href="@Url.Action("Index", "Schedule")" data-route="tour-guide"
                        class="group block rounded-2xl ring-1 ring-black/10 bg-white min-h-28 px-7 py-6 shadow-sm hover:bg-green-50 hover:ring-green-200 transition-shadow transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600">
                         <div class="flex items-center gap-5">
                             <div class="shrink-0">
@@ -238,9 +239,9 @@
                                 </svg>
                             </div>
                             <div class="flex-1">
-                                <div class="text-xl font-semibold text-gray-900">Tour Guide</div>
+                                <div class="text-xl font-semibold text-gray-900">Schedules</div>
                                 <div class="mt-1 text-base text-gray-600">
-                                    Find attractions and routes near each station.
+                                    Find out the schedules of your nearest metro station.
                                 </div>
                             </div>
                             <svg class="h-6 w-6 opacity-60 group-hover:opacity-100 transition" viewBox="0 0 24 24"
@@ -261,9 +262,9 @@
                                 </svg>
                             </div>
                             <div class="flex-1">
-                                <div class="text-xl font-semibold text-gray-900">Metro Museum</div>
+                                <div class="text-xl font-semibold text-gray-900">Tourist Attractions</div>
                                 <div class="mt-1 text-base text-gray-600">
-                                    Explore the history and tech behind the metro.
+                                    Explore the history and attractions within the country.
                                 </div>
                             </div>
                             <svg class="h-6 w-6 opacity-60 group-hover:opacity-100 transition" viewBox="0 0 24 24"

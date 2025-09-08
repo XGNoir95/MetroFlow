@@ -19,11 +19,9 @@ namespace MetroFlow.Controllers
         [HttpGet]
         public IActionResult RoutePlanner()
         {
-            var model = GetModelFromSession() ?? new RoutePlannerViewModel
-            {
-                AllStations = _locationService.GetAllStations()
-            };
-
+            var stations = _locationService.GetAllStations();
+            var model = GetModelFromSession() ?? new RoutePlannerViewModel();
+            model.AllStations = stations;
             return View(model);
         }
 
@@ -310,6 +308,27 @@ namespace MetroFlow.Controllers
                     walkingDistanceToOrigin,
                     walkingDistanceFromDest
                 );
+
+                // FIX: Ensure route stations are in the correct travel direction
+                if (model.RouteInfo?.RouteStations != null && model.RouteInfo.RouteStations.Any())
+                {
+                    // Get station indices to determine travel direction
+                    var allStations = _locationService.GetAllStations();
+                    var originIndex = allStations.FindIndex(s => s.Name == originStation.Name);
+                    var destIndex = allStations.FindIndex(s => s.Name == model.NearestDestinationStation.Name);
+
+                    // If traveling from south to north (higher index to lower index), reverse the route
+                    if (originIndex > destIndex)
+                    {
+                        model.RouteInfo.RouteStations.Reverse();
+                    }
+
+                    // Ensure the route starts with the origin station (additional safety check)
+                    if (model.RouteInfo.RouteStations.First().Name != originStation.Name)
+                    {
+                        model.RouteInfo.RouteStations.Reverse();
+                    }
+                }
 
                 model.SuccessMessage = "Route calculated successfully!";
                 model.ErrorMessage = null;

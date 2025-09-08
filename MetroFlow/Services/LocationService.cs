@@ -1,6 +1,6 @@
-// Services/LocationService.cs
 using System.Text.Json;
 using MetroFlow.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MetroFlow.Services
 {
@@ -9,32 +9,19 @@ namespace MetroFlow.Services
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
         private readonly List<Station> _stations;
+        private readonly ApplicationDbContext _db;
 
-        public LocationService(HttpClient httpClient, IConfiguration configuration)
+        public LocationService(HttpClient httpClient, IConfiguration configuration, ApplicationDbContext db)
         {
             _httpClient = httpClient;
             _configuration = configuration;
+            _db = db;
 
             // Initialize Dhaka Metro Rail Stations
-            _stations = new List<Station>
-            {
-                new() { Name = "Uttara North", Latitude = 23.8759, Longitude = 90.3795 },
-                new() { Name = "Uttara Center", Latitude = 23.8697, Longitude = 90.3831 },
-                new() { Name = "Uttara South", Latitude = 23.8643, Longitude = 90.3867 },
-                new() { Name = "Pallabi", Latitude = 23.8279, Longitude = 90.3651 },
-                new() { Name = "Mirpur 11", Latitude = 23.8223, Longitude = 90.3651 },
-                new() { Name = "Mirpur 10", Latitude = 23.8067, Longitude = 90.3651 },
-                new() { Name = "Kazipara", Latitude = 23.7967, Longitude = 90.3651 },
-                new() { Name = "Shewrapara", Latitude = 23.7867, Longitude = 90.3651 },
-                new() { Name = "Agargaon", Latitude = 23.7767, Longitude = 90.3751 },
-                new() { Name = "Bijoy Sarani", Latitude = 23.7667, Longitude = 90.3851 },
-                new() { Name = "Farmgate", Latitude = 23.7567, Longitude = 90.3951 },
-                new() { Name = "Karwan Bazar", Latitude = 23.7467, Longitude = 90.4051 },
-                new() { Name = "Shahbagh", Latitude = 23.7367, Longitude = 90.4151 },
-                new() { Name = "Dhaka University", Latitude = 23.7267, Longitude = 90.4251 },
-                new() { Name = "Secretariat", Latitude = 23.7167, Longitude = 90.4351 },
-                new() { Name = "Motijheel", Latitude = 23.7067, Longitude = 90.4451 }
-            };
+            _stations = _db.Stations
+                            .AsNoTracking()
+                            .OrderByDescending(s => s.Latitude)
+                            .ToList();
         }
 
         public List<Station> GetAllStations()
@@ -81,16 +68,16 @@ namespace MetroFlow.Services
 
         public Station FindNearestStation(double latitude, double longitude)
         {
+            Station nearestStation = null;
             double minDistance = double.MaxValue;
-            Station? nearest = null;
 
             foreach (var station in _stations)
             {
-                var distance = CalculateDistance(latitude, longitude, station.Latitude, station.Longitude);
+                double distance = CalculateDistance(latitude, longitude, station.Latitude, station.Longitude);
                 if (distance < minDistance)
                 {
                     minDistance = distance;
-                    nearest = new Station
+                    nearestStation = new Station
                     {
                         Name = station.Name,
                         Latitude = station.Latitude,
@@ -100,24 +87,31 @@ namespace MetroFlow.Services
                 }
             }
 
-            return nearest ?? throw new InvalidOperationException("No stations available");
+            return nearestStation ?? throw new InvalidOperationException("No stations available");
         }
 
         public List<Station> GetRouteStations(Station originStation, Station destinationStation)
         {
-            if (originStation == null || destinationStation == null)
-                return new List<Station>();
-
-            var originIndex = _stations.FindIndex(s => s.Name == originStation.Name);
-            var destIndex = _stations.FindIndex(s => s.Name == destinationStation.Name);
+            int originIndex = _stations.FindIndex(s => s.Name == originStation.Name);
+            int destIndex = _stations.FindIndex(s => s.Name == destinationStation.Name);
 
             if (originIndex == -1 || destIndex == -1)
+            {
                 return new List<Station>();
+            }
 
-            var start = Math.Min(originIndex, destIndex);
-            var end = Math.Max(originIndex, destIndex);
+            int start = Math.Min(originIndex, destIndex);
+            int end = Math.Max(originIndex, destIndex);
 
-            return _stations.GetRange(start, end - start + 1);
+            var routeStations = _stations.GetRange(start, end - start + 1);
+
+            // Reverse if going from south to north (higher index to lower index)
+            if (originIndex > destIndex)
+            {
+                routeStations.Reverse();
+            }
+
+            return routeStations;
         }
 
         public RouteInfo CalculateRoute(Station originStation, Station destinationStation,
