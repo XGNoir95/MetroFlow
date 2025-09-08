@@ -1,5 +1,7 @@
+// Services/LocationService.cs
 using System.Text.Json;
 using MetroFlow.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MetroFlow.Services
 {
@@ -8,32 +10,19 @@ namespace MetroFlow.Services
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
         private readonly List<Station> _stations;
+        private readonly ApplicationDbContext _db;
 
-        public LocationService(HttpClient httpClient, IConfiguration configuration)
+        public LocationService(HttpClient httpClient, IConfiguration configuration, ApplicationDbContext db)
         {
             _httpClient = httpClient;
             _configuration = configuration;
+            _db = db;
 
             // Initialize Dhaka Metro Rail Stations
-            _stations = new List<Station>
-            {
-                new() { Name = "Uttara North", Latitude = 23.8759, Longitude = 90.3795 },
-                new() { Name = "Uttara Center", Latitude = 23.8697, Longitude = 90.3831 },
-                new() { Name = "Uttara South", Latitude = 23.8643, Longitude = 90.3867 },
-                new() { Name = "Pallabi", Latitude = 23.8279, Longitude = 90.3651 },
-                new() { Name = "Mirpur 11", Latitude = 23.8223, Longitude = 90.3651 },
-                new() { Name = "Mirpur 10", Latitude = 23.8067, Longitude = 90.3651 },
-                new() { Name = "Kazipara", Latitude = 23.7967, Longitude = 90.3651 },
-                new() { Name = "Shewrapara", Latitude = 23.7867, Longitude = 90.3651 },
-                new() { Name = "Agargaon", Latitude = 23.7767, Longitude = 90.3751 },
-                new() { Name = "Bijoy Sarani", Latitude = 23.7667, Longitude = 90.3851 },
-                new() { Name = "Farmgate", Latitude = 23.7567, Longitude = 90.3951 },
-                new() { Name = "Karwan Bazar", Latitude = 23.7467, Longitude = 90.4051 },
-                new() { Name = "Shahbagh", Latitude = 23.7367, Longitude = 90.4151 },
-                new() { Name = "Dhaka University", Latitude = 23.7267, Longitude = 90.4251 },
-                new() { Name = "Secretariat", Latitude = 23.7167, Longitude = 90.4351 },
-                new() { Name = "Motijheel", Latitude = 23.7067, Longitude = 90.4451 }
-            };
+            _stations = _db.Stations
+                            .AsNoTracking()
+                            .OrderByDescending(s => s.Latitude)
+                            .ToList();
         }
 
         public List<Station> GetAllStations()
