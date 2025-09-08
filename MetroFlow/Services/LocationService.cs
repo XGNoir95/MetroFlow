@@ -1,4 +1,3 @@
-// Services/LocationService.cs
 using System.Text.Json;
 using MetroFlow.Models;
 using Microsoft.EntityFrameworkCore;
@@ -69,16 +68,16 @@ namespace MetroFlow.Services
 
         public Station FindNearestStation(double latitude, double longitude)
         {
+            Station nearestStation = null;
             double minDistance = double.MaxValue;
-            Station? nearest = null;
 
             foreach (var station in _stations)
             {
-                var distance = CalculateDistance(latitude, longitude, station.Latitude, station.Longitude);
+                double distance = CalculateDistance(latitude, longitude, station.Latitude, station.Longitude);
                 if (distance < minDistance)
                 {
                     minDistance = distance;
-                    nearest = new Station
+                    nearestStation = new Station
                     {
                         Name = station.Name,
                         Latitude = station.Latitude,
@@ -88,24 +87,31 @@ namespace MetroFlow.Services
                 }
             }
 
-            return nearest ?? throw new InvalidOperationException("No stations available");
+            return nearestStation ?? throw new InvalidOperationException("No stations available");
         }
 
         public List<Station> GetRouteStations(Station originStation, Station destinationStation)
         {
-            if (originStation == null || destinationStation == null)
-                return new List<Station>();
-
-            var originIndex = _stations.FindIndex(s => s.Name == originStation.Name);
-            var destIndex = _stations.FindIndex(s => s.Name == destinationStation.Name);
+            int originIndex = _stations.FindIndex(s => s.Name == originStation.Name);
+            int destIndex = _stations.FindIndex(s => s.Name == destinationStation.Name);
 
             if (originIndex == -1 || destIndex == -1)
+            {
                 return new List<Station>();
+            }
 
-            var start = Math.Min(originIndex, destIndex);
-            var end = Math.Max(originIndex, destIndex);
+            int start = Math.Min(originIndex, destIndex);
+            int end = Math.Max(originIndex, destIndex);
 
-            return _stations.GetRange(start, end - start + 1);
+            var routeStations = _stations.GetRange(start, end - start + 1);
+
+            // Reverse if going from south to north (higher index to lower index)
+            if (originIndex > destIndex)
+            {
+                routeStations.Reverse();
+            }
+
+            return routeStations;
         }
 
         public RouteInfo CalculateRoute(Station originStation, Station destinationStation,

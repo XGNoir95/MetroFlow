@@ -105,7 +105,7 @@
         <!-- Main Content Grid -->
         <div class="grid md:grid-cols-2 gap-8">
             <!-- Left Side - Route Planner Card -->
-            <div class="bg-white rounded-2xl p-8 shadow-2xl">
+            <div class="bg-white rounded-2xl p-8 shadow-2xl pt-20">
                 <!-- Header -->
                 <div class="mt-8 flex items-center justify-center mb-10">
                     <div class="bg-green-600 rounded-full p-3 mr-4">
@@ -166,7 +166,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                         </svg>
                                         <div>
-                                            <div class="font-medium">@Model.SelectedOrigin.DisplayName</div>
+                                            <div class="font-medium">@Model.SelectedOrigin.Name</div>
                                         </div>
                                     </div>
                                     @* <button type="button" onclick="clearOrigin()" class="text-gray-500 hover:text-gray-700">
@@ -256,7 +256,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                         </svg>
                                         <div>
-                                            <div class="font-medium">@Model.SelectedDestination.DisplayName</div>
+                                            <div class="font-medium">@Model.SelectedDestination.Name</div>
                                         </div>
                                     </div>
                                     @* <button type="button" onclick="clearDestination()" class="text-gray-500 hover:text-gray-700">
@@ -322,7 +322,7 @@
                         <span>Complete Origin & Destination First</span>
                     </div>
                 }
-                <div class="flex mt-5 mb-6 w-full bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-2 flex items-center justify-center space-x-2 transition-all duration-200 shadow-md">
+                <div class="flex mt-5 w-full bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-2 flex items-center justify-center space-x-2 transition-all duration-200 shadow-md">
                     <form asp-action="ClearRoute" method="post">
                         <button type="submit" class="w-full text-white font-semibold py-2 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 text-lg">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -434,6 +434,11 @@
                 return;
             }
 
+            // Check if map is already initialized
+            if (map) {
+                map.remove();
+            }
+
             map = L.map('map').setView([23.8103, 90.4125], 12); // Center on Dhaka
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -443,122 +448,122 @@
             // Add all metro stations
             @foreach (var station in Model.AllStations)
             {
-                        @:L.marker([@station.Latitude, @station.Longitude])
-                        @:  .addTo(map)
-                        @:  .bindPopup('<b>@Html.Raw(station.Name)</b><br>Metro Station');
+                    @:L.marker([@station.Latitude, @station.Longitude])
+                    @:  .addTo(map)
+                    @:  .bindPopup('<b>@Html.Raw(station.Name)</b><br>Metro Station');
             }
 
             // Add origin marker if available
             @if (Model.SelectedOrigin != null)
             {
-                        @:L.marker([@Model.SelectedOrigin.Latitude, @Model.SelectedOrigin.Longitude])
-                        @:  .addTo(map)
-                        @:  .bindPopup('<b>Your Origin</b><br>@Html.Raw(Model.SelectedOrigin.DisplayName)');
+                    @:L.marker([@Model.SelectedOrigin.Latitude, @Model.SelectedOrigin.Longitude])
+                    @:  .addTo(map)
+                    @:  .bindPopup('<b>Your Origin</b><br>@Html.Raw(Model.SelectedOrigin.DisplayName)');
             }
             else if (Model.HasCurrentLocation)
             {
-                        @:L.marker([@Model.CurrentLatitude, @Model.CurrentLongitude])
-                        @:  .addTo(map)
-                        @:  .bindPopup('<b>Your Current Location</b>');
+                    @:L.marker([@Model.CurrentLatitude, @Model.CurrentLongitude])
+                    @:  .addTo(map)
+                    @:  .bindPopup('<b>Your Current Location</b>');
             }
 
             // Add destination marker if available
             @if (Model.SelectedDestination != null)
             {
-                        @:L.marker([@Model.SelectedDestination.Latitude, @Model.SelectedDestination.Longitude])
-                        @:  .addTo(map)
-                        @:  .bindPopup('<b>Your Destination</b><br>@Html.Raw(Model.SelectedDestination.DisplayName)');
+                    @:L.marker([@Model.SelectedDestination.Latitude, @Model.SelectedDestination.Longitude])
+                    @:  .addTo(map)
+                    @:  .bindPopup('<b>Your Destination</b><br>@Html.Raw(Model.SelectedDestination.DisplayName)');
             }
 
             // Add route line if available
             @if (Model.RouteInfo?.RouteStations.Any() == true)
             {
-                        @:var routeCoordinates = [
-                        @foreach (var station in Model.RouteInfo.RouteStations)
-                        {
-                                    @:[@station.Latitude, @station.Longitude],
-                        }
-                                                                @:];
+                    @:var routeCoordinates = [
+                    @foreach (var station in Model.RouteInfo.RouteStations)
+                    {
+                            @:[@station.Latitude, @station.Longitude],
+                    }
+                                @:];
 
-                        @:if (routeCoordinates.length > 0) {
-                        @:    L.polyline(routeCoordinates, {
-                        @:        color: '#6366F1',
-                        @:        weight: 4,
-                        @:        opacity: 0.8
-                        @:    }).addTo(map);
-                        @:}
+                    @:if (routeCoordinates.length > 0) {
+                    @:    L.polyline(routeCoordinates, {
+                        @:        color: '#188f46',
+                    @:        weight: 4,
+                    @:        opacity: 0.8
+                    @:    }).addTo(map);
+                    @:}
 
-                        // Add connection lines
-                        @if (Model.SelectedOrigin != null && Model.NearestOriginStation != null)
-                        {
-                                    @:L.polyline([
-                                    @:    [@Model.SelectedOrigin.Latitude, @Model.SelectedOrigin.Longitude],
-                                    @:    [@Model.NearestOriginStation.Latitude, @Model.NearestOriginStation.Longitude]
-                                    @:], {
-                                    @:    color: '#10B981',
-                                    @:    weight: 2,
-                                    @:    opacity: 0.6,
-                                    @:    dashArray: '5, 5'
-                                    @:}).addTo(map);
-                        }
-                        else if (Model.HasCurrentLocation && Model.NearestCurrentStation != null)
-                        {
-                                    @:L.polyline([
-                                    @:    [@Model.CurrentLatitude, @Model.CurrentLongitude],
-                                    @:    [@Model.NearestCurrentStation.Latitude, @Model.NearestCurrentStation.Longitude]
-                                    @:], {
-                                    @:    color: '#10B981',
-                                    @:    weight: 2,
-                                    @:    opacity: 0.6,
-                                    @:    dashArray: '5, 5'
-                                    @:}).addTo(map);
-                        }
+                    // Add connection lines
+                    @if (Model.SelectedOrigin != null && Model.NearestOriginStation != null)
+                    {
+                            @:L.polyline([
+                            @:    [@Model.SelectedOrigin.Latitude, @Model.SelectedOrigin.Longitude],
+                            @:    [@Model.NearestOriginStation.Latitude, @Model.NearestOriginStation.Longitude]
+                            @:], {
+                            @:    color: '#10B981',
+                            @:    weight: 2,
+                            @:    opacity: 0.6,
+                            @:    dashArray: '5, 5'
+                            @:}).addTo(map);
+                    }
+                    else if (Model.HasCurrentLocation && Model.NearestCurrentStation != null)
+                    {
+                            @:L.polyline([
+                            @:    [@Model.CurrentLatitude, @Model.CurrentLongitude],
+                            @:    [@Model.NearestCurrentStation.Latitude, @Model.NearestCurrentStation.Longitude]
+                            @:], {
+                            @:    color: '#10B981',
+                            @:    weight: 2,
+                            @:    opacity: 0.6,
+                            @:    dashArray: '5, 5'
+                            @:}).addTo(map);
+                    }
 
-                        @if (Model.SelectedDestination != null && Model.NearestDestinationStation != null)
-                        {
-                                    @:L.polyline([
-                                    @:    [@Model.NearestDestinationStation.Latitude, @Model.NearestDestinationStation.Longitude],
-                                    @:    [@Model.SelectedDestination.Latitude, @Model.SelectedDestination.Longitude]
-                                    @:], {
-                                    @:    color: '#EF4444',
-                                    @:    weight: 2,
-                                    @:    opacity: 0.6,
-                                    @:    dashArray: '5, 5'
-                                    @:}).addTo(map);
-                        }
+                    @if (Model.SelectedDestination != null && Model.NearestDestinationStation != null)
+                    {
+                            @:L.polyline([
+                            @:    [@Model.NearestDestinationStation.Latitude, @Model.NearestDestinationStation.Longitude],
+                            @:    [@Model.SelectedDestination.Latitude, @Model.SelectedDestination.Longitude]
+                            @:], {
+                            @:    color: '#EF4444',
+                            @:    weight: 2,
+                            @:    opacity: 0.6,
+                            @:    dashArray: '5, 5'
+                            @:}).addTo(map);
+                    }
 
-                        // Fit map to show all points
-                                                                @:try {
-                        @:    var bounds = L.latLngBounds();
-                        @:    var hasPoints = false;
+                    // Fit map to show all points
+                                @:try {
+                    @:    var bounds = L.latLngBounds();
+                    @:    var hasPoints = false;
 
-                        @if (Model.SelectedOrigin != null)
-                        {
-                                    @:    bounds.extend([@Model.SelectedOrigin.Latitude, @Model.SelectedOrigin.Longitude]);
-                                    @:    hasPoints = true;
-                        }
-                        else if (Model.HasCurrentLocation)
-                        {
-                                    @:    bounds.extend([@Model.CurrentLatitude, @Model.CurrentLongitude]);
-                                    @:    hasPoints = true;
-                        }
-                        @if (Model.SelectedDestination != null)
-                        {
-                                    @:    bounds.extend([@Model.SelectedDestination.Latitude, @Model.SelectedDestination.Longitude]);
-                                    @:    hasPoints = true;
-                        }
-                        @foreach (var station in Model.RouteInfo.RouteStations)
-                        {
-                                    @:    bounds.extend([@station.Latitude, @station.Longitude]);
-                                    @:    hasPoints = true;
-                        }
+                    @if (Model.SelectedOrigin != null)
+                    {
+                            @:    bounds.extend([@Model.SelectedOrigin.Latitude, @Model.SelectedOrigin.Longitude]);
+                            @:    hasPoints = true;
+                    }
+                    else if (Model.HasCurrentLocation)
+                    {
+                            @:    bounds.extend([@Model.CurrentLatitude, @Model.CurrentLongitude]);
+                            @:    hasPoints = true;
+                    }
+                    @if (Model.SelectedDestination != null)
+                    {
+                            @:    bounds.extend([@Model.SelectedDestination.Latitude, @Model.SelectedDestination.Longitude]);
+                            @:    hasPoints = true;
+                    }
+                    @foreach (var station in Model.RouteInfo.RouteStations)
+                    {
+                            @:    bounds.extend([@station.Latitude, @station.Longitude]);
+                            @:    hasPoints = true;
+                    }
 
-                                                                @:    if (hasPoints && bounds.isValid()) {
-                        @:        map.fitBounds(bounds, { padding: [20, 20] });
-                        @:    }
-                        @:} catch (e) {
-                        @:    console.warn('Error fitting map bounds:', e);
-                        @:}
+                                @:    if (hasPoints && bounds.isValid()) {
+                    @:        map.fitBounds(bounds, { padding: [20, 20] });
+                    @:    }
+                    @:} catch (e) {
+                    @:    console.warn('Error fitting map bounds:', e);
+                    @:}
             }
 
             // Adjust map height dynamically based on content
@@ -634,8 +639,46 @@
             );
         }
 
+        // Initialize the map when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add a small delay to ensure Leaflet is fully loaded
+            setTimeout(function() {
+                initializeMap();
+            }, 100);
+
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', function(e) {
+                const originInput = document.getElementById('originInput');
+                const originSuggestionsDropdown = document.getElementById('originSuggestionsDropdown');
+                const destinationInput = document.getElementById('destinationInput');
+                const suggestionsDropdown = document.getElementById('suggestionsDropdown');
+
+                if (e.target !== originInput && originSuggestionsDropdown && !originSuggestionsDropdown.contains(e.target)) {
+                    hideOriginSuggestions();
+                }
+
+                if (e.target !== destinationInput && suggestionsDropdown && !suggestionsDropdown.contains(e.target)) {
+                    hideSuggestions();
+                }
+            });
+
+            // Adjust map height on window resize
+            window.addEventListener('resize', function() {
+                adjustMapHeight();
+            });
+        });
+
+        // Fallback: Also try to initialize when window loads
+        window.addEventListener('load', function() {
+            if (!map) {
+                setTimeout(function() {
+                    initializeMap();
+                }, 200);
+            }
+        });
+
         // Search origin with debouncing
-                function searchOrigin(query) {
+        function searchOrigin(query) {
             clearTimeout(originSearchTimeout);
 
             if (query.length < 2) {
@@ -644,7 +687,6 @@
             }
 
             originSearchTimeout = setTimeout(() => {
-                // FIXED: Changed from /Home/ to /Route/
                 fetch(`/Route/SearchOriginAjax?query=${encodeURIComponent(query)}`)
                     .then(response => response.json())
                     .then(suggestions => {
@@ -711,14 +753,8 @@
             document.getElementById('selectOriginForm').submit();
         }
 
-        // Clear selected origin
-        function clearOrigin() {
-            // This will redirect to the same page without the origin
-            window.location.href = window.location.href;
-        }
-
         // Search destination with debouncing
-                function searchDestination(query) {
+        function searchDestination(query) {
             clearTimeout(searchTimeout);
 
             if (query.length < 2) {
@@ -727,7 +763,6 @@
             }
 
             searchTimeout = setTimeout(() => {
-                // FIXED: Changed from /Home/ to /Route/
                 fetch(`/Route/SearchDestinationAjax?query=${encodeURIComponent(query)}`)
                     .then(response => response.json())
                     .then(suggestions => {
@@ -756,7 +791,7 @@
                 item.className = 'suggestion-item';
                 item.innerHTML = `
                     <div class="flex items-start space-x-3">
-                        <svg class="w-4 h-4 mt-1  text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 mt-1 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
@@ -793,50 +828,6 @@
             document.getElementById('selectedLongitude').value = place.longitude;
             document.getElementById('selectDestinationForm').submit();
         }
-
-        // Clear selected destination
-        function clearDestination() {
-            // This will redirect to the same page without the destination
-            window.location.href = window.location.href;
-        }
-
-        // Initialize the map when the page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add a small delay to ensure Leaflet is fully loaded
-            setTimeout(function() {
-                initializeMap();
-            }, 100);
-
-            // Hide suggestions when clicking outside
-            document.addEventListener('click', function(e) {
-                const originInput = document.getElementById('originInput');
-                const originSuggestionsDropdown = document.getElementById('originSuggestionsDropdown');
-                const destinationInput = document.getElementById('destinationInput');
-                const suggestionsDropdown = document.getElementById('suggestionsDropdown');
-
-                if (e.target !== originInput && originSuggestionsDropdown && !originSuggestionsDropdown.contains(e.target)) {
-                    hideOriginSuggestions();
-                }
-
-                if (e.target !== destinationInput && suggestionsDropdown && !suggestionsDropdown.contains(e.target)) {
-                    hideSuggestions();
-                }
-            });
-
-            // Adjust map height on window resize
-            window.addEventListener('resize', function() {
-                adjustMapHeight();
-            });
-        });
-
-        // Fallback: Also try to initialize when window loads
-        window.addEventListener('load', function() {
-            if (!map) {
-                setTimeout(function() {
-                    initializeMap();
-                }, 200);
-            }
-        });
     </script>
 </body>
 </html>
