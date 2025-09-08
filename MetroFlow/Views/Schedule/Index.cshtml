@@ -1,0 +1,504 @@
+﻿@model MetroFlow.Controllers.ScheduleViewModel
+@using MetroFlow.Models
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metro Train Schedule - MetroFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Your existing CSS styles remain the same */
+        .tab-active {
+            background-color: #16a34a;
+            color: white;
+        }
+
+        .tab-inactive {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+
+            .tab-inactive:hover {
+                background-color: #e5e7eb;
+                color: #374151;
+            }
+
+        .route-card {
+            transition: all 0.2s ease;
+        }
+
+            .route-card:hover {
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+            .schedule-table th {
+                background-color: #f9fafb;
+                color: #1B5E20;
+                padding: 16px 20px;
+                text-align: left;
+                font-weight: 700;
+                font-size: 20px;
+                border-bottom: 2px solid #e5e7eb;
+            }
+
+            .schedule-table td {
+                padding: 16px 20px;
+                border-bottom: 1px solid #f3f4f6;
+                font-size: 18px;
+            }
+
+            .schedule-table tr:hover {
+                background-color: #f9fafb;
+            }
+
+        .peak-time {
+            color: #dc2626;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .off-peak-time {
+            color: #16a34a;
+            font-weight: 600;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="max-w-8xl lg:mx-40 px-6 py-6">
+            <div class="flex items-center space-x-5">
+                <div class="w-16 h-16 bg-green-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-4xl font-bold text-gray-900 mb-2">Metro Train Schedule</h1>
+                    <p class="text-gray-600 text-lg">Weekday and Friday service timings</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="max-w-8xl lg:mx-40 px-6 py-6 ">
+        <div class="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
+            <button id="allDaysTab" class="tab-active px-6 py-2 rounded-md font-medium text-lg transition-all">
+                All Days
+            </button>
+            <button id="weekdaysTab" class="tab-inactive px-6 py-2 rounded-md font-medium text-lg transition-all">
+                Weekdays
+            </button>
+            <button id="fridayTab" class="tab-inactive px-6 py-2 rounded-md font-medium text-lg transition-all">
+                Friday
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-8xl lg:mx-40 px-6 pb-12">
+        <!-- All Days Content -->
+        <div id="allDaysContent">
+            <div class="grid lg:grid-cols-2 gap-6 mb-8">
+                <!-- Weekday Service Card -->
+                <div class="bg-white rounded-lg border border-gray-200 p-8 route-card">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-calendar-day text-green-600 text-lg"></i>
+                        </div>
+                        <h2 class="text-3xl font-bold text-gray-900">Weekday Service</h2>
+                    </div>
+                    <p class="text-gray-700 text-lg font-base mb-6">Operates Saturday to Thursday</p>
+
+                    @{
+                        var weekdayUttaraToMotijheel = Model.Schedules.FirstOrDefault(s => s.DayType == "Weekday" && s.Direction == "UttaraToMotijheel");
+                        var weekdayMotijheelToUttara = Model.Schedules.FirstOrDefault(s => s.DayType == "Weekday" && s.Direction == "MotijheelToUttara");
+                    }
+
+                    <!-- Uttara to Motijheel -->
+                    <div class="mb-6">
+                        <div class="flex items-center mb-2">
+                            <div class="w-3 h-3 bg-green-500 rounded-full mr-3 mt-1"></div>
+                            <h4 class="font-medium text-2xl text-gray-900">Uttara to Motijheel</h4>
+                        </div>
+                        <div class="ml-6 space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600 text-lg">First train:</span>
+                                <span class="font-medium text-lg">@weekdayUttaraToMotijheel?.FirstTrain.ToString(@"hh\:mm") AM</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600 text-lg">Last train:</span>
+                                <span class="font-medium text-lg">@weekdayUttaraToMotijheel?.LastTrain.ToString(@"hh\:mm") PM</span>
+                            </div>
+                            <div class="flex justify-end mt-2">
+                                <div class="text-green-700 bg-green-100 px-4 py-1 rounded">
+                                    Peak hours: @weekdayUttaraToMotijheel?.PeakFrequency
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Motijheel to Uttara -->
+                    <div class="mb-6">
+                        <div class="flex items-center mb-2">
+                            <div class="w-3 h-3 bg-green-500 rounded-full mr-3 mt-1"></div>
+                            <h4 class="font-medium text-2xl text-gray-900">Motijheel to Uttara</h4>
+                        </div>
+                        <div class="ml-6 space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600 text-lg">First train:</span>
+                                <span class="font-medium text-lg">@weekdayMotijheelToUttara?.FirstTrain.ToString(@"hh\:mm") AM</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600 text-lg">Last train:</span>
+                                <span class="font-medium text-lg">@weekdayMotijheelToUttara?.LastTrain.ToString(@"hh\:mm") PM</span>
+                            </div>
+                            <div class="flex justify-end mt-2">
+                                <div class="text-green-700 bg-green-100 px-4 py-1 rounded">
+                                    Peak hours: @weekdayMotijheelToUttara?.PeakFrequency
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Friday Service Card -->
+                <div class="bg-white rounded-lg border border-gray-200 p-8 route-card">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-mosque text-green-600 text-lg"></i>
+                        </div>
+                        <h2 class="text-3xl font-bold text-gray-900">Friday Service</h2>
+                    </div>
+                    <p class="text-gray-700 text-lg mb-6">Limited service on Fridays</p>
+
+                    @{
+                        var fridayUttaraToMotijheel = Model.Schedules.FirstOrDefault(s => s.DayType == "Friday" && s.Direction == "UttaraToMotijheel");
+                        var fridayMotijheelToUttara = Model.Schedules.FirstOrDefault(s => s.DayType == "Friday" && s.Direction == "MotijheelToUttara");
+                    }
+
+                    <!-- Uttara to Motijheel -->
+                    <div class="mb-6">
+                        <div class="flex items-center mb-2">
+                            <div class="w-3 h-3 bg-green-500 rounded-full mr-3 mt-1"></div>
+                            <h4 class="font-medium text-2xl text-gray-900">Uttara to Motijheel</h4>
+                        </div>
+                        <div class="ml-6 space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600 text-lg">First train:</span>
+                                <span class="font-medium text-lg">@fridayUttaraToMotijheel?.FirstTrain.ToString(@"hh\:mm") PM</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600 text-lg">Last train:</span>
+                                <span class="font-medium text-lg">@fridayUttaraToMotijheel?.LastTrain.ToString(@"hh\:mm") PM</span>
+                            </div>
+                            <div class="flex justify-end mt-2">
+                                <div class="text-red-700 bg-red-100 px-4 py-1 rounded">
+                                    Peak hours: @fridayUttaraToMotijheel?.PeakFrequency
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Motijheel to Uttara -->
+                    <div class="mb-6">
+                        <div class="flex items-center mb-2">
+                            <div class="w-3 h-3 bg-green-500 rounded-full mr-3 mt-1"></div>
+                            <h4 class="font-medium text-2xl text-gray-900">Motijheel to Uttara</h4>
+                        </div>
+                        <div class="ml-6 space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600 text-lg">First train:</span>
+                                <span class="font-medium text-lg">@fridayMotijheelToUttara?.FirstTrain.ToString(@"hh\:mm") PM</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600 text-lg">Last train:</span>
+                                <span class="font-medium text-lg">@fridayMotijheelToUttara?.LastTrain.ToString(@"hh\:mm") PM</span>
+                            </div>
+                            <div class="flex justify-end mt-2">
+                                <div class="text-red-700 bg-red-100 px-4 py-1 rounded">
+                                    Peak hours: @fridayMotijheelToUttara?.PeakFrequency
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ticket Information -->
+            <div class="grid lg:grid-cols-2 gap-6">
+                @foreach (var ticketOption in Model.TicketOptions)
+                {
+                    <div class="bg-white rounded-lg border border-gray-200 p-8 route-card">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                <i class="@(ticketOption.Type == "SingleJourney" ? "fas fa-ticket-alt text-green-600" : "fas fa-id-card-alt text-green-700") text-lg"></i>
+                            </div>
+                            <h3 class="text-3xl font-bold text-gray-900">@ticketOption.Title</h3>
+                        </div>
+                        <p class="text-gray-700 text-lg mb-6">@ticketOption.Description</p>
+
+                        <div class="mb-6">
+                            <h4 class="font-medium text-xl text-gray-900 mb-4">@(ticketOption.Type == "SingleJourney" ? "Purchase Methods:" : "Purchase & Recharge Methods:")</h4>
+
+                            <div class="space-y-3">
+                                @foreach (var method in ticketOption.PurchaseMethods)
+                                {
+                                    <div class="flex items-center border-b border-gray-200 last:border-b-0 py-4 bg-gray-100 hover hover:bg-green-100 text-green-900 rounded-xl">
+                                        <div class="w-12 h-12 flex items-center justify-center rounded-lg text-green-600 hover text-base">
+                                            <i class="@method.IconClass"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-lg">@method.Name</p>
+                                            <p class="text-sm text-gray-500">@method.Description</p>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <button class="w-full py-3 bg-green-600 text-lg text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
+                            @(ticketOption.Type == "SingleJourney" ? "Purchase Single Ticket" : "Register for MRT Pass")
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Weekdays Content -->
+        <div id="weekdaysContent" class="hidden">
+            <div class="bg-white rounded-lg border border-gray-200 p-8 transition-all duration-200 hover:shadow-lg">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-calendar-day text-green-600 text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-900 mb-2">Weekday Service</h2>
+                        <p class="text-gray-700 text-lg">Operates Saturday to Thursday</p>
+                    </div>
+                </div>
+
+                <!-- Uttara to Motijheel -->
+                <div class="mb-8">
+                    <div class="flex items-center mb-6">
+                        <div class="w-3 h-3 bg-green-500 rounded-full mr-4 mt-1"></div>
+                        <h3 class="text-2xl font-bold text-gray-900">Uttara to Motijheel</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr>
+                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Period</th>
+                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Service Type</th>
+                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Frequency</th>
+                                </tr>
+                            </thead>
+                            <tbody id="weekdayUttaraToMotijheelPeriods">
+                                <!-- This will be populated via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Motijheel to Uttara -->
+                <div>
+                    <div class="flex items-center mb-6">
+                        <div class="w-3 h-3 mt-1 bg-green-500 rounded-full mr-4 mt-1"></div>
+                        <h3 class="text-2xl font-bold text-gray-900">Motijheel to Uttara</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr>
+                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Period</th>
+                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Service Type</th>
+                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Frequency</th>
+                                </tr>
+                            </thead>
+                            <tbody id="weekdayMotijheelToUttaraPeriods">
+                                <!-- This will be populated via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Friday Content -->
+        <div id="fridayContent" class="hidden">
+            <div class="bg-white rounded-lg border border-gray-200 p-8 transition-all duration-200 hover:shadow-lg">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-mosque text-green-600 text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-900 mb-2">Friday Service</h2>
+                        <p class="text-gray-700 text-lg">Limited service on Fridays</p>
+                    </div>
+                </div>
+
+                <!-- Uttara to Motijheel -->
+                <div class="mb-8">
+                    <div class="flex items-center mb-6">
+                        <div class="w-3 h-3 mt-1 bg-green-500 rounded-full mr-4"></div>
+                        <h3 class="text-2xl font-bold text-gray-900">Uttara to Motijheel</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr>
+                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Period</th>
+                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Service Type</th>
+                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Frequency</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fridayUttaraToMotijheelPeriods">
+                                <!-- This will be populated via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Motijheel to Uttara -->
+                <div>
+                    <div class="flex items-center mb-6">
+                        <div class="w-3 h-3 bg-green-500 rounded-full mr-4"></div>
+                        <h3 class="text-2xl font-bold text-gray-900">Motijheel to Uttara</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr>
+                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Period</th>
+                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Service Type</th>
+                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Frequency</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fridayMotijheelToUttaraPeriods">
+                                <!-- This will be populated via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab functionality
+        const tabs = {
+            allDaysTab: document.getElementById('allDaysTab'),
+            weekdaysTab: document.getElementById('weekdaysTab'),
+            fridayTab: document.getElementById('fridayTab')
+        };
+
+        const contents = {
+            allDaysContent: document.getElementById('allDaysContent'),
+            weekdaysContent: document.getElementById('weekdaysContent'),
+            fridayContent: document.getElementById('fridayContent')
+        };
+
+        function activateTab(tabName) {
+            // Reset all tabs
+            Object.values(tabs).forEach(tab => {
+                tab.classList.remove('tab-active');
+                tab.classList.add('tab-inactive');
+            });
+
+            // Hide all contents
+            Object.values(contents).forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // Activate selected tab
+            tabs[tabName].classList.remove('tab-inactive');
+            tabs[tabName].classList.add('tab-active');
+
+            // Show selected content
+            const contentId = tabName.replace('Tab', 'Content');
+            contents[contentId].classList.remove('hidden');
+
+            // Load schedule periods if needed
+            if (tabName === 'weekdaysTab') {
+                loadSchedulePeriods(1, 'weekdayUttaraToMotijheelPeriods');
+                loadSchedulePeriods(2, 'weekdayMotijheelToUttaraPeriods');
+            } else if (tabName === 'fridayTab') {
+                loadSchedulePeriods(3, 'fridayUttaraToMotijheelPeriods');
+                loadSchedulePeriods(4, 'fridayMotijheelToUttaraPeriods');
+            }
+        }
+
+        // Function to load schedule periods via AJAX
+        function loadSchedulePeriods(scheduleId, targetElementId) {
+            fetch(`/Schedule/GetSchedulePeriods?scheduleId=${scheduleId}`)
+                .then(response => response.json())
+                .then(periods => {
+                    const tableBody = document.getElementById(targetElementId);
+                    tableBody.innerHTML = '';
+
+                    periods.forEach(period => {
+                        const row = document.createElement('tr');
+                        row.className = 'hover:bg-gray-200';
+
+                        const timeCell = document.createElement('td');
+                        timeCell.className = 'px-5 py-4 border-b border-gray-100 text-lg font-medium';
+                        timeCell.textContent = `${formatTime(period.startTime)} - ${formatTime(period.endTime)}`;
+
+                        const typeCell = document.createElement('td');
+                        typeCell.className = `px-5 py-4 border-b border-gray-100 font-semibold text-lg ${getPeriodTypeClass(period.periodType)}`;
+                        typeCell.textContent = period.periodType;
+
+                        const frequencyCell = document.createElement('td');
+                        frequencyCell.className = 'px-5 py-4 border-b border-gray-100 text-lg';
+                        frequencyCell.textContent = period.frequency;
+
+                        row.appendChild(timeCell);
+                        row.appendChild(typeCell);
+                        row.appendChild(frequencyCell);
+
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error loading schedule periods:', error));
+        }
+
+        // Helper function to format time
+        function formatTime(timeString) {
+            const timeParts = timeString.split(':');
+            const hours = parseInt(timeParts[0]);
+            const minutes = timeParts[1];
+            const period = hours >= 12 ? 'PM' : 'AM';
+            const formattedHours = hours % 12 || 12;
+
+            return `${formattedHours}:${minutes} ${period}`;
+        }
+
+        // Helper function to get CSS class based on period type
+        function getPeriodTypeClass(periodType) {
+            switch (periodType) {
+                case 'Peak': return 'text-red-600';
+                case 'Off-Peak': return 'text-green-600';
+                default: return 'text-gray-700';
+            }
+        }
+
+        // Event listeners
+        tabs.allDaysTab.addEventListener('click', () => activateTab('allDaysTab'));
+        tabs.weekdaysTab.addEventListener('click', () => activateTab('weekdaysTab'));
+        tabs.fridayTab.addEventListener('click', () => activateTab('fridayTab'));
+
+        // Initialize with All Days tab active
+        activateTab('allDaysTab');
+    </script>
+</body>
+</html>

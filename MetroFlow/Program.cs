@@ -18,8 +18,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Add HttpClient for external API calls
 builder.Services.AddHttpClient<ILocationService, LocationService>();
 
-// Register the LocationService
 builder.Services.AddScoped<ILocationService, LocationService>();
+builder.Services.AddScoped<IScheduleService, ScheduleService>();
 
 // Add session services (MUST be before AddControllersWithViews)
 builder.Services.AddDistributedMemoryCache();

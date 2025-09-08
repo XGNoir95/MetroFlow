@@ -29,9 +29,9 @@
 
                     <!-- Desktop links -->
                     <ul class="hidden gap-6 lg:flex items-center">
-                        <li><a class="text-2xl font-semibold text-white hover:text-red-200" asp-controller="Home" asp-action="Index">Home</a></li>
-                        <li><a class="text-2xl font-semibold text-white hover:text-red-200" asp-controller="Route" asp-action="RoutePlanner">Routes</a></li>
-                        <li><a class="text-2xl font-semibold text-white hover:text-red-200" asp-controller="Metro" asp-action="Schedule">Schedule</a></li>
+                        <li><a class="text-2xl font-semibold text-white hover:text-green-300" asp-controller="Home" asp-action="Index">Home</a></li>
+                        <li><a class="text-2xl font-semibold text-white hover:text-green-300" asp-controller="Route" asp-action="RoutePlanner">Routes</a></li>
+                        <li><a class="text-2xl font-semibold text-white hover:text-green-300" asp-controller="Schedule" asp-action="Index">Schedule</a></li>
 
                         @if (User.Identity?.IsAuthenticated == true)
                         {
