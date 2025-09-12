@@ -1,0 +1,191 @@
+﻿@model List<MetroFlow.Models.Station>
+@{
+    Layout = "_Layout";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Tourist Attractions - MetroFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #map {
+            height: 500px;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .station-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        }
+
+        .loader {
+            border-top-color: #16a34a;
+            animation: spin 1s linear infinite;
+        }
+
+        @@keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex items-center justify-center mb-10">
+            <div class="bg-green-600 rounded-full p-3 mr-4">
+                <svg class="w-8 h-8 text-green-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </div>
+            <h1 class="text-4xl font-bold text-gray-800 text-center">Tourist Attractions Near Metro Stations</h1>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Station List -->
+            <div class="bg-white rounded-2xl p-6 shadow-2xl">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Select a Metro Station</h2>
+                <div id="stationsList" class="grid gap-4 max-h-[600px] overflow-y-auto pr-2">
+                    @foreach (var station in Model)
+                    {
+                        <div class="station-card bg-gray-50 rounded-xl p-4 cursor-pointer border border-gray-200"
+                             onclick="selectStation(@station.Latitude, @station.Longitude, '@station.Name')">
+                            <div class="flex items-center">
+                                <div class="bg-green-100 rounded-full p-2 mr-3">
+                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-gray-800">@station.Name</h3>
+                                    <p class="text-sm text-gray-600">Lat: @station.Latitude, Lng: @station.Longitude</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Attractions and Map -->
+            <div class="bg-white rounded-2xl p-6 shadow-2xl">
+                <div id="selectedStationInfo" class="mb-6 hidden">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-bold text-gray-800" id="stationName"></h2>
+                        <button onclick="clearSelection()" class="text-gray-500 hover:text-gray-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="text-gray-600" id="stationCoordinates"></div>
+                </div>
+
+                <div id="loadingAttractions" class="hidden flex justify-center py-10">
+                    <div class="loader border-4 border-t-4 border-gray-200 h-12 w-12 rounded-full"></div>
+                    <span class="ml-3 text-gray-600">Loading attractions...</span>
+                </div>
+
+                <div id="attractionsList" class="hidden space-y-4 max-h-[300px] overflow-y-auto mb-6"></div>
+
+                <div id="map" class="mt-6"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = '8f727e29868243288774b59332787cf4';
+        const categories = [
+        
+          'man_made',
+          'entertainment',
+          'heritage',
+          'airport'
+        ].join(',');
+
+        let map = L.map('map').setView([23.8103, 90.4125], 12);
+        let currentMarkers = [];
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        function selectStation(lat, lng, name) {
+            document.getElementById('selectedStationInfo').classList.remove('hidden');
+            document.getElementById('stationName').textContent = name;
+            document.getElementById('stationCoordinates').textContent = `Lat: ${lat}, Lng: ${lng}`;
+
+            clearMapMarkers();
+
+            let marker = L.marker([lat, lng]).addTo(map).bindPopup(`${name}`).openPopup();
+            currentMarkers.push(marker);
+            map.setView([lat, lng], 14);
+
+            fetchNearbyAttractions(lat, lng);
+        }
+
+        function fetchNearbyAttractions(lat, lng) {
+            document.getElementById('loadingAttractions').classList.remove('hidden');
+            document.getElementById('attractionsList').classList.add('hidden');
+            const url = `https://api.geoapify.com/v2/places?categories=${categories}&filter=circle:${lng},${lat},2000&limit=40&apiKey=${apiKey}`;
+
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    const list = document.getElementById('attractionsList');
+                    list.innerHTML = '';
+
+                    data.features.forEach(feature => {
+                        const props = feature.properties;
+                        const item = document.createElement('div');
+                        item.className = 'bg-gray-50 rounded-lg p-4 border border-gray-200';
+                        item.innerHTML = `
+                            <h3 class="font-semibold text-gray-800">${props.name || 'Unnamed Attraction'}</h3>
+                            <p class="text-sm text-gray-600">${props.address_line2 || props.formatted}</p>
+                            <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full mt-2 inline-block">${props.categories[0].split('.')[1]}</span>
+                        `;
+                        list.appendChild(item);
+
+                        let marker = L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]])
+                            .addTo(map)
+                            .bindPopup(props.name || 'Unnamed Attraction');
+                        currentMarkers.push(marker);
+                    });
+
+                    document.getElementById('loadingAttractions').classList.add('hidden');
+                    document.getElementById('attractionsList').classList.remove('hidden');
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('loadingAttractions').classList.add('hidden');
+                });
+        }
+
+        function clearSelection() {
+            document.getElementById('selectedStationInfo').classList.add('hidden');
+            document.getElementById('attractionsList').classList.add('hidden');
+            clearMapMarkers();
+            map.setView([23.8103, 90.4125], 12);
+        }
+
+        function clearMapMarkers() {
+            currentMarkers.forEach(marker => map.removeLayer(marker));
+            currentMarkers = [];
+        }
+    </script>
+</body>
+</html>
