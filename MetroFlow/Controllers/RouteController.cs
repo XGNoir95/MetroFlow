@@ -9,11 +9,15 @@ namespace MetroFlow.Controllers
     {
         private readonly ILogger<RouteController> _logger;
         private readonly ILocationService _locationService;
+        private readonly IHeatmapService _heatmapService;
+        private readonly IScheduleService _scheduleService;
 
-        public RouteController(ILogger<RouteController> logger, ILocationService locationService)
+        public RouteController(ILogger<RouteController> logger, ILocationService locationService, IHeatmapService heatmapService, IScheduleService scheduleService)
         {
             _logger = logger;
             _locationService = locationService;
+            _heatmapService = heatmapService;
+            _scheduleService = scheduleService;
         }
 
         [HttpGet]
@@ -32,36 +36,30 @@ namespace MetroFlow.Controllers
             {
                 var model = GetModelFromSession() ?? new RoutePlannerViewModel();
                 model.AllStations = _locationService.GetAllStations();
-
                 model.CurrentLatitude = latitude;
                 model.CurrentLongitude = longitude;
                 model.CurrentLocationText = "Current Location Detected";
-
                 model.NearestCurrentStation = _locationService.FindNearestStation(latitude, longitude);
 
                 // Clear any selected origin when using current location
                 model.SelectedOrigin = null;
                 model.OriginQuery = string.Empty;
                 model.OriginSuggestions.Clear();
-
                 model.SuccessMessage = "Current location set successfully!";
                 model.ErrorMessage = null;
 
                 // Clear any previous route info
                 model.RouteInfo = null;
-
                 SaveModelToSession(model);
                 return View("RoutePlanner", model);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error setting current location");
-
                 var model = GetModelFromSession() ?? new RoutePlannerViewModel();
                 model.AllStations = _locationService.GetAllStations();
                 model.ErrorMessage = "Unable to set current location. Please try again.";
                 model.SuccessMessage = null;
-
                 return View("RoutePlanner", model);
             }
         }
@@ -78,7 +76,6 @@ namespace MetroFlow.Controllers
                 try
                 {
                     model.DestinationSuggestions = await _locationService.SearchPlacesAsync(destinationQuery);
-
                     if (!model.DestinationSuggestions.Any())
                     {
                         model.ErrorMessage = "No places found. Try a different search term.";
@@ -123,7 +120,6 @@ namespace MetroFlow.Controllers
                 try
                 {
                     model.OriginSuggestions = await _locationService.SearchPlacesAsync(originQuery);
-
                     if (!model.OriginSuggestions.Any())
                     {
                         model.ErrorMessage = "No places found. Try a different search term.";
@@ -157,7 +153,6 @@ namespace MetroFlow.Controllers
             {
                 var model = GetModelFromSession() ?? new RoutePlannerViewModel();
                 model.AllStations = _locationService.GetAllStations();
-
                 model.SelectedDestination = new Place
                 {
                     Name = name,
@@ -165,29 +160,22 @@ namespace MetroFlow.Controllers
                     Latitude = latitude,
                     Longitude = longitude
                 };
-
                 model.DestinationQuery = displayName;
                 model.DestinationSuggestions.Clear();
-
                 model.NearestDestinationStation = _locationService.FindNearestStation(latitude, longitude);
-
                 model.SuccessMessage = "Destination selected successfully!";
                 model.ErrorMessage = null;
-
                 model.RouteInfo = null;
-
                 SaveModelToSession(model);
                 return View("RoutePlanner", model);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error selecting destination");
-
                 var model = GetModelFromSession() ?? new RoutePlannerViewModel();
                 model.AllStations = _locationService.GetAllStations();
                 model.ErrorMessage = "Unable to select destination. Please try again.";
                 model.SuccessMessage = null;
-
                 return View("RoutePlanner", model);
             }
         }
@@ -199,7 +187,6 @@ namespace MetroFlow.Controllers
             {
                 var model = GetModelFromSession() ?? new RoutePlannerViewModel();
                 model.AllStations = _locationService.GetAllStations();
-
                 model.SelectedOrigin = new Place
                 {
                     Name = name,
@@ -207,29 +194,22 @@ namespace MetroFlow.Controllers
                     Latitude = latitude,
                     Longitude = longitude
                 };
-
                 model.OriginQuery = displayName;
                 model.OriginSuggestions.Clear();
-
                 model.NearestOriginStation = _locationService.FindNearestStation(latitude, longitude);
-
                 model.SuccessMessage = "Origin selected successfully!";
                 model.ErrorMessage = null;
-
                 model.RouteInfo = null;
-
                 SaveModelToSession(model);
                 return View("RoutePlanner", model);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error selecting origin");
-
                 var model = GetModelFromSession() ?? new RoutePlannerViewModel();
                 model.AllStations = _locationService.GetAllStations();
                 model.ErrorMessage = "Unable to select origin. Please try again.";
                 model.SuccessMessage = null;
-
                 return View("RoutePlanner", model);
             }
         }
@@ -241,7 +221,6 @@ namespace MetroFlow.Controllers
             {
                 var model = GetModelFromSession() ?? new RoutePlannerViewModel();
                 model.AllStations = _locationService.GetAllStations();
-
                 Station originStation = null;
                 double originLatitude = 0, originLongitude = 0, walkingDistanceToOrigin = 0;
 
@@ -332,19 +311,16 @@ namespace MetroFlow.Controllers
 
                 model.SuccessMessage = "Route calculated successfully!";
                 model.ErrorMessage = null;
-
                 SaveModelToSession(model);
                 return View("RoutePlanner", model);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error planning trip");
-
                 var model = GetModelFromSession() ?? new RoutePlannerViewModel();
                 model.AllStations = _locationService.GetAllStations();
                 model.ErrorMessage = "Unable to plan trip. Please try again.";
                 model.SuccessMessage = null;
-
                 return View("RoutePlanner", model);
             }
         }
@@ -353,12 +329,10 @@ namespace MetroFlow.Controllers
         public IActionResult ClearRoute()
         {
             HttpContext.Session.Remove("RoutePlannerModel");
-
             var model = new RoutePlannerViewModel
             {
                 AllStations = _locationService.GetAllStations()
             };
-
             return View("RoutePlanner", model);
         }
 
@@ -396,6 +370,81 @@ namespace MetroFlow.Controllers
             {
                 _logger.LogError(ex, "Error in AJAX origin search: {Query}", query);
                 return Json(new List<Place>());
+            }
+        }
+
+        // Original heatmap endpoint (keep for backward compatibility)
+        [HttpGet]
+        public IActionResult GetHeatmapData()
+        {
+            try
+            {
+                var currentPeriod = GetCurrentServicePeriod();
+                var heatmapData = _heatmapService.GetAllStationsHeatmapData(currentPeriod);
+
+                return Json(new
+                {
+                    success = true,
+                    currentPeriod = currentPeriod,
+                    stations = heatmapData,
+                    timestamp = DateTime.Now
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting heatmap data");
+                return Json(new { success = false, error = "Unable to load heatmap data" });
+            }
+        }
+
+        // New heatmap endpoint with time period selection
+        [HttpGet]
+        public IActionResult GetHeatmapDataByPeriod(string timePeriod = "current")
+        {
+            try
+            {
+                string currentPeriod;
+
+                if (timePeriod == "current")
+                {
+                    currentPeriod = GetCurrentServicePeriod();
+                }
+                else
+                {
+                    // Extract day type from time period
+                    string dayType = timePeriod.StartsWith("weekday") ? "Weekday" : "Friday";
+                    currentPeriod = _heatmapService.GetPeriodTypeFromTimeRange(timePeriod, dayType);
+                }
+
+                var heatmapData = _heatmapService.GetAllStationsHeatmapData(currentPeriod);
+                var timePeriodOptions = _heatmapService.GetTimePeriodOptions();
+
+                return Json(new
+                {
+                    success = true,
+                    currentPeriod = currentPeriod,
+                    selectedTimePeriod = timePeriod,
+                    stations = heatmapData,
+                    timePeriodOptions = timePeriodOptions,
+                    timestamp = DateTime.Now
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting heatmap data for period: {TimePeriod}", timePeriod);
+                return Json(new { success = false, error = "Unable to load heatmap data" });
+            }
+        }
+
+        private string GetCurrentServicePeriod()
+        {
+            try
+            {
+                return _scheduleService.GetCurrentPeriodType();
+            }
+            catch
+            {
+                return "Normal Hour";
             }
         }
 
@@ -488,12 +537,10 @@ namespace MetroFlow.Controllers
                     model.CurrentLatitude = lat;
                     model.CurrentLongitude = lng;
                 }
-
                 model.CurrentLocationText = TempData["CurrentLocationText"]?.ToString() ?? "Get Current Location";
 
                 var stationName = TempData["NearestCurrentStationName"]?.ToString();
                 var stationDistanceStr = TempData["NearestCurrentStationDistance"]?.ToString();
-
                 if (!string.IsNullOrEmpty(stationName) &&
                     double.TryParse(stationDistanceStr, out double stationDistance))
                 {
@@ -513,7 +560,6 @@ namespace MetroFlow.Controllers
 
             // Destination
             model.DestinationQuery = TempData["DestinationQuery"]?.ToString() ?? string.Empty;
-
             if (TempData["SelectedDestinationName"] != null)
             {
                 var destName = TempData["SelectedDestinationName"]?.ToString();
@@ -536,7 +582,6 @@ namespace MetroFlow.Controllers
 
                 var destStationName = TempData["NearestDestinationStationName"]?.ToString();
                 var destStationDistanceStr = TempData["NearestDestinationStationDistance"]?.ToString();
-
                 if (!string.IsNullOrEmpty(destStationName) &&
                     double.TryParse(destStationDistanceStr, out double destStationDistance))
                 {
@@ -556,7 +601,6 @@ namespace MetroFlow.Controllers
 
             // Origin
             model.OriginQuery = TempData["OriginQuery"]?.ToString() ?? string.Empty;
-
             if (TempData["SelectedOriginName"] != null)
             {
                 var originName = TempData["SelectedOriginName"]?.ToString();
@@ -579,7 +623,6 @@ namespace MetroFlow.Controllers
 
                 var originStationName = TempData["NearestOriginStationName"]?.ToString();
                 var originStationDistanceStr = TempData["NearestOriginStationDistance"]?.ToString();
-
                 if (!string.IsNullOrEmpty(originStationName) &&
                     double.TryParse(originStationDistanceStr, out double originStationDistance))
                 {

@@ -13,12 +13,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        #map {
-            border-radius: 16px;
-            overflow: hidden;
-            height: 500px; /* Default height */
-        }
-
+        /* Only essential Leaflet and suggestion dropdown styles */
         .suggestions-container {
             position: relative;
             width: 100%;
@@ -57,24 +52,50 @@
                 border-bottom: none;
             }
 
-        /* Ensure the right section takes full available height */
-        .right-section {
-            display: flex;
-            flex-direction: column;
-            height: auto;
-            min-height: 600px;
+        /* Heatmap section toggle states */
+        #heatmapSection {
+            transition: all 0.3s ease-in-out;
+            overflow: hidden;
         }
 
-        .map-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 400px;
+            #heatmapSection.collapsed {
+                max-height: 120px !important;
+                padding-bottom: 2rem !important;
+                overflow: hidden !important;
+            }
+
+            #heatmapSection.expanded {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+        .heatmap-content {
+            transition: all 0.3s ease-in-out;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #heatmapSection.collapsed .heatmap-content {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none;
+            height: 0;
+            padding: 0;
+            margin: 0;
+        }
+
+        #heatmapSection.expanded .heatmap-content {
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: all;
+            height: auto;
         }
     </style>
+
+
 </head>
 <body class="font-sans bg-gray-100">
-    <div class="container mx-auto px-4 py-8">
+    <div class="container mx-auto px-4 py-8 pb-16">
         <!-- Messages -->
         @if (!string.IsNullOrEmpty(Model.SuccessMessage))
         {
@@ -100,14 +121,12 @@
             </div>
         }
 
-
-
         <!-- Main Content Grid -->
         <div class="grid md:grid-cols-2 gap-8">
             <!-- Left Side - Route Planner Card -->
-            <div class="bg-white rounded-2xl p-8 shadow-2xl pt-20">
+            <div class="bg-white rounded-2xl p-8 shadow-2xl pt-10">
                 <!-- Header -->
-                <div class="mt-8 flex items-center justify-center mb-10">
+                <div class="flex items-center justify-center mb-10">
                     <div class="bg-green-600 rounded-full p-3 mr-4">
                         <svg class="w-8 h-8 text-green-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
@@ -121,12 +140,11 @@
                 <div class="space-y-6 mb-8">
                     <div>
                         <label class="block text-gray-700 text-lg font-medium mb-3">Your Origin</label>
-
                         <!-- Current Location Option -->
                         @if (!Model.HasOrigin)
                         {
                             <div class="mb-4">
-                                <button type="button" onclick="getCurrentLocation()" class=" text-lg w-full bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-3 flex items-center justify-center space-x-2 transition-all duration-200 shadow-md">
+                                <button type="button" onclick="getCurrentLocation()" class="text-lg w-full bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-3 flex items-center justify-center space-x-2 transition-all duration-200 shadow-md">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -169,11 +187,6 @@
                                             <div class="font-medium">@Model.SelectedOrigin.Name</div>
                                         </div>
                                     </div>
-                                    @* <button type="button" onclick="clearOrigin()" class="text-gray-500 hover:text-gray-700">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                        </svg>
-                                    </button> *@
                                 </div>
                             </div>
                         </div>
@@ -259,11 +272,6 @@
                                             <div class="font-medium">@Model.SelectedDestination.Name</div>
                                         </div>
                                     </div>
-                                    @* <button type="button" onclick="clearDestination()" class="text-gray-500 hover:text-gray-700">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                        </svg>
-                                    </button> *@
                                 </div>
                             </div>
                         </div>
@@ -335,7 +343,7 @@
             </div>
 
             <!-- Right Side - Map Container -->
-            <div class="right-section bg-white rounded-2xl p-6 shadow-2xl">
+            <div class="bg-white rounded-2xl p-6 shadow-2xl flex flex-col min-h-[600px]">
                 <div class="mt-4 flex items-center justify-center mb-5">
                     <div class="bg-green-600 rounded-full p-2 mr-3">
                         <svg class="w-8 h-8 text-lg text-green-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -345,8 +353,8 @@
                     <h2 class="text-4xl text-center ml-1 font-bold text-gray-800">Metro Route Map</h2>
                 </div>
 
-                <div class="map-container">
-                    <div id="map"></div>
+                <div class="flex-1 flex flex-col min-h-[400px]">
+                    <div id="map" class="rounded-2xl overflow-hidden h-full min-h-[400px]"></div>
                 </div>
 
                 @if (Model.RouteInfo != null)
@@ -386,17 +394,165 @@
             </div>
         </div>
 
-        @* <!-- New Journey Button (Top Right) -->
-        <div class="flex justify-end mt-6 mb-6">
-            <form asp-action="ClearRoute" method="post">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 flex items-center space-x-2 shadow-md">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                    </svg>
-                    <span>Plan New Journey</span>
-                </button>
-            </form>
-        </div> *@
+        <!-- Station Heatmaps Section -->
+        @if (Model.RouteInfo != null && Model.RouteInfo.OriginStation != null && Model.RouteInfo.DestinationStation != null)
+        {
+            <div id="heatmapSection" class="expanded bg-white rounded-2xl p-8 shadow-2xl mt-8 mb-8 transition-all duration-300 ease-in-out">
+                <!-- Header with toggle button -->
+                <div class="flex items-center justify-between mb-6 pb-4">
+                    <div class="flex items-center">
+                        <div class="bg-red-600 rounded-full p-3 mr-4">
+                            <svg class="w-8 h-8 text-gray-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-4xl font-bold text-gray-800">Station Heatmaps</h2>
+                    </div>
+                    <button onclick="toggleHeatmapSection()" id="toggleHeatmapBtn" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 text-lg rounded-lg transition-all duration-200 flex items-center space-x-2 shadow-md">
+                        <span id="toggleHeatmapText">Hide</span>
+                        <svg id="toggleHeatmapIcon" class="w-4 h-4 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Heatmap Content -->
+                <div class="heatmap-content transition-opacity duration-300 ease-in-out">
+                    <!-- Time Control Bar -->
+                    <div class="bg-green-100 rounded-xl p-8 mb-8 shadow-2xl">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 mb-5">
+                            <!-- Current Time Display -->
+                            <div class="flex items-center space-x-4">
+                                <div class="bg-green-700 rounded-full p-2">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-xl text-gray-600 font-medium">Current Bangladesh Time</div>
+                                    <div id="heatmapCurrentTime" class="text-xl font-bold text-gray-800">Loading...</div>
+                                </div>
+                            </div>
+
+                            <!-- Time Period Selector -->
+                            <div class="flex items-center space-x-4">
+                                <label for="timePeriodSelect" class="text-lg font-medium text-gray-700 whitespace-nowrap">
+                                    Analyze Time Period:
+                                </label>
+                                <select id="timePeriodSelect" onchange="changeTimePeriod(this.value)"
+                                        class="bg-white border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-lg min-w-48">
+                                    <option value="current">Current Time</option>
+                                    <!-- Options will be populated by JavaScript -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Selected Period Info -->
+                        <div id="selectedPeriodInfo" class="mt-4 p-6 bg-white rounded-lg shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-lg font-medium text-gray-600">Analyzing Period:</span>
+                                <span id="currentAnalyzingPeriod" class="px-8 py-2 rounded-full text-lg font-semibold bg-blue-100 text-blue-800">
+                                    Current Time
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Heatmap Grids -->
+                    <div class="grid md:grid-cols-2 gap-8 mb-8">
+                        <!-- Origin Station Heatmap -->
+                        <div class="bg-gray-100 rounded-2xl p-6 pt-10 shadow-lg flex flex-col min-h-[600px]">
+                            <div class="flex items-center justify-center mb-3">
+                                <div class="bg-green-600 rounded-full p-2 mr-3">
+                                    <svg class="w-10 h-10 text-green-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-3xl font-bold text-gray-800">@Model.RouteInfo.OriginStation.Name</h3>
+                            </div>
+                            <div class="text-center text-gray-600 mb-4">
+                                <span class="text-xl font-medium">Origin Station Analysis</span>
+                            </div>
+                            <div id="originHeatmap" class="rounded-2xl overflow-hidden min-h-[450px] h-[450px] mb-4"></div>
+
+                            <!-- Origin Station Description -->
+                            <div class="mt-auto p-6 bg-white rounded-lg shadow-sm flex items-center min-h-[120px] border border-gray-200">
+                                <p id="originStationDescription" class="text-lg text-gray-700 leading-relaxed font-medium tracking-wide block">
+                                    Loading analysis...
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Destination Station Heatmap -->
+                        <div class="bg-gray-100 rounded-2xl p-6 pt-10 shadow-lg flex flex-col min-h-[600px]">
+                            <div class="flex items-center justify-center mb-3">
+                                <div class="bg-red-600 rounded-full p-2 mr-3">
+                                    <svg class="w-10 h-10 text-green-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-3xl font-bold text-gray-800">@Model.RouteInfo.DestinationStation.Name</h3>
+                            </div>
+                            <div class="text-center text-gray-600 mb-4">
+                                <span class="text-xl font-medium">Destination Station Analysis</span>
+                            </div>
+                            <div id="destinationHeatmap" class="rounded-2xl overflow-hidden min-h-[450px] h-[450px] mb-4"></div>
+
+                            <!-- Destination Station Description -->
+                            <div class="mt-auto p-6 bg-white rounded-lg shadow-sm flex items-center min-h-[120px] border border-gray-200">
+                                <p id="destinationStationDescription" class="text-lg text-gray-700 leading-relaxed font-medium tracking-wide block">
+                                    Loading analysis...
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Heat Intensity Legend -->
+                    <div class="mt-8 mb-8 p-8 bg-gray-100 rounded-xl border border-gray-300">
+                        <div class="text-center mb-10">
+                            <h4 class="text-3xl font-bold text-gray-800 mb-4">Heat Intensity Guide</h4>
+                        </div>
+
+                        <div class="grid md:grid-cols-3 gap-6">
+                            <div class="text-center">
+                                <div class="flex items-center justify-center mb-3">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-400 to-red-700"></div>
+                                </div>
+                                <div class="font-bold text-red-600 mb-1 text-2xl">Peak Hours</div>
+                                <div class="text-xl text-gray-600 font-semibold">Maximum activity and crowding</div>
+                                <div class="text-lg text-gray-500 mt-1">Intense heat zones, frequent services</div>
+                            </div>
+
+                            <div class="text-center">
+                                <div class="flex items-center justify-center mb-3">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600"></div>
+                                </div>
+                                <div class="font-bold text-orange-600 mb-1 text-2xl">Normal Hours</div>
+                                <div class="text-xl text-gray-600 font-semibold">Moderate activity levels</div>
+                                <div class="text-lg text-gray-500 mt-1">Warm zones, regular services</div>
+                            </div>
+
+                            <div class="text-center">
+                                <div class="flex items-center justify-center mb-3">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-green-600"></div>
+                                </div>
+                                <div class="font-bold text-green-600 mb-1 text-2xl">OffPeak Hours</div>
+                                <div class="text-xl text-gray-600 font-semibold">Low activity and minimal crowding</div>
+                                <div class="text-lg text-gray-500 mt-1">Cool zones, extended intervals</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 text-center text-lg text-gray-600">
+                            <span class="font-semibold">Note:</span> Heat intensity varies by station popularity (1-16 scale) and time period.
+                            Larger circles and more intense colors indicate higher activity levels.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
     </div>
 
     <!-- Hidden form for setting current location -->
@@ -423,29 +579,31 @@
 
     <script>
         let map = null;
+        let originHeatmapMap = null;
+        let destinationHeatmapMap = null;
         let searchTimeout = null;
         let originSearchTimeout = null;
+        let heatmapUpdateInterval;
+        let currentHeatmapData = null;
+        let selectedTimePeriod = 'current';
 
         // Initialize map
         function initializeMap() {
-            // Ensure Leaflet is loaded
             if (typeof L === 'undefined') {
                 console.error('Leaflet library not loaded');
                 return;
             }
 
-            // Check if map is already initialized
             if (map) {
                 map.remove();
             }
 
-            map = L.map('map').setView([23.8103, 90.4125], 12); // Center on Dhaka
+            map = L.map('map').setView([23.8103, 90.4125], 12);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
-            // Add all metro stations
             @foreach (var station in Model.AllStations)
             {
                     @:L.marker([@station.Latitude, @station.Longitude])
@@ -453,7 +611,6 @@
                     @:  .bindPopup('<b>@Html.Raw(station.Name)</b><br>Metro Station');
             }
 
-            // Add origin marker if available
             @if (Model.SelectedOrigin != null)
             {
                     @:L.marker([@Model.SelectedOrigin.Latitude, @Model.SelectedOrigin.Longitude])
@@ -467,7 +624,6 @@
                     @:  .bindPopup('<b>Your Current Location</b>');
             }
 
-            // Add destination marker if available
             @if (Model.SelectedDestination != null)
             {
                     @:L.marker([@Model.SelectedDestination.Latitude, @Model.SelectedDestination.Longitude])
@@ -475,7 +631,6 @@
                     @:  .bindPopup('<b>Your Destination</b><br>@Html.Raw(Model.SelectedDestination.DisplayName)');
             }
 
-            // Add route line if available
             @if (Model.RouteInfo?.RouteStations.Any() == true)
             {
                     @:var routeCoordinates = [
@@ -487,13 +642,12 @@
 
                     @:if (routeCoordinates.length > 0) {
                     @:    L.polyline(routeCoordinates, {
-                        @:        color: '#188f46',
+                    @:        color: '#188f46',
                     @:        weight: 4,
                     @:        opacity: 0.8
                     @:    }).addTo(map);
                     @:}
 
-                    // Add connection lines
                     @if (Model.SelectedOrigin != null && Model.NearestOriginStation != null)
                     {
                             @:L.polyline([
@@ -532,7 +686,6 @@
                             @:}).addTo(map);
                     }
 
-                    // Fit map to show all points
                                 @:try {
                     @:    var bounds = L.latLngBounds();
                     @:    var hasPoints = false;
@@ -566,40 +719,660 @@
                     @:}
             }
 
-            // Adjust map height dynamically based on content
             adjustMapHeight();
         }
 
-        // Adjust map height dynamically
-        function adjustMapHeight() {
-            const mapElement = document.getElementById('map');
-            const rightSection = document.querySelector('.right-section');
-            const routeInfo = document.querySelector('.bg-gray-50.rounded-xl');
+        function updateHeatmapCurrentTime() {
+            fetch('/Schedule/GetCurrentTimeInfo')
+                .then(response => response.json())
+                .then(data => {
+                    const timeOnly = data.timeOfDay;
+                    const timeParts = timeOnly.split(':');
+                    const hours = parseInt(timeParts[0]);
+                    const minutes = parseInt(timeParts[1]);
+                    const seconds = parseInt(timeParts[2]);
 
-            if (mapElement && rightSection) {
-                // Calculate available height
-                const rightSectionHeight = rightSection.offsetHeight;
-                const otherElementsHeight = rightSection.querySelector('div.flex.items-center').offsetHeight + 32; // header + padding
+                    const period = hours >= 12 ? 'PM' : 'AM';
+                    const displayHours = hours % 12 || 12;
+                    const formattedTime = `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} ${period}`;
 
-                let routeInfoHeight = 0;
-                if (routeInfo) {
-                    routeInfoHeight = routeInfo.offsetHeight + 16; // + margin
+                    const currentTimeElement = document.getElementById('heatmapCurrentTime');
+                    if (currentTimeElement) {
+                        currentTimeElement.textContent = formattedTime;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating heatmap current time:', error);
+                    const currentTimeElement = document.getElementById('heatmapCurrentTime');
+                    if (currentTimeElement) {
+                        currentTimeElement.textContent = 'Error loading time';
+                    }
+                });
+        }
+
+        async function loadHeatmapData(timePeriod = 'current') {
+            try {
+                console.log('Loading heatmap data for period:', timePeriod);
+                const response = await fetch(`/Route/GetHeatmapDataByPeriod?timePeriod=${encodeURIComponent(timePeriod)}`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                // Set map height to fill available space
-                const availableHeight = rightSectionHeight - otherElementsHeight - routeInfoHeight;
-                mapElement.style.height = Math.max(400, availableHeight) + 'px'; // Minimum 400px
+                const data = await response.json();
+                console.log('Heatmap data received:', data);
 
-                // Trigger map resize if map is already initialized
-                if (map) {
-                    setTimeout(() => {
+                if (data.success) {
+                    currentHeatmapData = data;
+                    selectedTimePeriod = timePeriod;
+
+                    populateTimePeriodDropdown(data.timePeriodOptions);
+                    updateSelectedPeriodInfo(data.currentPeriod, timePeriod);
+
+                    return data;
+                } else {
+                    console.error('Failed to load heatmap data:', data.error);
+                    updateErrorState('Failed to load heatmap data');
+                    return null;
+                }
+            } catch (error) {
+                console.error('Error loading heatmap data:', error);
+                updateErrorState('Error loading heatmap data');
+                return null;
+            }
+        }
+
+        function updateErrorState(message) {
+            const periodInfo = document.getElementById('currentAnalyzingPeriod');
+            if (periodInfo) {
+                periodInfo.textContent = 'Error';
+                periodInfo.className = 'px-10 py-2 rounded-full text-lg font-semibold bg-red-100 text-red-800';
+            }
+
+            const originDesc = document.getElementById('originStationDescription');
+            const destDesc = document.getElementById('destinationStationDescription');
+            if (originDesc) originDesc.textContent = message;
+            if (destDesc) destDesc.textContent = message;
+        }
+
+        function populateTimePeriodDropdown(options) {
+            const dropdown = document.getElementById('timePeriodSelect');
+            if (!dropdown) {
+                console.error('Time period dropdown not found');
+                return;
+            }
+
+            dropdown.innerHTML = '<option value="current">Current Time</option>';
+
+            if (!options || !Array.isArray(options)) {
+                console.error('Invalid options provided to dropdown');
+                return;
+            }
+
+            let currentGroup = '';
+            options.forEach(option => {
+                if (option.value === 'current') return;
+
+                if (option.dayType !== currentGroup) {
+                    currentGroup = option.dayType;
+                    if (currentGroup !== 'Current') {
+                        const optgroup = document.createElement('optgroup');
+                        optgroup.label = `${option.dayType} Schedule`;
+                        dropdown.appendChild(optgroup);
+
+                        const optionElement = document.createElement('option');
+                        optionElement.value = option.value;
+                        optionElement.textContent = option.label;
+                        optgroup.appendChild(optionElement);
+                    } else {
+                        const optionElement = document.createElement('option');
+                        optionElement.value = option.value;
+                        optionElement.textContent = option.label;
+                        dropdown.appendChild(optionElement);
+                    }
+                } else if (dropdown.lastElementChild && dropdown.lastElementChild.tagName === 'OPTGROUP') {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option.value;
+                    optionElement.textContent = option.label;
+                    dropdown.lastElementChild.appendChild(optionElement);
+                } else {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option.value;
+                    optionElement.textContent = option.label;
+                    dropdown.appendChild(optionElement);
+                }
+            });
+
+            dropdown.value = selectedTimePeriod;
+            console.log('Dropdown populated with', options.length, 'options');
+        }
+
+        function updateSelectedPeriodInfo(currentPeriod, timePeriod) {
+            const periodInfo = document.getElementById('currentAnalyzingPeriod');
+            if (!periodInfo) {
+                console.error('Period info element not found');
+                return;
+            }
+
+            const periodColor = getPeriodColorClass(currentPeriod);
+            periodInfo.className = `px-8 py-2 rounded-full text-slg font-semibold ${periodColor}`;
+
+            if (timePeriod === 'current') {
+                periodInfo.textContent = `Current: ${currentPeriod}`;
+            } else {
+                const dropdown = document.getElementById('timePeriodSelect');
+                const selectedOption = dropdown?.querySelector(`option[value="${timePeriod}"]`);
+                const timeLabel = selectedOption?.textContent || timePeriod;
+                periodInfo.textContent = `${timeLabel}: ${currentPeriod}`;
+            }
+
+            console.log('Period info updated:', currentPeriod, timePeriod);
+        }
+
+        function getPeriodColorClass(period) {
+            switch (period) {
+                case 'Peak Hour': return 'bg-red-600 text-white';
+                case 'Normal Hour': return 'bg-orange-600 text-white';
+                case 'OffPeak Hour': return 'bg-green-600 text-white';
+                default: return 'bg-gray-600 text-white';
+            }
+        }
+
+        function changeTimePeriod(timePeriod) {
+            console.log('Changing time period to:', timePeriod);
+            selectedTimePeriod = timePeriod;
+
+            const periodInfo = document.getElementById('currentAnalyzingPeriod');
+            if (periodInfo) {
+                periodInfo.textContent = 'Loading...';
+                periodInfo.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800';
+            }
+
+            loadHeatmapData(timePeriod).then(heatmapData => {
+                if (heatmapData) {
+                    @if (Model.RouteInfo != null && Model.RouteInfo.OriginStation != null && Model.RouteInfo.DestinationStation != null)
+                    {
+                            @:initializeOriginHeatmap('@Model.RouteInfo.OriginStation.Name', heatmapData);
+                            @:initializeDestinationHeatmap('@Model.RouteInfo.DestinationStation.Name', heatmapData);
+                    }
+                }
+            });
+        }
+
+        function initializeHeatmaps() {
+            @if (Model.RouteInfo != null && Model.RouteInfo.OriginStation != null && Model.RouteInfo.DestinationStation != null)
+            {
+                    @:console.log('Initializing heatmaps...');
+
+                    @:updateHeatmapCurrentTime();
+                    @:setInterval(updateHeatmapCurrentTime, 1000);
+
+                    @:loadHeatmapData('current').then(heatmapData => {
+                    @:    if (heatmapData) {
+                    @:        console.log('Initial heatmap data loaded successfully');
+                    @:        initializeOriginHeatmap('@Model.RouteInfo.OriginStation.Name', heatmapData);
+                    @:        initializeDestinationHeatmap('@Model.RouteInfo.DestinationStation.Name', heatmapData);
+                    @:    } else {
+                    @:        console.error('Failed to load initial heatmap data');
+                    @:    }
+                    @:});
+
+                    @:if (heatmapUpdateInterval) {
+                    @:    clearInterval(heatmapUpdateInterval);
+                    @:}
+                    @:heatmapUpdateInterval = setInterval(() => {
+                    @:    if (selectedTimePeriod === 'current') {
+                    @:        console.log('Auto-updating heatmap data...');
+                    @:        updateHeatmaps();
+                    @:    }
+                    @:}, 30000);
+            }
+        }
+
+                function getHeatmapGradientColors(period, intensity) {
+            const baseColors = {
+                'Peak Hour': [
+                    `rgba(153, 27, 27, ${intensity})`,        // Much darker red
+                    `rgba(185, 28, 28, ${intensity * 0.9})`,  // Dark red
+                    `rgba(220, 38, 38, ${intensity * 0.8})`,  // Deep red
+                    `rgba(239, 68, 68, ${intensity * 0.6})`,  // Medium red
+                    `rgba(248, 113, 113, ${intensity * 0.4})` // Light red
+                ],
+                'Normal Hour': [
+                    `rgba(154, 52, 18, ${intensity})`,        // Much darker orange
+                    `rgba(194, 65, 12, ${intensity * 0.9})`,  // Dark orange
+                    `rgba(234, 88, 12, ${intensity * 0.8})`,  // Deep orange
+                    `rgba(249, 115, 22, ${intensity * 0.6})`, // Medium orange
+                    `rgba(251, 146, 60, ${intensity * 0.4})`  // Light orange
+                ],
+                'OffPeak Hour': [
+                    `rgba(20, 83, 45, ${intensity})`,         // Much darker green
+                    `rgba(22, 101, 52, ${intensity * 0.9})`,  // Dark forest green
+                    `rgba(5, 150, 105, ${intensity * 0.8})`,  // Deep emerald
+                    `rgba(16, 185, 129, ${intensity * 0.6})`, // Medium green
+                    `rgba(34, 197, 94, ${intensity * 0.4})`   // Light green
+                ],
+                'Service Not Available': [
+                    `rgba(55, 65, 81, ${intensity * 0.8})`,   // Dark gray
+                    `rgba(75, 85, 99, ${intensity * 0.6})`,   // Medium gray
+                    `rgba(107, 114, 128, ${intensity * 0.4})`, // Light gray
+                    `rgba(156, 163, 175, ${intensity * 0.3})`, // Very light gray
+                    `rgba(209, 213, 219, ${intensity * 0.2})`  // Pale gray
+                ]
+            };
+
+            return baseColors[period] || baseColors['Normal Hour'];
+        }
+
+                function addHeatmapCircles(map, stationData) {
+            console.log('Adding weather-style heatmap for station:', stationData.stationName, 'with intensity:', stationData.heatIntensity);
+
+            const baseRadius = stationData.radius || 250;
+            const intensity = Math.max(0.4, stationData.heatIntensity); // Increased minimum intensity
+            const popularity = stationData.popularityIndex;
+
+            // Enhanced layer configuration with higher opacity
+            const layers = [
+                { multiplier: 1.8, opacity: Math.max(0.6, intensity * 1.0) },
+                { multiplier: 1.4, opacity: Math.max(0.5, intensity * 0.8) },
+                { multiplier: 1.0, opacity: Math.max(0.4, intensity * 0.7) },
+                { multiplier: 0.6, opacity: Math.max(0.3, intensity * 0.6) },
+                { multiplier: 0.3, opacity: Math.max(0.2, intensity * 0.5) }
+            ];
+
+            const gradientColors = getHeatmapGradientColors(stationData.currentPeriod, intensity);
+
+            // Add gradient layers from largest to smallest
+            layers.forEach((layer, index) => {
+                const radius = baseRadius * layer.multiplier * (0.5 + (popularity / 32));
+                const color = gradientColors[Math.min(index, gradientColors.length - 1)];
+
+                L.circle([stationData.latitude, stationData.longitude], {
+                    color: 'transparent',
+                    fillColor: color,
+                    fillOpacity: layer.opacity,
+                    radius: radius,
+                    weight: 0,
+                    interactive: false
+                }).addTo(map);
+            });
+
+            // Add additional heat spots for high intensity stations
+            if (intensity > 0.5) {
+                const hotSpots = [
+                    { offset: [0.001, 0.001], intensity: 0.8 },
+                    { offset: [-0.001, 0.001], intensity: 0.6 },
+                    { offset: [0.001, -0.001], intensity: 0.6 },
+                    { offset: [-0.001, -0.001], intensity: 0.4 }
+                ];
+
+                hotSpots.forEach(spot => {
+                    L.circle([
+                        stationData.latitude + spot.offset[0],
+                        stationData.longitude + spot.offset[1]
+                    ], {
+                        color: 'transparent',
+                        fillColor: gradientColors[0],
+                        fillOpacity: Math.max(0.3, spot.intensity * intensity * 0.6), // Increased opacity
+                        radius: baseRadius * 0.4,
+                        weight: 0,
+                        interactive: false
+                    }).addTo(map);
+                });
+            }
+
+            // Add intensity contour lines for definition
+            const contourLevels = Math.max(2, Math.floor(intensity * 4));
+            for (let i = 1; i <= contourLevels; i++) {
+                const contourRadius = baseRadius * (i / contourLevels) * 0.8;
+                const contourOpacity = Math.max(0.2, (intensity / contourLevels) * (contourLevels - i + 1) * 0.7); // Increased opacity
+
+                L.circle([stationData.latitude, stationData.longitude], {
+                    color: gradientColors[Math.min(i - 1, gradientColors.length - 1)],
+                    fillColor: 'transparent',
+                    radius: contourRadius,
+                    weight: Math.max(1, 3 - i),
+                    opacity: contourOpacity,
+                    interactive: false
+                }).addTo(map);
+            }
+
+            console.log('Weather-style heatmap added successfully for', stationData.stationName);
+        }
+
+        // function addHeatmapCircles(map, stationData) {
+        //     console.log('Adding weather-style heatmap for station:', stationData.stationName, 'with intensity:', stationData.heatIntensity);
+
+        //     const baseRadius = stationData.radius || 250;
+        //     const intensity = Math.max(0.3, stationData.heatIntensity);
+        //     const popularity = stationData.popularityIndex;
+
+        //     const layers = [
+        //         { multiplier: 1.8, opacity: Math.max(0.4, intensity * 0.8) },
+        //         { multiplier: 1.4, opacity: Math.max(0.3, intensity * 0.6) },
+        //         { multiplier: 1.0, opacity: Math.max(0.25, intensity * 0.5) },
+        //         { multiplier: 0.6, opacity: Math.max(0.2, intensity * 0.4) },
+        //         { multiplier: 0.3, opacity: Math.max(0.15, intensity * 0.3) }
+        //     ];
+
+        //     const gradientColors = getHeatmapGradientColors(stationData.currentPeriod, intensity);
+
+        //     layers.forEach((layer, index) => {
+        //         const radius = baseRadius * layer.multiplier * (0.5 + (popularity / 32));
+        //         const color = gradientColors[Math.min(index, gradientColors.length - 1)];
+
+        //         L.circle([stationData.latitude, stationData.longitude], {
+        //             color: 'transparent',
+        //             fillColor: color,
+        //             fillOpacity: layer.opacity,
+        //             radius: radius,
+        //             weight: 0,
+        //             interactive: false
+        //         }).addTo(map);
+        //     });
+
+        //     if (intensity > 0.5) {
+        //         const hotSpots = [
+        //             { offset: [0.001, 0.001], intensity: 0.8 },
+        //             { offset: [-0.001, 0.001], intensity: 0.6 },
+        //             { offset: [0.001, -0.001], intensity: 0.6 },
+        //             { offset: [-0.001, -0.001], intensity: 0.4 }
+        //         ];
+
+        //         hotSpots.forEach(spot => {
+        //             L.circle([
+        //                 stationData.latitude + spot.offset[0],
+        //                 stationData.longitude + spot.offset[1]
+        //             ], {
+        //                 color: 'transparent',
+        //                 fillColor: gradientColors[0],
+        //                 fillOpacity: Math.max(0.2, spot.intensity * intensity * 0.4),
+        //                 radius: baseRadius * 0.4,
+        //                 weight: 0,
+        //                 interactive: false
+        //             }).addTo(map);
+        //         });
+        //     }
+
+        //     const contourLevels = Math.max(2, Math.floor(intensity * 4));
+        //     for (let i = 1; i <= contourLevels; i++) {
+        //         const contourRadius = baseRadius * (i / contourLevels) * 0.8;
+        //         const contourOpacity = Math.max(0.15, (intensity / contourLevels) * (contourLevels - i + 1) * 0.5);
+
+        //         L.circle([stationData.latitude, stationData.longitude], {
+        //             color: gradientColors[Math.min(i - 1, gradientColors.length - 1)],
+        //             fillColor: 'transparent',
+        //             radius: contourRadius,
+        //             weight: Math.max(1, 3 - i),
+        //             opacity: contourOpacity,
+        //             interactive: false
+        //         }).addTo(map);
+        //     }
+
+        //     console.log('Weather-style heatmap added successfully for', stationData.stationName);
+        // }
+
+        function addStationMarker(map, stationData, isOrigin) {
+            const color = isOrigin ? '#16A34A' : '#DC2626';
+            const stationType = isOrigin ? 'Origin' : 'Destination';
+
+            L.circle([stationData.latitude, stationData.longitude], {
+                color: '#ffffff',
+                fillColor: '#ffffff',
+                fillOpacity: 0.9,
+                radius: 50,
+                weight: 3,
+                opacity: 1
+            }).addTo(map);
+
+            L.marker([stationData.latitude, stationData.longitude], {
+                icon: L.divIcon({
+                    className: 'custom-station-marker',
+                    html: `
+                        <div style="
+                            background-color: ${color};
+                            width: 28px;
+                            height: 28px;
+                            border-radius: 50%;
+                            border: 4px solid white;
+                            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+                            position: relative;
+                            z-index: 1000;
+                        "></div>
+                    `,
+                    iconSize: [36, 36],
+                    iconAnchor: [18, 18]
+                }),
+                zIndexOffset: 1000
+            }).addTo(map).bindPopup(`
+                <div class="text-center max-w-xs p-2">
+                    <b class="text-lg">${stationData.stationName}</b><br>
+                    <span class="text-sm text-gray-600">${stationType} Station</span><br>
+                    <div class="mt-2 text-xs">
+                        <div>Popularity: <strong>${stationData.popularityIndex}/16</strong></div>
+                        <div>Period: <strong>${stationData.currentPeriod}</strong></div>
+                        <div>Heat Intensity: <strong>${stationData.heatIntensity}</strong></div>
+                    </div>
+                </div>
+            `);
+
+            const descriptionElement = document.getElementById(isOrigin ? 'originStationDescription' : 'destinationStationDescription');
+            if (descriptionElement) {
+                if (stationData.description) {
+                    descriptionElement.textContent = stationData.description;
+                    descriptionElement.style.display = 'block';
+                } else {
+                    descriptionElement.textContent = 'Station analysis data is currently being processed...';
+                    descriptionElement.style.display = 'block';
+                }
+                console.log(`${isOrigin ? 'Origin' : 'Destination'} description updated successfully`);
+            }
+        }
+
+        function initializeOriginHeatmap(stationName, heatmapData) {
+            console.log('Initializing origin heatmap for:', stationName);
+
+            if (originHeatmapMap) {
+                originHeatmapMap.remove();
+            }
+
+            const stationData = findStationInHeatmapData(stationName, heatmapData);
+            if (!stationData) {
+                console.error('Station data not found for:', stationName);
+                return;
+            }
+
+            try {
+                originHeatmapMap = L.map('originHeatmap').setView([stationData.latitude, stationData.longitude], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(originHeatmapMap);
+
+                addHeatmapCircles(originHeatmapMap, stationData);
+                addNearbyStationsToHeatmap(originHeatmapMap, stationData, heatmapData);
+                addStationMarker(originHeatmapMap, stationData, true);
+
+                setTimeout(() => {
+                    if (originHeatmapMap) {
+                        originHeatmapMap.invalidateSize();
+                    }
+                }, 200);
+
+                console.log('Origin heatmap initialized successfully');
+            } catch (error) {
+                console.error('Error initializing origin heatmap:', error);
+            }
+        }
+
+        function initializeDestinationHeatmap(stationName, heatmapData) {
+            console.log('Initializing destination heatmap for:', stationName);
+
+            if (destinationHeatmapMap) {
+                destinationHeatmapMap.remove();
+            }
+
+            const stationData = findStationInHeatmapData(stationName, heatmapData);
+            if (!stationData) {
+                console.error('Station data not found for:', stationName);
+                return;
+            }
+
+            try {
+                destinationHeatmapMap = L.map('destinationHeatmap').setView([stationData.latitude, stationData.longitude], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(destinationHeatmapMap);
+
+                addHeatmapCircles(destinationHeatmapMap, stationData);
+                addNearbyStationsToHeatmap(destinationHeatmapMap, stationData, heatmapData);
+                addStationMarker(destinationHeatmapMap, stationData, false);
+
+                setTimeout(() => {
+                    if (destinationHeatmapMap) {
+                        destinationHeatmapMap.invalidateSize();
+                    }
+                }, 200);
+
+                console.log('Destination heatmap initialized successfully');
+            } catch (error) {
+                console.error('Error initializing destination heatmap:', error);
+            }
+        }
+
+        function addNearbyStationsToHeatmap(map, centerStation, heatmapData) {
+            if (!heatmapData || !heatmapData.stations) {
+                console.log('No nearby stations data available');
+                return;
+            }
+
+            let nearbyCount = 0;
+            heatmapData.stations.forEach(station => {
+                if (station.stationName === centerStation.stationName) return;
+
+                const distance = calculateDistance(
+                    centerStation.latitude, centerStation.longitude,
+                    station.latitude, station.longitude
+                );
+
+                if (distance <= 2) {
+                    nearbyCount++;
+                    L.marker([station.latitude, station.longitude], {
+                        icon: L.divIcon({
+                            className: 'nearby-station-marker',
+                            html: `<div style="background-color: ${station.color}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; opacity: 0.8;"></div>`,
+                            iconSize: [16, 16],
+                            iconAnchor: [8, 8]
+                        })
+                    }).addTo(map).bindPopup(`
+                        <div class="text-center text-sm">
+                            <b>${station.stationName}</b><br>
+                            <small>Popularity: ${station.popularityIndex}/16</small><br>
+                            <small>Distance: ${distance.toFixed(1)}km</small>
+                        </div>
+                    `);
+
+                    const nearbyGradientColors = getHeatmapGradientColors(station.currentPeriod, station.heatIntensity);
+                    L.circle([station.latitude, station.longitude], {
+                        color: 'transparent',
+                        fillColor: nearbyGradientColors[2],
+                        fillOpacity: 0.15,
+                        radius: (station.radius || 200) * 0.4,
+                        weight: 0,
+                        interactive: false
+                    }).addTo(map);
+                }
+            });
+
+            console.log('Added', nearbyCount, 'nearby stations to heatmap');
+        }
+
+                function toggleHeatmapSection() {
+            const section = document.getElementById('heatmapSection');
+            const toggleBtn = document.getElementById('toggleHeatmapBtn');
+            const toggleText = document.getElementById('toggleHeatmapText');
+            const toggleIcon = document.getElementById('toggleHeatmapIcon');
+            const heatmapContent = section.querySelector('.heatmap-content');
+
+            if (section.classList.contains('collapsed')) {
+                // Expand
+                section.classList.remove('collapsed');
+                section.classList.add('expanded');
+                section.style.maxHeight = 'none';
+                section.style.overflow = 'visible';
+                heatmapContent.style.display = 'block';
+                heatmapContent.style.opacity = '1';
+
+                toggleText.textContent = 'Hide';
+                toggleIcon.style.transform = 'rotate(0deg)';
+                toggleBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                toggleBtn.classList.add('bg-red-600', 'hover:bg-red-800');
+
+                // Reinitialize heatmaps when expanding
+                setTimeout(() => {
+                    initializeHeatmaps();
+                }, 300);
+            } else {
+                // Collapse
+                section.classList.remove('expanded');
+                section.classList.add('collapsed');
+                section.style.maxHeight = '90px';
+                section.style.overflow = 'hidden';
+                heatmapContent.style.display = 'none';
+                heatmapContent.style.opacity = '0';
+
+                toggleText.textContent = 'Show';
+                toggleIcon.style.transform = 'rotate(180deg)';
+                toggleBtn.classList.remove('bg-red-600', 'hover:bg-red-800');
+                toggleBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+            }
+        }
+
+
+        function adjustMapHeight() {
+            const mapElement = document.getElementById('map');
+            if (mapElement) {
+                setTimeout(() => {
+                    if (map) {
                         map.invalidateSize();
-                    }, 100);
+                    }
+                }, 100);
+            }
+        }
+
+        async function updateHeatmaps() {
+            const heatmapData = await loadHeatmapData(selectedTimePeriod);
+            if (heatmapData) {
+                @if (Model.RouteInfo != null && Model.RouteInfo.OriginStation != null && Model.RouteInfo.DestinationStation != null)
+                {
+                        @:initializeOriginHeatmap('@Model.RouteInfo.OriginStation.Name', heatmapData);
+                        @:initializeDestinationHeatmap('@Model.RouteInfo.DestinationStation.Name', heatmapData);
                 }
             }
         }
 
-        // Get current location using geolocation API
+        function findStationInHeatmapData(stationName, heatmapData) {
+            if (!heatmapData || !heatmapData.stations) {
+                console.error('No heatmap data or stations available');
+                return null;
+            }
+            const station = heatmapData.stations.find(station => station.stationName === stationName);
+            if (!station) {
+                console.error('Station not found in heatmap data:', stationName);
+            }
+            return station;
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
         function getCurrentLocation() {
             const buttonText = document.getElementById('locationButtonText');
 
@@ -618,7 +1391,6 @@
                 },
                 function(error) {
                     buttonText.textContent = 'Use My Current Location';
-
                     let errorMessage = 'Unable to access your location. ';
                     switch(error.code) {
                         case error.PERMISSION_DENIED:
@@ -639,14 +1411,146 @@
             );
         }
 
-        // Initialize the map when the page loads
+        function searchOrigin(query) {
+            clearTimeout(originSearchTimeout);
+            if (query.length < 2) {
+                hideOriginSuggestions();
+                return;
+            }
+            originSearchTimeout = setTimeout(() => {
+                fetch(`/Route/SearchOriginAjax?query=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(suggestions => {
+                        displayOriginSuggestions(suggestions);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching origin suggestions:', error);
+                        hideOriginSuggestions();
+                    });
+            }, 300);
+        }
+
+        function displayOriginSuggestions(suggestions) {
+            const dropdown = document.getElementById('originSuggestionsDropdown');
+            if (!suggestions || suggestions.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+            dropdown.innerHTML = '';
+            suggestions.forEach(place => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <svg class="w-4 h-4 mt-1 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium truncate">${place.name}</div>
+                            <div class="text-xs opacity-70 truncate">${place.displayName}</div>
+                        </div>
+                    </div>
+                `;
+                item.addEventListener('click', () => {
+                    selectOrigin(place);
+                });
+                dropdown.appendChild(item);
+            });
+            dropdown.style.display = 'block';
+        }
+
+        function hideOriginSuggestions() {
+            const dropdown = document.getElementById('originSuggestionsDropdown');
+            if (dropdown) {
+                dropdown.style.display = 'none';
+            }
+        }
+
+        function selectOrigin(place) {
+            document.getElementById('selectedOriginName').value = place.name;
+            document.getElementById('selectedOriginDisplayName').value = place.displayName;
+            document.getElementById('selectedOriginLatitude').value = place.latitude;
+            document.getElementById('selectedOriginLongitude').value = place.longitude;
+            document.getElementById('selectOriginForm').submit();
+        }
+
+        function searchDestination(query) {
+            clearTimeout(searchTimeout);
+            if (query.length < 2) {
+                hideSuggestions();
+                return;
+            }
+            searchTimeout = setTimeout(() => {
+                fetch(`/Route/SearchDestinationAjax?query=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(suggestions => {
+                        displaySuggestions(suggestions);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching destination suggestions:', error);
+                        hideSuggestions();
+                    });
+            }, 300);
+        }
+
+        function displaySuggestions(suggestions) {
+            const dropdown = document.getElementById('suggestionsDropdown');
+            if (!suggestions || suggestions.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+            dropdown.innerHTML = '';
+            suggestions.forEach(place => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <svg class="w-4 h-4 mt-1 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 616 0z"></path>
+                        </svg>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium truncate">${place.name}</div>
+                            <div class="text-xs opacity-70 truncate">${place.displayName}</div>
+                        </div>
+                    </div>
+                `;
+                item.addEventListener('click', () => {
+                    selectDestination(place);
+                });
+                dropdown.appendChild(item);
+            });
+            dropdown.style.display = 'block';
+        }
+
+        function hideSuggestions() {
+            const dropdown = document.getElementById('suggestionsDropdown');
+            if (dropdown) {
+                dropdown.style.display = 'none';
+            }
+        }
+
+        function selectDestination(place) {
+            document.getElementById('selectedName').value = place.name;
+            document.getElementById('selectedDisplayName').value = place.displayName;
+            document.getElementById('selectedLatitude').value = place.latitude;
+            document.getElementById('selectedLongitude').value = place.longitude;
+            document.getElementById('selectDestinationForm').submit();
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
-            // Add a small delay to ensure Leaflet is fully loaded
+            console.log('DOM Content Loaded - Initializing page...');
+
             setTimeout(function() {
                 initializeMap();
+                @if (Model.RouteInfo != null)
+                {
+                        @:console.log('Route info available, initializing heatmaps...');
+                        @:initializeHeatmaps();
+                }
             }, 100);
 
-            // Hide suggestions when clicking outside
             document.addEventListener('click', function(e) {
                 const originInput = document.getElementById('originInput');
                 const originSuggestionsDropdown = document.getElementById('originSuggestionsDropdown');
@@ -662,172 +1566,43 @@
                 }
             });
 
-            // Adjust map height on window resize
             window.addEventListener('resize', function() {
                 adjustMapHeight();
+                if (originHeatmapMap) {
+                    setTimeout(() => {
+                        originHeatmapMap.invalidateSize();
+                    }, 100);
+                }
+                if (destinationHeatmapMap) {
+                    setTimeout(() => {
+                        destinationHeatmapMap.invalidateSize();
+                    }, 100);
+                }
             });
+
+            adjustMapHeight();
         });
 
-        // Fallback: Also try to initialize when window loads
         window.addEventListener('load', function() {
+            console.log('Window loaded');
+            adjustMapHeight();
+
             if (!map) {
                 setTimeout(function() {
                     initializeMap();
+                    @if (Model.RouteInfo != null)
+                    {
+                            @:initializeHeatmaps();
+                    }
                 }, 200);
             }
         });
 
-        // Search origin with debouncing
-        function searchOrigin(query) {
-            clearTimeout(originSearchTimeout);
-
-            if (query.length < 2) {
-                hideOriginSuggestions();
-                return;
+        window.addEventListener('beforeunload', function() {
+            if (heatmapUpdateInterval) {
+                clearInterval(heatmapUpdateInterval);
             }
-
-            originSearchTimeout = setTimeout(() => {
-                fetch(`/Route/SearchOriginAjax?query=${encodeURIComponent(query)}`)
-                    .then(response => response.json())
-                    .then(suggestions => {
-                        displayOriginSuggestions(suggestions);
-                    })
-                    .catch(error => {
-                        console.error('Error fetching origin suggestions:', error);
-                        hideOriginSuggestions();
-                    });
-            }, 300);
-        }
-
-        // Display origin search suggestions
-        function displayOriginSuggestions(suggestions) {
-            const dropdown = document.getElementById('originSuggestionsDropdown');
-
-            if (!suggestions || suggestions.length === 0) {
-                dropdown.style.display = 'none';
-                return;
-            }
-
-            dropdown.innerHTML = '';
-
-            suggestions.forEach(place => {
-                const item = document.createElement('div');
-                item.className = 'suggestion-item';
-                item.innerHTML = `
-                    <div class="flex items-start space-x-3">
-                        <svg class="w-4 h-4 mt-1 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                        <div class="flex-1 min-w-0">
-                            <div class="font-medium truncate">${place.name}</div>
-                            <div class="text-xs opacity-70 truncate">${place.displayName}</div>
-                        </div>
-                    </div>
-                `;
-
-                item.addEventListener('click', () => {
-                    selectOrigin(place);
-                });
-
-                dropdown.appendChild(item);
-            });
-
-            dropdown.style.display = 'block';
-        }
-
-        // Hide origin suggestions dropdown
-        function hideOriginSuggestions() {
-            const dropdown = document.getElementById('originSuggestionsDropdown');
-            if (dropdown) {
-                dropdown.style.display = 'none';
-            }
-        }
-
-        // Select an origin from suggestions
-        function selectOrigin(place) {
-            document.getElementById('selectedOriginName').value = place.name;
-            document.getElementById('selectedOriginDisplayName').value = place.displayName;
-            document.getElementById('selectedOriginLatitude').value = place.latitude;
-            document.getElementById('selectedOriginLongitude').value = place.longitude;
-            document.getElementById('selectOriginForm').submit();
-        }
-
-        // Search destination with debouncing
-        function searchDestination(query) {
-            clearTimeout(searchTimeout);
-
-            if (query.length < 2) {
-                hideSuggestions();
-                return;
-            }
-
-            searchTimeout = setTimeout(() => {
-                fetch(`/Route/SearchDestinationAjax?query=${encodeURIComponent(query)}`)
-                    .then(response => response.json())
-                    .then(suggestions => {
-                        displaySuggestions(suggestions);
-                    })
-                    .catch(error => {
-                        console.error('Error fetching destination suggestions:', error);
-                        hideSuggestions();
-                    });
-            }, 300);
-        }
-
-        // Display search suggestions
-        function displaySuggestions(suggestions) {
-            const dropdown = document.getElementById('suggestionsDropdown');
-
-            if (!suggestions || suggestions.length === 0) {
-                dropdown.style.display = 'none';
-                return;
-            }
-
-            dropdown.innerHTML = '';
-
-            suggestions.forEach(place => {
-                const item = document.createElement('div');
-                item.className = 'suggestion-item';
-                item.innerHTML = `
-                    <div class="flex items-start space-x-3">
-                        <svg class="w-4 h-4 mt-1 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                        <div class="flex-1 min-w-0">
-                            <div class="font-medium truncate">${place.name}</div>
-                            <div class="text-xs opacity-70 truncate">${place.displayName}</div>
-                        </div>
-                    </div>
-                `;
-
-                item.addEventListener('click', () => {
-                    selectDestination(place);
-                });
-
-                dropdown.appendChild(item);
-            });
-
-            dropdown.style.display = 'block';
-        }
-
-        // Hide suggestions dropdown
-        function hideSuggestions() {
-            const dropdown = document.getElementById('suggestionsDropdown');
-            if (dropdown) {
-                dropdown.style.display = 'none';
-            }
-        }
-
-        // Select a destination from suggestions
-        function selectDestination(place) {
-            document.getElementById('selectedName').value = place.name;
-            document.getElementById('selectedDisplayName').value = place.displayName;
-            document.getElementById('selectedLatitude').value = place.latitude;
-            document.getElementById('selectedLongitude').value = place.longitude;
-            document.getElementById('selectDestinationForm').submit();
-        }
+        });
     </script>
 </body>
 </html>

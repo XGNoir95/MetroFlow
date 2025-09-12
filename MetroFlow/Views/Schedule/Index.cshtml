@@ -1,6 +1,5 @@
 ﻿@model MetroFlow.Controllers.ScheduleViewModel
 @using MetroFlow.Models
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -58,17 +57,86 @@
             .schedule-table tr:hover {
                 background-color: #f9fafb;
             }
-
-        .peak-time {
+        /* Updated period type styles */
+        .peak-hour {
             color: #dc2626;
             font-weight: 600;
             font-size: 16px;
         }
 
-        .off-peak-time {
+        .normal-hour {
+            color: #2563eb;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .offpeak-hour {
             color: #16a34a;
             font-weight: 600;
             font-size: 16px;
+        }
+        /* Period type badges */
+        .period-badge {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-peak {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .badge-normal {
+            background-color: #dbeafe;
+            color: #2563eb;
+        }
+
+        .badge-offpeak {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+
+        .service-not-available {
+            background-color: #fef2f2;
+            color: #dc2626;
+        }
+        /* Time display styles */
+        .time-display {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            color: white;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+        }
+
+        .current-time {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .current-period {
+            font-size: 19px;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .blinking {
+            animation: blink 1s infinite;
+        }
+
+        @@keyframes blink {
+            0%, 50% {
+                opacity: 1;
+            }
+
+            51%, 100% {
+                opacity: 0.5;
+            }
         }
     </style>
 </head>
@@ -76,15 +144,24 @@
     <!-- Header -->
     <div class="bg-white border-b border-gray-200">
         <div class="max-w-8xl lg:mx-40 px-6 py-6">
-            <div class="flex items-center space-x-5">
-                <div class="w-16 h-16 bg-green-600 rounded-lg flex items-center justify-center">
-                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-5">
+                    <div class="w-16 h-16 bg-green-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-4xl font-bold text-gray-900 mb-2">Metro Train Schedule</h1>
+                        <p class="text-gray-600 text-lg">Weekday and Friday service timings with detailed period information</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-4xl font-bold text-gray-900 mb-2">Metro Train Schedule</h1>
-                    <p class="text-gray-600 text-lg">Weekday and Friday service timings</p>
+
+                <!-- Bangladesh Time Display -->
+                <div class="time-display">
+                    <div class="current-time" id="currentTime">Loading...</div>
+                    <div class="current-period" id="currentPeriod">Loading...</div>
+                    <div class="text-lg opacity-80 mt-2" id="currentDayType">Loading...</div>
                 </div>
             </div>
         </div>
@@ -109,6 +186,39 @@
     <div class="max-w-8xl lg:mx-40 px-6 pb-12">
         <!-- All Days Content -->
         <div id="allDaysContent">
+            <!-- Current Service Status Banner -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6" id="currentServiceStatus">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-3xl font-bold text-gray-900 mb-2">Current Service Status</h3>
+                        <p class="text-gray-600 text-lg" id="serviceStatusText">Loading...</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-gray-900 mb-2">Service Period</div>
+                        <div class="text-sm font-semibold text-gray-900" id="currentServiceType">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Period Types Legend -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                <h3 class="text-[1.7rem] font-bold text-gray-900 mb-2">Service Period Types</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="flex items-center space-x-3">
+                        <span class="period-badge badge-peak">Peak Hour</span>
+                        <span class="text-gray-600">Highest frequency during busy hours</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="period-badge badge-normal">Normal Hour</span>
+                        <span class="text-gray-600">Standard frequency during regular hours</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="period-badge badge-offpeak">OffPeak Hour</span>
+                        <span class="text-gray-600">Lower frequency during quiet hours</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid lg:grid-cols-2 gap-6 mb-8">
                 <!-- Weekday Service Card -->
                 <div class="bg-white rounded-lg border border-gray-200 p-8 route-card">
@@ -118,13 +228,37 @@
                         </div>
                         <h2 class="text-3xl font-bold text-gray-900">Weekday Service</h2>
                     </div>
-                    <p class="text-gray-700 text-lg font-base mb-6">Operates Saturday to Thursday</p>
-
+                    <p class="text-gray-700 text-lg font-base mb-6">Operates Saturday to Thursday (7:00 AM - 9:40 PM)</p>
                     @{
                         var weekdayUttaraToMotijheel = Model.Schedules.FirstOrDefault(s => s.DayType == "Weekday" && s.Direction == "UttaraToMotijheel");
                         var weekdayMotijheelToUttara = Model.Schedules.FirstOrDefault(s => s.DayType == "Weekday" && s.Direction == "MotijheelToUttara");
                     }
-
+                    <!-- Weekday Schedule Summary -->
+                    <div class="bg-gray-50 rounded-lg p-7 mb-6">
+                        <h4 class="font-bold text-xl text-gray-900 mb-3">Daily Schedule Pattern:</h4>
+                        <div class="space-y-2 text-lg">
+                            <div class="flex justify-between">
+                                <span>7:00 AM - 8:30 AM:</span>
+                                <span class="period-badge badge-normal">Normal Hour (10 min)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>8:31 AM - 1:00 PM:</span>
+                                <span class="period-badge badge-peak">Peak Hour (6 min)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>1:01 PM - 3:30 PM:</span>
+                                <span class="period-badge badge-normal">Normal Hour (10 min)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>3:31 PM - 8:30 PM:</span>
+                                <span class="period-badge badge-peak">Peak Hour (6 min)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>8:31 PM - 9:40 PM:</span>
+                                <span class="period-badge badge-offpeak">OffPeak Hour (12 min)</span>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Uttara to Motijheel -->
                     <div class="mb-6">
                         <div class="flex items-center mb-2">
@@ -140,14 +274,8 @@
                                 <span class="text-gray-600 text-lg">Last train:</span>
                                 <span class="font-medium text-lg">@weekdayUttaraToMotijheel?.LastTrain.ToString(@"hh\:mm") PM</span>
                             </div>
-                            <div class="flex justify-end mt-2">
-                                <div class="text-green-700 bg-green-100 px-4 py-1 rounded">
-                                    Peak hours: @weekdayUttaraToMotijheel?.PeakFrequency
-                                </div>
-                            </div>
                         </div>
                     </div>
-
                     <!-- Motijheel to Uttara -->
                     <div class="mb-6">
                         <div class="flex items-center mb-2">
@@ -163,11 +291,6 @@
                                 <span class="text-gray-600 text-lg">Last train:</span>
                                 <span class="font-medium text-lg">@weekdayMotijheelToUttara?.LastTrain.ToString(@"hh\:mm") PM</span>
                             </div>
-                            <div class="flex justify-end mt-2">
-                                <div class="text-green-700 bg-green-100 px-4 py-1 rounded">
-                                    Peak hours: @weekdayMotijheelToUttara?.PeakFrequency
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -180,13 +303,25 @@
                         </div>
                         <h2 class="text-3xl font-bold text-gray-900">Friday Service</h2>
                     </div>
-                    <p class="text-gray-700 text-lg mb-6">Limited service on Fridays</p>
-
+                    <p class="text-gray-700 text-lg mb-6">Limited service on Fridays (3:00 PM - 10:00 PM)</p>
                     @{
                         var fridayUttaraToMotijheel = Model.Schedules.FirstOrDefault(s => s.DayType == "Friday" && s.Direction == "UttaraToMotijheel");
                         var fridayMotijheelToUttara = Model.Schedules.FirstOrDefault(s => s.DayType == "Friday" && s.Direction == "MotijheelToUttara");
                     }
-
+                    <!-- Friday Schedule Summary -->
+                    <div class="bg-gray-50 rounded-lg p-7 mb-6">
+                        <h4 class="font-bold text-xl text-gray-900 mb-3">Friday Schedule Pattern:</h4>
+                        <div class="space-y-2 text-lg">
+                            <div class="flex justify-between">
+                                <span>3:00 PM - 9:00 PM:</span>
+                                <span class="period-badge badge-peak">Peak Hour (8 min)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>9:01 PM - 10:00 PM:</span>
+                                <span class="period-badge badge-offpeak">OffPeak Hour (15 min)</span>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Uttara to Motijheel -->
                     <div class="mb-6">
                         <div class="flex items-center mb-2">
@@ -202,14 +337,8 @@
                                 <span class="text-gray-600 text-lg">Last train:</span>
                                 <span class="font-medium text-lg">@fridayUttaraToMotijheel?.LastTrain.ToString(@"hh\:mm") PM</span>
                             </div>
-                            <div class="flex justify-end mt-2">
-                                <div class="text-red-700 bg-red-100 px-4 py-1 rounded">
-                                    Peak hours: @fridayUttaraToMotijheel?.PeakFrequency
-                                </div>
-                            </div>
                         </div>
                     </div>
-
                     <!-- Motijheel to Uttara -->
                     <div class="mb-6">
                         <div class="flex items-center mb-2">
@@ -225,14 +354,38 @@
                                 <span class="text-gray-600 text-lg">Last train:</span>
                                 <span class="font-medium text-lg">@fridayMotijheelToUttara?.LastTrain.ToString(@"hh\:mm") PM</span>
                             </div>
-                            <div class="flex justify-end mt-2">
-                                <div class="text-red-700 bg-red-100 px-4 py-1 rounded">
-                                    Peak hours: @fridayMotijheelToUttara?.PeakFrequency
+                        </div>
+                    </div>
+
+                    <!-- Disclaimer Card -->
+                    <div class="bg-green-50 border border-green-200 rounded-xl p-6 mt-6">
+                        <div class="flex items-start space-x-4">
+                            <!-- Icon Section -->
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-green-100" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
                                 </div>
+                            </div>
+
+                            <!-- Content Section -->
+                            <div class="flex-1">
+                                <div class="flex items-center mb-2">
+                                    <h5 class="text-xl font-bold text-green-800 mr-2">Important Notice</h5>
+                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <p class="text-green-700 text-lg leading-relaxed">
+                                    <strong>Train schedules are subject to change</strong> depending on operational requirements,
+                                    weather conditions, maintenance activities, and special circumstances.
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
 
             <!-- Ticket Information -->
@@ -247,10 +400,8 @@
                             <h3 class="text-3xl font-bold text-gray-900">@ticketOption.Title</h3>
                         </div>
                         <p class="text-gray-700 text-lg mb-6">@ticketOption.Description</p>
-
                         <div class="mb-6">
                             <h4 class="font-medium text-xl text-gray-900 mb-4">@(ticketOption.Type == "SingleJourney" ? "Purchase Methods:" : "Purchase & Recharge Methods:")</h4>
-
                             <div class="space-y-3">
                                 @foreach (var method in ticketOption.PurchaseMethods)
                                 {
@@ -266,7 +417,6 @@
                                 }
                             </div>
                         </div>
-
                         <button class="w-full py-3 bg-green-600 text-lg text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
                             @(ticketOption.Type == "SingleJourney" ? "Purchase Single Ticket" : "Register for MRT Pass")
                         </button>
@@ -284,7 +434,7 @@
                     </div>
                     <div>
                         <h2 class="text-3xl font-bold text-gray-900 mb-2">Weekday Service</h2>
-                        <p class="text-gray-700 text-lg">Operates Saturday to Thursday</p>
+                        <p class="text-gray-700 text-lg">Operates Saturday to Thursday (7:00 AM - 9:40 PM)</p>
                     </div>
                 </div>
 
@@ -298,7 +448,7 @@
                         <table class="w-full border-collapse">
                             <thead>
                                 <tr>
-                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Period</th>
+                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Time Period</th>
                                     <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Service Type</th>
                                     <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Frequency</th>
                                 </tr>
@@ -320,7 +470,7 @@
                         <table class="w-full border-collapse">
                             <thead>
                                 <tr>
-                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Period</th>
+                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Time Period</th>
                                     <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Service Type</th>
                                     <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Frequency</th>
                                 </tr>
@@ -343,7 +493,7 @@
                     </div>
                     <div>
                         <h2 class="text-3xl font-bold text-gray-900 mb-2">Friday Service</h2>
-                        <p class="text-gray-700 text-lg">Limited service on Fridays</p>
+                        <p class="text-gray-700 text-lg">Limited service on Fridays (3:00 PM - 10:00 PM)</p>
                     </div>
                 </div>
 
@@ -357,7 +507,7 @@
                         <table class="w-full border-collapse">
                             <thead>
                                 <tr>
-                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Period</th>
+                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Time Period</th>
                                     <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Service Type</th>
                                     <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Frequency</th>
                                 </tr>
@@ -379,7 +529,7 @@
                         <table class="w-full border-collapse">
                             <thead>
                                 <tr>
-                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Period</th>
+                                    <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Time Period</th>
                                     <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Service Type</th>
                                     <th class="bg-green-600 text-white px-5 py-4 text-left font-semibold text-xl border-b-2 border-gray-200">Frequency</th>
                                 </tr>
@@ -395,6 +545,9 @@
     </div>
 
     <script>
+        // Global variables
+        let timeUpdateInterval;
+
         // Tab functionality
         const tabs = {
             allDaysTab: document.getElementById('allDaysTab'),
@@ -408,27 +561,100 @@
             fridayContent: document.getElementById('fridayContent')
         };
 
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Start real-time updates
+            updateCurrentTime();
+            timeUpdateInterval = setInterval(updateCurrentTime, 1000); // Update every second
+
+            // Load initial current service status
+            updateCurrentServiceStatus();
+            setInterval(updateCurrentServiceStatus, 30000); // Update every 30 seconds
+
+            // Add tab event listeners
+            Object.keys(tabs).forEach(tabName => {
+                tabs[tabName].addEventListener('click', () => activateTab(tabName));
+            });
+        });
+
+        // Update current Bangladesh time and period
+        function updateCurrentTime() {
+            fetch('/Schedule/GetCurrentTimeInfo')
+                .then(response => response.json())
+                .then(data => {
+                    const timeOnly = data.timeOfDay;
+                    const timeParts = timeOnly.split(':');
+                    const hours = parseInt(timeParts[0]);
+                    const minutes = parseInt(timeParts[1]);
+                    const seconds = parseInt(timeParts[2]);
+
+                    const period = hours >= 12 ? 'PM' : 'AM';
+                    const displayHours = hours % 12 || 12;
+                    const formattedTime = `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} ${period}`;
+
+                    document.getElementById('currentTime').textContent = formattedTime;
+                    document.getElementById('currentPeriod').textContent = data.currentPeriodType;
+                    document.getElementById('currentDayType').textContent = `${data.dayType} - ${data.timeZone}`;
+
+                    const periodElement = document.getElementById('currentPeriod');
+                    periodElement.className = 'current-period';
+
+                    if (data.currentPeriodType === 'Service Not Available') {
+                        periodElement.classList.add('blinking');
+                        periodElement.style.color = '#dc2626';
+                    } else {
+                        periodElement.classList.add('blinking');
+                        periodElement.style.color = 'rgba(255, 0, 0, 2.5)';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating current time:', error);
+                    document.getElementById('currentTime').textContent = 'Time Error';
+                    document.getElementById('currentPeriod').textContent = 'Connection Error';
+                });
+        }
+
+        // Update current service status banner
+        function updateCurrentServiceStatus() {
+            fetch('/Schedule/GetCurrentTimeInfo')
+                .then(response => response.json())
+                .then(data => {
+                    const statusElement = document.getElementById('serviceStatusText');
+                    const serviceTypeElement = document.getElementById('currentServiceType');
+
+                    if (data.currentPeriodType === 'Service Not Available') {
+                        statusElement.textContent = `Metro service is currently not available. Next service starts based on ${data.dayType} schedule.`;
+                        statusElement.className = 'text-red-600 font-medium text-xl';
+                        serviceTypeElement.textContent = 'Service Unavailable';
+                        serviceTypeElement.className = 'font-semibold text-red-600 text-xl';
+                    } else {
+                        statusElement.textContent = `Metro is currently operating in ${data.currentPeriodType} on ${data.dayType}.`;
+                        statusElement.className = 'text-green-600 font-medium text-xl';
+                        serviceTypeElement.textContent = data.currentPeriodType;
+                        serviceTypeElement.className = 'text-xl font-semibold text-green-600';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating service status:', error);
+                });
+        }
+
         function activateTab(tabName) {
-            // Reset all tabs
             Object.values(tabs).forEach(tab => {
                 tab.classList.remove('tab-active');
                 tab.classList.add('tab-inactive');
             });
 
-            // Hide all contents
             Object.values(contents).forEach(content => {
                 content.classList.add('hidden');
             });
 
-            // Activate selected tab
             tabs[tabName].classList.remove('tab-inactive');
             tabs[tabName].classList.add('tab-active');
 
-            // Show selected content
             const contentId = tabName.replace('Tab', 'Content');
             contents[contentId].classList.remove('hidden');
 
-            // Load schedule periods if needed
             if (tabName === 'weekdaysTab') {
                 loadSchedulePeriods(1, 'weekdayUttaraToMotijheelPeriods');
                 loadSchedulePeriods(2, 'weekdayMotijheelToUttaraPeriods');
@@ -438,67 +664,81 @@
             }
         }
 
-        // Function to load schedule periods via AJAX
         function loadSchedulePeriods(scheduleId, targetElementId) {
             fetch(`/Schedule/GetSchedulePeriods?scheduleId=${scheduleId}`)
                 .then(response => response.json())
                 .then(periods => {
                     const tableBody = document.getElementById(targetElementId);
+                    if (!tableBody) {
+                        console.error(`Element with ID ${targetElementId} not found`);
+                        return;
+                    }
+
                     tableBody.innerHTML = '';
+
+                    if (periods.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="3" class="px-5 py-4 text-center text-gray-500">No schedule periods available</td></tr>';
+                        return;
+                    }
 
                     periods.forEach(period => {
                         const row = document.createElement('tr');
-                        row.className = 'hover:bg-gray-200';
+                        row.className = 'hover:bg-gray-50 transition-colors';
 
                         const timeCell = document.createElement('td');
                         timeCell.className = 'px-5 py-4 border-b border-gray-100 text-lg font-medium';
                         timeCell.textContent = `${formatTime(period.startTime)} - ${formatTime(period.endTime)}`;
 
                         const typeCell = document.createElement('td');
-                        typeCell.className = `px-5 py-4 border-b border-gray-100 font-semibold text-lg ${getPeriodTypeClass(period.periodType)}`;
-                        typeCell.textContent = period.periodType;
+                        typeCell.className = 'px-5 py-4 border-b border-gray-100';
+
+                        const badge = document.createElement('span');
+                        badge.className = `period-badge ${getPeriodTypeBadgeClass(period.periodType)}`;
+                        badge.textContent = period.periodType;
+                        typeCell.appendChild(badge);
 
                         const frequencyCell = document.createElement('td');
-                        frequencyCell.className = 'px-5 py-4 border-b border-gray-100 text-lg';
+                        frequencyCell.className = 'px-5 py-4 border-b border-gray-100 text-lg font-medium';
                         frequencyCell.textContent = period.frequency;
 
                         row.appendChild(timeCell);
                         row.appendChild(typeCell);
                         row.appendChild(frequencyCell);
-
                         tableBody.appendChild(row);
                     });
                 })
-                .catch(error => console.error('Error loading schedule periods:', error));
+                .catch(error => {
+                    console.error('Error loading schedule periods:', error);
+                    const tableBody = document.getElementById(targetElementId);
+                    if (tableBody) {
+                        tableBody.innerHTML = '<tr><td colspan="3" class="px-5 py-4 text-center text-red-600">Error loading schedule data</td></tr>';
+                    }
+                });
         }
 
-        // Helper function to format time
         function formatTime(timeString) {
             const timeParts = timeString.split(':');
             const hours = parseInt(timeParts[0]);
             const minutes = timeParts[1];
             const period = hours >= 12 ? 'PM' : 'AM';
             const formattedHours = hours % 12 || 12;
-
             return `${formattedHours}:${minutes} ${period}`;
         }
 
-        // Helper function to get CSS class based on period type
-        function getPeriodTypeClass(periodType) {
+        function getPeriodTypeBadgeClass(periodType) {
             switch (periodType) {
-                case 'Peak': return 'text-red-600';
-                case 'Off-Peak': return 'text-green-600';
-                default: return 'text-gray-700';
+                case 'Peak Hour': return 'badge-peak';
+                case 'Normal Hour': return 'badge-normal';
+                case 'OffPeak Hour': return 'badge-offpeak';
+                default: return 'service-not-available';
             }
         }
 
-        // Event listeners
-        tabs.allDaysTab.addEventListener('click', () => activateTab('allDaysTab'));
-        tabs.weekdaysTab.addEventListener('click', () => activateTab('weekdaysTab'));
-        tabs.fridayTab.addEventListener('click', () => activateTab('fridayTab'));
-
-        // Initialize with All Days tab active
-        activateTab('allDaysTab');
+        window.addEventListener('beforeunload', function() {
+            if (timeUpdateInterval) {
+                clearInterval(timeUpdateInterval);
+            }
+        });
     </script>
 </body>
 </html>

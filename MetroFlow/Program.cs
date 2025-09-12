@@ -19,7 +19,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddHttpClient<ILocationService, LocationService>();
 
 builder.Services.AddScoped<ILocationService, LocationService>();
+builder.Services.AddScoped<ITimeZoneService, TimeZoneService>();
 builder.Services.AddScoped<IScheduleService, ScheduleService>();
+builder.Services.AddScoped<IHeatmapService, HeatmapService>();
 
 // Add session services (MUST be before AddControllersWithViews)
 builder.Services.AddDistributedMemoryCache();

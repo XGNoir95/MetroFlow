@@ -19,9 +19,17 @@ namespace MetroFlow.Services
 
             // Initialize Dhaka Metro Rail Stations
             _stations = _db.Stations
-                            .AsNoTracking()
-                            .OrderByDescending(s => s.Latitude)
-                            .ToList();
+                    .AsNoTracking()
+                    .OrderByDescending(s => s.Latitude)
+                    .Select(s => new Station
+                    {
+                        Id = s.Id,
+                        Name = s.Name,
+                        Latitude = s.Latitude,
+                        Longitude = s.Longitude,
+                        PopularityIndex = s.PopularityIndex  // Make sure this is included
+                    })
+                    .ToList();
         }
 
         public List<Station> GetAllStations()
