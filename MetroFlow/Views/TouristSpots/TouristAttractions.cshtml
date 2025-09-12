@@ -10,21 +10,31 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         #map {
-            height: 500px;
-            border-radius: 1rem;
-            overflow: hidden;
+            height: calc(100vh - 520px);
+            min-height: 400px;
         }
 
-        .station-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        @@media (min-width: 768px) {
+            #map
+
+        {
+            height: calc(100vh - 480px);
+            min-height: 500px;
         }
 
-        .loader {
-            border-top-color: #16a34a;
-            animation: spin 1s linear infinite;
+        }
+
+        @@media (min-width: 1280px) {
+            #map
+
+        {
+            height: calc(100vh - 450px);
+            min-height: 600px;
+        }
+
         }
 
         @@keyframes spin {
@@ -36,149 +46,1003 @@
                 transform: rotate(360deg);
             }
         }
+
+        .custom-div-icon {
+            background: #16a34a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Disable hover effects only for selected/active filter tags */
+.filter-tag.bg-green-700:hover {
+    /* Override all hover effects for selected category */
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: #15803d !important; /* Keep the green-700 border */
+    background-color: #15803d !important; /* Keep the green-700 background */
+}
+
+/* Disable hover effects for selected popular tags */
+.filter-tag.bg-amber-600:hover {
+    /* Override all hover effects for selected popular category */
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: #d97706 !important; /* Keep the amber-600 border */
+    background-color: #d97706 !important; /* Keep the amber-600 background */
+    color: white !important; /* Keep white text */
+}
+
+/* Keep hover effects for non-selected categories */
+.filter-tag:not(.bg-green-700):not(.bg-amber-600):hover {
+    transform: translateY(-1px);
+    border-color: #16a34a;
+    background-color: #f0fdf4;
+}
+
+/* Special handling for popular tags that are not selected */
+.filter-tag.bg-amber-100:not(.bg-green-700):not(.bg-amber-600):hover {
+    background-color: #fbbf24;
+    border-color: #f59e0b;
+}
+
+/* Popular attraction cards hover effect */
+.border-l-amber-500:hover {
+    background-color: #fef3c7 !important;
+}
+        /* Disable hover effects only for selected/active filter tags */
+        .filter-tag.bg-green-700:hover {
+            /* Override all hover effects for selected category */
+            transform: none !important;
+            box-shadow: none !important;
+            border-color: #15803d !important; /* Keep the green-700 border */
+            background-color: #15803d !important; /* Keep the green-700 background */
+        }
+
+        /* Disable hover effects for selected popular tags */
+        .filter-tag.bg-amber-600:hover {
+            /* Override all hover effects for selected popular category */
+            transform: none !important;
+            box-shadow: none !important;
+            border-color: #d97706 !important; /* Keep the amber-600 border */
+            background-color: #d97706 !important; /* Keep the amber-600 background */
+            color: white !important; /* Keep white text */
+        }
+
+        /* Keep hover effects for non-selected categories */
+        .filter-tag:not(.bg-green-700):not(.bg-amber-600):hover {
+            transform: translateY(-1px);
+            border-color: #16a34a;
+            background-color: #f0fdf4;
+        }
+
+        /* Special handling for popular tags that are not selected */
+        .filter-tag.bg-amber-100:not(.bg-green-700):not(.bg-amber-600):hover {
+            background-color: #fbbf24;
+            border-color: #f59e0b;
+        }
+
+        /* Popular attraction cards hover effect */
+        .border-l-amber-500:hover {
+            background-color: #fef3c7 !important;
+        }
+
+
+
+        @@keyframes pulse-smooth {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .animate-pulse-smooth {
+            animation: pulse-smooth 2s ease-in-out infinite;
+        }
+
+        .attraction-marker {
+            background: #6b7280;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .popular-marker {
+            background: #f59e0b;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .search-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-top: none;
+            border-radius: 0 0 0.5rem 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+            .search-dropdown.show {
+                display: block;
+            }
+
+        .search-dropdown-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+            .search-dropdown-item:hover {
+                background-color: #f9fafb;
+            }
+
+            .search-dropdown-item:last-child {
+                border-bottom: none;
+            }
+
+        /* Custom responsive utilities */
+        @@media (min-width: 1024px) {
+            .lg\:w-3\/10
+
+        {
+            width: 30%;
+        }
+
+        .lg\:w-7\/10 {
+            width: 70%;
+        }
+
+        }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <div class="flex items-center justify-center mb-10">
-            <div class="bg-green-600 rounded-full p-3 mr-4">
-                <svg class="w-8 h-8 text-green-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-8xl mx-4 sm:mx-6 md:mx-8 lg:mx-40 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-start mb-6">
+                <div class="bg-green-600 text-white w-12 h-12 sm:w-14 sm:h-14 rounded-lg flex items-center justify-center mr-0 sm:mr-4 mb-4 sm:mb-0 flex-shrink-0">
+                    <i class="fas fa-map-marker-alt text-xl sm:text-2xl lg:text-3xl"></i>
+                </div>
+                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
+                    Tourist Attractions
+                </h1>
             </div>
-            <h1 class="text-4xl font-bold text-gray-800 text-center">Tourist Attractions Near Metro Stations</h1>
+            <p class="text-base sm:text-lg lg:text-xl text-gray-600 mb-6 sm:mb-8 leading-relaxed">
+                Explore the best of Dhaka with our comprehensive guide to tourist attractions, heritage sites, dining options, shopping destinations, recreational parks, and cultural landmarks accessible via the metro rail network
+            </p>
+
+            <!-- Station Selection Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-10 gap-4 lg:gap-6">
+                <!-- Dropdown (30% on large screens) -->
+                <div class="lg:col-span-3">
+                    <label for="stationSelect" class="block text-base sm:text-lg lg:text-2xl font-semibold text-green-800 mb-2">
+                        Select Station
+                    </label>
+                    <select id="stationSelect"
+                            class="w-full px-4 py-5 text-sm sm:text-base rounded-lg bg-white border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none transition-all duration-200"
+                            onchange="onStationChange()">
+                        <option value="">Choose a Metro Station...</option>
+                        @foreach (var station in Model)
+                        {
+                            <option value="@station.Latitude,@station.Longitude,@station.Name">
+                                @station.Name
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Search Bar (70% on large screens) -->
+                <div class="lg:col-span-7 relative">
+                    <label for="stationSearch" class="block text-base sm:text-lg lg:text-2xl font-semibold text-green-800 mb-2">
+                        Search Station
+                    </label>
+                    <div class="relative">
+                        <input type="text"
+                               id="stationSearch"
+                               placeholder="Search for a metro station..."
+                               class="w-full px-4 py-5 text-lg sm:text-base rounded-lg bg-white border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none transition-all duration-200 pr-10"
+                               oninput="onSearchInput()"
+                               onfocus="showSearchDropdown()"
+                               onblur="hideSearchDropdown()">
+                        <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <div id="searchDropdown" class="search-dropdown">
+                            <!-- Search results will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-8">
-            <!-- Station List -->
-            <div class="bg-white rounded-2xl p-6 shadow-2xl">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">Select a Metro Station</h2>
-                <div id="stationsList" class="grid gap-4 max-h-[600px] overflow-y-auto pr-2">
-                    @foreach (var station in Model)
-                    {
-                        <div class="station-card bg-gray-50 rounded-xl p-4 cursor-pointer border border-gray-200"
-                             onclick="selectStation(@station.Latitude, @station.Longitude, '@station.Name')">
-                            <div class="flex items-center">
-                                <div class="bg-green-100 rounded-full p-2 mr-3">
-                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                </div>
-                                <div class="flex-1">
-                                    <h3 class="font-semibold text-gray-800">@station.Name</h3>
-                                    <p class="text-sm text-gray-600">Lat: @station.Latitude, Lng: @station.Longitude</p>
-                                </div>
+        <!-- Main Content Area -->
+        <div id="mainContent" class="hidden">
+            <!-- Station Info Header -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 shadow-sm mb-6 sm:mb-8">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3">
+                    <div class="flex items-start mb-4 sm:mb-0 flex-1 min-w-0">
+                        <div class="w-3 h-3 bg-green-600 rounded-full mr-4 mt-3.5 flex-shrink-0 animate-pulse-smooth"></div>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex flex-col sm:flex-row sm:items-baseline sm:gap-3">
+                                <h2 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 break-words" id="selectedStationName"></h2>
+                                <span class="text-sm sm:text-base lg:text-lg text-gray-500 font-medium mt-1 sm:mt-0" id="selectedStationCoords"></span>
                             </div>
                         </div>
-                    }
+                    </div>
+                    <button onclick="clearSelection()"
+                            class="text-green-700 hover:text-green-800 p-2 rounded-md hover:bg-gray-100 transition-colors flex-shrink-0 self-start">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Attraction Search Bar -->
+                <div class="mb-6">
+                    <h3 class="text-base sm:text-lg lg:text-xl font-semibold text-green-700 mb-3">Search Attractions</h3>
+                    <div class="relative">
+                        <input type="text"
+                               id="attractionSearch"
+                               placeholder="Search among attractions..."
+                               class="w-full px-4 py-3 text-sm sm:text-base rounded-lg bg-white border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none transition-all duration-200 pr-10"
+                               oninput="onAttractionSearch()">
+                        <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Filter Tags -->
+                <div class="mb-6">
+                    <h3 class="text-base sm:text-lg lg:text-xl font-semibold text-green-700 mb-4">Filter by Category</h3>
+                    <div class="flex flex-wrap gap-2 sm:gap-3" id="filterTags">
+                        <!-- Dynamic filter tags will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Results Count -->
+                <div class="mb-4">
+                    <span class="font-semibold text-xs sm:text-sm text-green-800 bg-green-100 px-4 sm:px-6 py-2 rounded-full" id="resultsCount">
+                        0 attractions found
+                    </span>
                 </div>
             </div>
 
-            <!-- Attractions and Map -->
-            <div class="bg-white rounded-2xl p-6 shadow-2xl">
-                <div id="selectedStationInfo" class="mb-6 hidden">
-                    <div class="flex justify-between items-center">
-                        <h2 class="text-2xl font-bold text-gray-800" id="stationName"></h2>
-                        <button onclick="clearSelection()" class="text-gray-500 hover:text-gray-700">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
+            <!-- Split Content Layout -->
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
+                <!-- Left Side - Attractions List -->
+                <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 lg:p-8 shadow-sm">
+                    <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center">
+                        <i class="fas fa-list mr-3 sm:mr-4 text-green-600 flex-shrink-0"></i>
+                        <span>Nearby Attractions</span>
+                    </h3>
+
+                    <!-- Loading State -->
+                    <div id="loadingAttractions" class="hidden">
+                        <div class="flex flex-col items-center justify-center py-16">
+                            <div class="border-4 border-gray-200 border-t-green-500 h-8 w-8 rounded-full animate-spin mb-4"></div>
+                            <p class="text-gray-600 text-center">Discovering attractions...</p>
+                        </div>
                     </div>
-                    <div class="text-gray-600" id="stationCoordinates"></div>
+
+                    <!-- Attractions List -->
+                    <div id="attractionsList" class="space-y-3 sm:space-y-4 max-h-[400px] sm:max-h-[500px] lg:max-h-[600px] overflow-y-auto"></div>
                 </div>
 
-                <div id="loadingAttractions" class="hidden flex justify-center py-10">
-                    <div class="loader border-4 border-t-4 border-gray-200 h-12 w-12 rounded-full"></div>
-                    <span class="ml-3 text-gray-600">Loading attractions...</span>
+                <!-- Right Side - Interactive Map -->
+                <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 lg:p-8 shadow-sm">
+                    <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center">
+                        <i class="fas fa-map mr-3 sm:mr-4 text-green-600 flex-shrink-0"></i>
+                        <span>Interactive Map</span>
+                    </h3>
+                    <div id="map" class="rounded-lg border border-gray-200 w-full"></div>
                 </div>
-
-                <div id="attractionsList" class="hidden space-y-4 max-h-[300px] overflow-y-auto mb-6"></div>
-
-                <div id="map" class="mt-6"></div>
             </div>
         </div>
     </div>
 
     <script>
+        // Geoapify API Key
         const apiKey = '8f727e29868243288774b59332787cf4';
-        const categories = [
-        
-          'man_made',
-          'entertainment',
-          'heritage',
-          'airport'
-        ].join(',');
 
         let map = L.map('map').setView([23.8103, 90.4125], 12);
         let currentMarkers = [];
+        let allAttractions = [];
+        let filteredAttractions = [];
+        let availableCategories = new Map();
+        let currentFilter = 'all';
+        let currentStationName = '';
+        let allStations = [];
+        let searchTimeout;
 
+        // Store all station data
+        @{
+                var stationData = "[" + string.Join(",", Model.Select(s => $"{{name: '{s.Name}', lat: {s.Latitude}, lng: {s.Longitude}}}")) + "]";
+        }
+        allStations = @Html.Raw(stationData);
+
+        // Enhanced map tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 18
         }).addTo(map);
 
+        // Comprehensive hardcoded monuments and attractions database
+        const monumentsDatabase = [
+            // Historical Monuments & Heritage Sites - All marked as popular
+            { name: 'Lalbagh Fort', lat: 23.7200, lng: 90.3888, category: 'heritage', popular: true, monument: true, description: 'Historic Mughal fort complex from the 17th century' },
+            { name: 'Ahsan Manzil (Pink Palace)', lat: 23.7085, lng: 90.4071, category: 'heritage', popular: true, monument: true, description: 'Former residential palace and seat of the Nawab of Dhaka' },
+            { name: 'National Museum of Bangladesh', lat: 23.7289, lng: 90.3952, category: 'heritage', popular: true, monument: true, description: 'Largest museum in Bangladesh showcasing rich cultural heritage' },
+            { name: 'Shaheed Minar', lat: 23.7289, lng: 90.3952, category: 'heritage', popular: true, monument: true, description: 'National monument commemorating the martyrs of Bengali Language Movement' },
+            { name: 'Jatiyo Sangsad Bhaban', lat: 23.7627, lng: 90.3776, category: 'heritage', popular: true, monument: true, description: 'National Parliament House designed by Louis Kahn' },
+            { name: 'Liberation War Museum', lat: 23.7461, lng: 90.3742, category: 'heritage', popular: true, monument: true, description: 'Museum dedicated to the Bangladesh Liberation War of 1971' },
+            { name: 'Dhakeshwari Temple', lat: 23.7197, lng: 90.3888, category: 'heritage', popular: true, monument: true, description: 'National temple of Bangladesh and important Hindu pilgrimage site' },
+            { name: 'Star Mosque (Tara Masjid)', lat: 23.7100, lng: 90.4050, category: 'heritage', popular: true, monument: true, description: 'Beautiful mosque decorated with star motifs' },
+            { name: 'Curzon Hall', lat: 23.7267, lng: 90.3951, category: 'heritage', popular: true, monument: true, description: 'Historic building of University of Dhaka' },
+            { name: 'Old High Court Building', lat: 23.7089, lng: 90.4072, category: 'heritage', popular: true, monument: true, description: 'Colonial era courthouse building' },
+            { name: 'Bangabandhu Memorial Museum', lat: 23.7461, lng: 90.3742, category: 'heritage', popular: true, monument: true, description: 'Former residence of Sheikh Mujibur Rahman' },
+            { name: 'Central Shaheed Minar', lat: 23.7289, lng: 90.3952, category: 'heritage', popular: true, monument: true, description: 'Main Language Martyrs Monument' },
+            { name: 'Baitul Mukarram Mosque', lat: 23.7289, lng: 90.4151, category: 'heritage', popular: true, monument: true, description: 'National Mosque of Bangladesh' },
+
+            // Parks & Natural Areas
+            { name: 'Ramna Park', lat: 23.7378, lng: 90.4044, category: 'natural', popular: true, monument: false, description: 'Large urban park in the heart of Dhaka' },
+            { name: 'Dhanmondi Lake', lat: 23.7461, lng: 90.3742, category: 'natural', popular: true, monument: false, description: 'Scenic lake popular for boating and recreation' },
+            { name: 'Suhrawardy Udyan', lat: 23.7378, lng: 90.4044, category: 'natural', popular: true, monument: true, description: 'Historic park where independence was declared' },
+            { name: 'Baldha Garden', lat: 23.7267, lng: 90.4151, category: 'natural', popular: false, monument: false, description: 'Botanical garden with diverse plant species' },
+            { name: 'Chandrima Udyan', lat: 23.7627, lng: 90.3776, category: 'natural', popular: false, monument: false, description: 'Park surrounding the National Parliament' },
+
+            // Sports Venues
+            { name: 'Bangabandhu National Stadium', lat: 23.7378, lng: 90.4044, category: 'sport', popular: true, monument: false, description: 'Main national stadium for football and athletics' },
+            { name: 'Dhanmondi Cricket Stadium', lat: 23.7461, lng: 90.3742, category: 'sport', popular: false, monument: false, description: 'Cricket ground and sports complex' },
+            { name: 'Army Stadium', lat: 23.7789, lng: 90.4125, category: 'sport', popular: false, monument: false, description: 'Military sports complex' },
+
+            // Zoos & Entertainment
+            { name: 'Mirpur Zoo (National Zoo)', lat: 23.8123, lng: 90.3469, category: 'tourism', popular: true, monument: false, description: 'Largest zoo in Bangladesh with diverse wildlife' },
+            { name: 'Fantasy Kingdom', lat: 23.8500, lng: 90.3500, category: 'tourism', popular: true, monument: false, description: 'Popular amusement park and resort' },
+
+            // Transport Hubs
+            { name: 'Shahjalal International Airport', lat: 23.8433, lng: 90.3978, category: 'airport', popular: true, monument: false, description: 'Main international airport of Bangladesh' },
+            { name: 'Kamalapur Railway Station', lat: 23.7307, lng: 90.4259, category: 'railway', popular: true, monument: false, description: 'Main railway station of Dhaka' },
+
+            // Shopping Centers
+            { name: 'New Market', lat: 23.7289, lng: 90.3880, category: 'commercial', popular: true, monument: false, description: 'Historic shopping area' },
+            { name: 'Bashundhara City', lat: 23.7547, lng: 90.4125, category: 'commercial', popular: true, monument: false, description: 'Large shopping mall' },
+            { name: 'Jamuna Future Park', lat: 23.8697, lng: 90.3831, category: 'commercial', popular: true, monument: false, description: 'Modern shopping and entertainment complex' },
+
+            // Educational Institutions
+            { name: 'University of Dhaka', lat: 23.7267, lng: 90.3951, category: 'education', popular: true, monument: true, description: 'Oldest university in Bangladesh' },
+            { name: 'BUET', lat: 23.7267, lng: 90.3951, category: 'education', popular: false, monument: false, description: 'Bangladesh University of Engineering and Technology' }
+        ];
+
+        // Enhanced category mapping
+        const categoryNames = {
+            'tourism': 'Tourist Attraction',
+            'heritage': 'Historical Site',
+            'natural': 'Park & Nature',
+            'entertainment': 'Entertainment',
+            'sport': 'Sports Venue',
+            'catering': 'Restaurant & Cafe',
+            'accommodation': 'Hotel',
+            'healthcare': 'Healthcare',
+            'commercial': 'Shopping',
+            'airport': 'Airport',
+            'railway': 'Railway',
+            'service': 'Services',
+            'education': 'Education',
+            'office': 'Offices',
+            'religion': 'Religious',
+            'finance': 'Banking'
+        };
+
+        const categoryIcons = {
+            'tourism': 'fas fa-camera',
+            'heritage': 'fas fa-landmark',
+            'natural': 'fas fa-tree',
+            'entertainment': 'fas fa-masks-theater',
+            'sport': 'fas fa-dumbbell',
+            'catering': 'fas fa-utensils',
+            'accommodation': 'fas fa-bed',
+            'healthcare': 'fas fa-hospital',
+            'commercial': 'fas fa-shopping-bag',
+            'airport': 'fas fa-plane',
+            'railway': 'fas fa-train',
+            'service': 'fas fa-concierge-bell',
+            'education': 'fas fa-graduation-cap',
+            'office': 'fas fa-building',
+            'religion': 'fas fa-place-of-worship',
+            'finance': 'fas fa-university'
+        };
+
+        // Attraction search functionality
+        function onAttractionSearch() {
+            const query = document.getElementById('attractionSearch').value.toLowerCase().trim();
+
+            if (query === '') {
+                // Show all attractions based on current filter
+                applyCurrentFilter();
+            } else {
+                // Filter attractions based on search query
+                const searchResults = allAttractions.filter(attraction =>
+                    attraction.displayName.toLowerCase().includes(query) ||
+                    attraction.formatted_address.toLowerCase().includes(query) ||
+                    categoryNames[attraction.primaryCategory]?.toLowerCase().includes(query)
+                );
+
+                displayAttractions(searchResults);
+                updateMarkersOnMap(searchResults);
+                updateResultsCount(searchResults.length);
+                filteredAttractions = searchResults;
+            }
+        }
+
+        function applyCurrentFilter() {
+            let filtered = allAttractions;
+            if (currentFilter === 'popular') {
+                filtered = allAttractions.filter(attraction => attraction.isPopular || attraction.monument);
+            } else if (currentFilter !== 'all') {
+                filtered = allAttractions.filter(attraction =>
+                    attraction.primaryCategory === currentFilter
+                );
+            }
+
+            displayAttractions(filtered);
+            updateMarkersOnMap(filtered);
+            updateResultsCount(filtered.length);
+            filteredAttractions = filtered;
+        }
+
+        // Search functionality
+        function onSearchInput() {
+            clearTimeout(searchTimeout);
+            const query = document.getElementById('stationSearch').value.toLowerCase();
+
+            searchTimeout = setTimeout(() => {
+                if (query.length > 0) {
+                    const filteredStations = allStations.filter(station =>
+                        station.name.toLowerCase().includes(query)
+                    );
+                    displaySearchResults(filteredStations);
+                } else {
+                    hideSearchDropdown();
+                }
+            }, 300);
+        }
+
+        function displaySearchResults(stations) {
+            const dropdown = document.getElementById('searchDropdown');
+            dropdown.innerHTML = '';
+
+            if (stations.length === 0) {
+                dropdown.innerHTML = '<div class="search-dropdown-item text-gray-500">No stations found</div>';
+            } else {
+                stations.forEach(station => {
+                    const item = document.createElement('div');
+                    item.className = 'search-dropdown-item';
+                    item.textContent = station.name;
+                    item.onmousedown = () => selectStationFromSearch(station);
+                    dropdown.appendChild(item);
+                });
+            }
+
+            dropdown.classList.add('show');
+        }
+
+        function selectStationFromSearch(station) {
+            document.getElementById('stationSearch').value = station.name;
+            document.getElementById('stationSelect').value = `${station.lat},${station.lng},${station.name}`;
+            hideSearchDropdown();
+            selectStation(station.lat, station.lng, station.name);
+        }
+
+        function showSearchDropdown() {
+            if (document.getElementById('stationSearch').value.length > 0) {
+                onSearchInput();
+            }
+        }
+
+        function hideSearchDropdown() {
+            setTimeout(() => {
+                document.getElementById('searchDropdown').classList.remove('show');
+            }, 200);
+        }
+
+        function onStationChange() {
+            const select = document.getElementById('stationSelect');
+            const value = select.value;
+
+            if (!value) {
+                clearSelection();
+                return;
+            }
+
+            const [lat, lng, name] = value.split(',');
+            document.getElementById('stationSearch').value = name;
+            selectStation(parseFloat(lat), parseFloat(lng), name);
+        }
+
         function selectStation(lat, lng, name) {
-            document.getElementById('selectedStationInfo').classList.remove('hidden');
-            document.getElementById('stationName').textContent = name;
-            document.getElementById('stationCoordinates').textContent = `Lat: ${lat}, Lng: ${lng}`;
+            currentStationName = name;
+
+            // Show main content
+            document.getElementById('mainContent').classList.remove('hidden');
+
+            // Update station info
+            document.getElementById('selectedStationName').textContent = name;
+            document.getElementById('selectedStationCoords').textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+
+            // Clear attraction search
+            document.getElementById('attractionSearch').value = '';
 
             clearMapMarkers();
 
-            let marker = L.marker([lat, lng]).addTo(map).bindPopup(`${name}`).openPopup();
+            // Enhanced station marker
+            let stationIcon = L.divIcon({
+                html: '<i class="fas fa-subway text-white text-lg"></i>',
+                iconSize: [40, 40],
+                className: 'custom-div-icon',
+                iconAnchor: [20, 20]
+            });
+
+            let marker = L.marker([lat, lng], {icon: stationIcon})
+                .addTo(map)
+                .bindPopup(`<strong>${name} Station</strong><br>Metro Rail Station`)
+                .openPopup();
             currentMarkers.push(marker);
-            map.setView([lat, lng], 14);
+
+            // Fix map initialization and view
+            setTimeout(() => {
+                map.invalidateSize();
+                map.setView([lat, lng], 14);
+            }, 100);
+
+            // Reset filter and clear categories
+            currentFilter = 'all';
+            availableCategories.clear();
 
             fetchNearbyAttractions(lat, lng);
         }
 
+        // Enhanced attraction fetching with smart monument filtering
         function fetchNearbyAttractions(lat, lng) {
             document.getElementById('loadingAttractions').classList.remove('hidden');
-            document.getElementById('attractionsList').classList.add('hidden');
-            const url = `https://api.geoapify.com/v2/places?categories=${categories}&filter=circle:${lng},${lat},2000&limit=40&apiKey=${apiKey}`;
+            document.getElementById('attractionsList').innerHTML = '';
+
+            // Load hardcoded monuments - only those closest to current station
+            const hardcodedAttractions = loadHardcodedAttractions(lat, lng);
+
+            // Then fetch from API
+            const categories = [
+                'tourism', 'heritage', 'natural', 'entertainment', 'sport',
+                'catering', 'accommodation', 'healthcare', 'commercial',
+                'airport', 'railway'
+            ].join(',');
+
+            const url = `https://api.geoapify.com/v2/places?categories=${categories}&filter=circle:${lng},${lat},2500&bias=proximity:${lng},${lat}&limit=100&apiKey=${apiKey}`;
 
             fetch(url)
                 .then(res => res.json())
                 .then(data => {
-                    const list = document.getElementById('attractionsList');
-                    list.innerHTML = '';
+                    let apiAttractions = [];
+                    if (data.features && data.features.length > 0) {
+                        apiAttractions = processAttractions(data.features, lat, lng);
+                    }
 
-                    data.features.forEach(feature => {
-                        const props = feature.properties;
-                        const item = document.createElement('div');
-                        item.className = 'bg-gray-50 rounded-lg p-4 border border-gray-200';
-                        item.innerHTML = `
-                            <h3 class="font-semibold text-gray-800">${props.name || 'Unnamed Attraction'}</h3>
-                            <p class="text-sm text-gray-600">${props.address_line2 || props.formatted}</p>
-                            <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full mt-2 inline-block">${props.categories[0].split('.')[1]}</span>
-                        `;
-                        list.appendChild(item);
+                    // Combine hardcoded and API attractions
+                    allAttractions = [...hardcodedAttractions, ...apiAttractions];
 
-                        let marker = L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]])
-                            .addTo(map)
-                            .bindPopup(props.name || 'Unnamed Attraction');
-                        currentMarkers.push(marker);
+                    // Remove duplicates
+                    allAttractions = removeDuplicates(allAttractions);
+
+                    // Generate dynamic filter buttons
+                    generateDynamicFilters();
+
+                    // Sort attractions - popular first, then by distance
+                    allAttractions.sort((a, b) => {
+                        if ((a.isPopular || a.monument) && !(b.isPopular || b.monument)) return -1;
+                        if (!(a.isPopular || a.monument) && (b.isPopular || b.monument)) return 1;
+                        return a.distance - b.distance;
                     });
 
+                    displayAttractions(allAttractions);
+                    updateMarkersOnMap(allAttractions);
+                    updateResultsCount(allAttractions.length);
+                    filteredAttractions = allAttractions;
+
                     document.getElementById('loadingAttractions').classList.add('hidden');
-                    document.getElementById('attractionsList').classList.remove('hidden');
                 })
                 .catch(err => {
-                    console.error(err);
+                    console.error('API Error, using hardcoded attractions only:', err);
+
+                    allAttractions = hardcodedAttractions;
+                    generateDynamicFilters();
+
+                    allAttractions.sort((a, b) => {
+                        if ((a.isPopular || a.monument) && !(b.isPopular || b.monument)) return -1;
+                        if (!(a.isPopular || a.monument) && (b.isPopular || b.monument)) return 1;
+                        return a.distance - b.distance;
+                    });
+
+                    displayAttractions(allAttractions);
+                    updateMarkersOnMap(allAttractions);
+                    updateResultsCount(allAttractions.length);
+                    filteredAttractions = allAttractions;
+
                     document.getElementById('loadingAttractions').classList.add('hidden');
                 });
         }
 
+        // Smart monument filtering - only show if current station is closest
+        function loadHardcodedAttractions(stationLat, stationLng) {
+            const results = [];
+
+            monumentsDatabase.forEach(attraction => {
+                const distance = calculateDistance(stationLat, stationLng, attraction.lat, attraction.lng);
+
+                // Only include if within reasonable range (8km)
+                if (distance <= 8000) {
+                    // Check if current station is the closest to this attraction
+                    let isClosestStation = true;
+                    let closestDistance = distance;
+                    let closerStation = null;
+
+                    // Check all other stations to see if any is closer
+                    for (let station of allStations) {
+                        if (station.name === currentStationName) continue;
+
+                        const stationDistance = calculateDistance(station.lat, station.lng, attraction.lat, attraction.lng);
+
+                        if (stationDistance < closestDistance - 200) { // 200m buffer
+                            isClosestStation = false;
+                            closerStation = { name: station.name, distance: stationDistance };
+                            break;
+                        }
+                    }
+
+                    // Only include if this is the closest station OR if it's very close (within 1km)
+                    if (isClosestStation || distance <= 1000) {
+                        // Track categories
+                        if (availableCategories.has(attraction.category)) {
+                            availableCategories.set(attraction.category, availableCategories.get(attraction.category) + 1);
+                        } else {
+                            availableCategories.set(attraction.category, 1);
+                        }
+
+                        results.push({
+                            geometry: { coordinates: [attraction.lng, attraction.lat] },
+                            displayName: attraction.name,
+                            formatted_address: attraction.description || 'Dhaka, Bangladesh',
+                            distance: distance,
+                            primaryCategory: attraction.category,
+                            rating: 0,
+                            isPopular: attraction.popular,
+                            monument: attraction.monument,
+                            closerStation: closerStation,
+                            description: attraction.description
+                        });
+                    }
+                }
+            });
+
+            return results;
+        }
+
+        function processAttractions(features, stationLat, stationLng) {
+            const seen = new Set();
+            const processed = [];
+
+            features.forEach(feature => {
+                const props = feature.properties;
+                let name = props.name || props.address_line1;
+
+                if (!name || name.trim() === '' || name.toLowerCase().includes('unnamed') || name.length < 2) {
+                    return;
+                }
+
+                const lat = Math.round(feature.geometry.coordinates[1] * 10000);
+                const lng = Math.round(feature.geometry.coordinates[0] * 10000);
+                const normalizedName = normalizeName(name);
+                const key = `${lat}_${lng}_${normalizedName}`;
+
+                if (seen.has(key)) return;
+                seen.add(key);
+
+                const distance = calculateDistance(
+                    stationLat, stationLng,
+                    feature.geometry.coordinates[1], feature.geometry.coordinates[0]
+                );
+
+                const primaryCategory = props.categories && props.categories[0]
+                    ? props.categories[0].split('.')[0]
+                    : 'tourism';
+
+                if (availableCategories.has(primaryCategory)) {
+                    availableCategories.set(primaryCategory, availableCategories.get(primaryCategory) + 1);
+                } else {
+                    availableCategories.set(primaryCategory, 1);
+                }
+
+                const closerStation = findCloserStation(
+                    feature.geometry.coordinates[1], feature.geometry.coordinates[0],
+                    stationLat, stationLng
+                );
+
+                const isPopular = isPopularAttraction(name);
+
+                processed.push({
+                    geometry: feature.geometry,
+                    displayName: name,
+                    formatted_address: props.formatted || props.address_line2 || 'Dhaka, Bangladesh',
+                    distance: distance,
+                    primaryCategory: primaryCategory,
+                    rating: props.rating || 0,
+                    isPopular: isPopular,
+                    monument: false,
+                    closerStation: closerStation,
+                    properties: props
+                });
+            });
+
+            return processed;
+        }
+
+        function removeDuplicates(attractions) {
+            const seen = new Set();
+            return attractions.filter(attraction => {
+                const key = `${attraction.displayName.toLowerCase().replace(/[^a-z0-9]/g, '')}_${Math.round(attraction.distance / 100)}`;
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+        }
+
+        function generateDynamicFilters() {
+            const filterContainer = document.getElementById('filterTags');
+            filterContainer.innerHTML = '';
+
+            const allButton = createFilterButton('all', 'All', 'fas fa-globe', false, allAttractions.length);
+            filterContainer.appendChild(allButton);
+
+            const popularCount = allAttractions.filter(a => a.isPopular || a.monument).length;
+            if (popularCount > 0) {
+                const popularButton = createFilterButton('popular', 'Popular', 'fas fa-star', true, popularCount);
+                filterContainer.appendChild(popularButton);
+            }
+
+            const sortedCategories = Array.from(availableCategories.entries())
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 6);
+
+            sortedCategories.forEach(([category, count]) => {
+                const categoryInfo = categoryNames[category] || category.charAt(0).toUpperCase() + category.slice(1);
+                const iconInfo = categoryIcons[category] || 'fas fa-map-marker-alt';
+
+                const button = createFilterButton(category, categoryInfo, iconInfo, false, count);
+                filterContainer.appendChild(button);
+            });
+
+            setActiveFilter(currentFilter);
+        }
+
+                function createFilterButton(category, name, icon, isPopular, count) {
+            const button = document.createElement('button');
+            const baseClasses = 'px-3 sm:px-4 py-2 text-xs sm:text-sm lg:text-base font-semibold rounded-lg border transition-all duration-200 filter-tag whitespace-nowrap';
+
+            // Set initial classes based on if it's popular or not
+            const initialClasses = isPopular
+                ? 'bg-amber-100 border-amber-300 text-amber-800'
+                : 'bg-white border-gray-300 text-gray-700';
+
+            button.className = `${baseClasses} ${initialClasses}`;
+            button.setAttribute('data-category', category);
+            button.onclick = () => filterAttractions(category);
+            button.innerHTML = `<i class="${icon} mr-1 sm:mr-2 text-xs sm:text-sm"></i>${name} (${count})`;
+            return button;
+        }
+
+
+        function displayAttractions(attractions) {
+            const list = document.getElementById('attractionsList');
+            list.innerHTML = '';
+
+            if (attractions.length === 0) {
+                list.innerHTML = '<div class="text-center py-8 text-gray-500"><i class="fas fa-search mb-2 text-2xl"></i><br><p class="text-sm sm:text-base">No attractions found</p></div>';
+                return;
+            }
+
+            attractions.forEach(attraction => {
+                const item = document.createElement('div');
+                let baseClass = 'bg-white rounded-lg p-6 border transition-all duration-200';
+
+                if (attraction.isPopular || attraction.monument) {
+                    baseClass += ' border-l-4 border-l-amber-500 bg-amber-50 hover:bg-amber-200 hover:border-l-amber-600';
+                } else {
+                    baseClass += ' border-gray-200 hover:border-gray-300 hover:shadow-md';
+                }
+
+
+                item.className = baseClass;
+
+                const categoryName = categoryNames[attraction.primaryCategory] || 'Attraction';
+                const iconClass = categoryIcons[attraction.primaryCategory] || 'fas fa-map-marker-alt';
+
+                const popularBadge = (attraction.isPopular || attraction.monument) ?
+                    `<span class="bg-amber-500 text-white text-xs px-2 py-1 rounded-full ml-2 whitespace-nowrap">POPULAR</span>` : '';
+
+                const ratingDisplay = attraction.rating > 0 ?
+                    `<div class="flex items-center mt-2">
+                        <span class="text-yellow-500 text-sm">★</span>
+                        <span class="text-sm text-gray-600 ml-1">${attraction.rating.toFixed(1)}</span>
+                    </div>` : '';
+
+                const closerStationBadge = attraction.closerStation ?
+                    `<span class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full border border-red-200 ml-2 whitespace-nowrap">Closer to ${attraction.closerStation.name}</span>` : '';
+
+                item.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <div class="bg-green-600 border border-green-300 w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 text-white">
+                            <i class="${iconClass} text-lg"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex flex-wrap items-center gap-1 sm:gap-2 mb-2">
+                                <h3 class="font-semibold text-gray-900 text-xl font-bold break-words min-w-0">${attraction.displayName}</h3>
+                                ${popularBadge}
+                                ${closerStationBadge}
+                            </div>
+                            <p class="text-gray-800 text-[1.0rem] mb-3 break-words leading-relaxed">${attraction.formatted_address}</p>
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                <span class="bg-green-600 text-white text-sm px-5 py-1 rounded-full flex items-center w-fit">
+                                    <i class="${iconClass} mr-1 text-xs"></i>
+                                    ${categoryName}
+                                </span>
+                                <span class="bg-gray-200 text-gray-800 text-xs px-4 py-1 rounded-full border border-gray-200 w-fit">
+                                    <i class="fas fa-walking mr-1 text-xs"></i>
+                                    ${Math.round(attraction.distance)}m
+                                </span>
+                            </div>
+                            ${ratingDisplay}
+                        </div>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function updateMarkersOnMap(attractions) {
+            // Clear existing attraction markers
+            currentMarkers.slice(1).forEach(marker => map.removeLayer(marker));
+            currentMarkers = currentMarkers.slice(0, 1);
+
+            attractions.forEach(attraction => {
+                const iconClass = categoryIcons[attraction.primaryCategory] || 'fas fa-map-marker-alt';
+                let markerClass = 'attraction-marker';
+
+                if (attraction.isPopular || attraction.monument) {
+                    markerClass = 'popular-marker';
+                }
+
+                const attractionIcon = L.divIcon({
+                    html: `<i class="${iconClass} text-white text-sm"></i>`,
+                    iconSize: [30, 30],
+                    className: markerClass,
+                    iconAnchor: [15, 15]
+                });
+
+                const popularBadge = (attraction.isPopular || attraction.monument) ?
+                    '<div class="mt-2 text-center"><span class="text-xs px-2 py-1 bg-yellow-500 text-white rounded">POPULAR</span></div>' : '';
+
+                const ratingInfo = attraction.rating > 0 ?
+                    `<br><small>Rating: ${attraction.rating.toFixed(1)} ★</small>` : '';
+
+                const closerStationInfo = attraction.closerStation ?
+                    `<div class="mt-2 text-center"><span class="text-xs px-2 py-1 bg-red-500 text-white rounded">Closer to ${attraction.closerStation.name}</span></div>` : '';
+
+                const marker = L.marker([
+                    attraction.geometry.coordinates[1],
+                    attraction.geometry.coordinates[0]
+                ], {icon: attractionIcon}).addTo(map).bindPopup(`
+                    <div class="p-3 max-w-sm">
+                        <h4 class="font-semibold text-gray-800 mb-2">${attraction.displayName}</h4>
+                        <p class="text-gray-600 text-sm mb-2">${attraction.formatted_address}</p>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded">
+                                ${categoryNames[attraction.primaryCategory] || 'Attraction'}
+                            </span>
+                            <span class="text-xs text-gray-500">
+                                ${Math.round(attraction.distance)}m away
+                            </span>
+                        </div>
+                        ${ratingInfo}
+                        ${popularBadge}
+                        ${closerStationInfo}
+                    </div>
+                `);
+                currentMarkers.push(marker);
+            });
+        }
+
+        function filterAttractions(category) {
+            currentFilter = category;
+            setActiveFilter(category);
+
+            // Clear search when filtering
+            document.getElementById('attractionSearch').value = '';
+
+            let filtered = allAttractions;
+            if (category === 'popular') {
+                filtered = allAttractions.filter(attraction => attraction.isPopular || attraction.monument);
+            } else if (category !== 'all') {
+                filtered = allAttractions.filter(attraction =>
+                    attraction.primaryCategory === category
+                );
+            }
+
+            displayAttractions(filtered);
+            updateMarkersOnMap(filtered);
+            updateResultsCount(filtered.length);
+            filteredAttractions = filtered;
+        }
+
+                function setActiveFilter(category) {
+            document.querySelectorAll('.filter-tag').forEach(tag => {
+                const isPopularTag = tag.classList.contains('bg-amber-100') || tag.classList.contains('bg-amber-600');
+
+                // Remove active states
+                tag.classList.remove('bg-green-700', 'text-white', 'border-green-700', 'bg-amber-600', 'border-amber-600');
+
+                // Reset to default states
+                if (isPopularTag) {
+                    // Always return popular tags to their original light amber state
+                    tag.classList.add('bg-amber-100', 'border-amber-300', 'text-amber-800');
+                } else {
+                    tag.classList.add('bg-white', 'text-gray-700', 'border-gray-300');
+                }
+
+                // Apply active state to selected category
+                if (tag.getAttribute('data-category') === category) {
+                    if (isPopularTag) {
+                        tag.classList.remove('bg-amber-100', 'border-amber-300', 'text-amber-800');
+                        // Apply darker amber for selected popular tag
+                        tag.classList.add('bg-amber-600', 'text-white', 'border-amber-600');
+                    } else {
+                        tag.classList.remove('bg-white', 'text-gray-700', 'border-gray-300');
+                        tag.classList.add('bg-green-700', 'text-white', 'border-green-700');
+                    }
+                }
+            });
+        }
+
+
+
+        function updateResultsCount(count) {
+            document.getElementById('resultsCount').innerHTML = `
+                ${count} attraction${count !== 1 ? 's' : ''} found
+            `;
+        }
+
         function clearSelection() {
-            document.getElementById('selectedStationInfo').classList.add('hidden');
-            document.getElementById('attractionsList').classList.add('hidden');
+            document.getElementById('mainContent').classList.add('hidden');
+            document.getElementById('stationSelect').value = '';
+            document.getElementById('stationSearch').value = '';
+            document.getElementById('attractionSearch').value = '';
+            hideSearchDropdown();
             clearMapMarkers();
+            allAttractions = [];
+            filteredAttractions = [];
+            availableCategories.clear();
+            currentStationName = '';
             map.setView([23.8103, 90.4125], 12);
         }
 
@@ -186,6 +1050,66 @@
             currentMarkers.forEach(marker => map.removeLayer(marker));
             currentMarkers = [];
         }
+
+        // Helper functions
+        function normalizeName(name) {
+            return name.toLowerCase()
+                .replace(/[^\w\s]/g, '')
+                .replace(/\s+/g, '')
+                .replace(/shaheed/g, 'shahid')
+                .replace(/shohid/g, 'shahid')
+                .replace(/minar/g, 'minar')
+                .replace(/fort/g, 'fort')
+                .replace(/kella/g, 'fort')
+                .replace(/mandir/g, 'temple')
+                .replace(/masjid/g, 'mosque')
+                .replace(/restaurant/g, 'rest')
+                .replace(/hospital/g, 'hosp');
+        }
+
+        function isPopularAttraction(name) {
+            const popularNames = [
+                'KFC', 'Pizza Hut', 'Burger King', 'Nandos', 'Subway',
+                'Westin', 'Pan Pacific', 'Intercontinental', 'Amari'
+            ];
+
+            return popularNames.some(popular =>
+                name.toLowerCase().includes(popular.toLowerCase())
+            );
+        }
+
+        function findCloserStation(attractionLat, attractionLng, currentStationLat, currentStationLng) {
+            const currentDistance = calculateDistance(currentStationLat, currentStationLng, attractionLat, attractionLng);
+
+            for (let station of allStations) {
+                if (station.name === currentStationName) continue;
+
+                const stationDistance = calculateDistance(station.lat, station.lng, attractionLat, attractionLng);
+
+                if (stationDistance < currentDistance - 500) {
+                    return { name: station.name, distance: stationDistance };
+                }
+            }
+            return null;
+        }
+
+        function calculateDistance(lat1, lng1, lat2, lng2) {
+            const R = 6371e3;
+            const φ1 = lat1 * Math.PI/180;
+            const φ2 = lat2 * Math.PI/180;
+            const Δφ = (lat2-lat1) * Math.PI/180;
+            const Δλ = (lng2-lng1) * Math.PI/180;
+
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+            return R * c;
+        }
+
+        // Initialize
+        setActiveFilter('all');
     </script>
 </body>
 </html>
