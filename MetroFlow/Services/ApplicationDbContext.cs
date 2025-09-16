@@ -14,6 +14,8 @@ namespace MetroFlow.Services
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Station> Stations { get; set; }
         public DbSet<Distress> Distresses { get; set; }
+        public DbSet<Admin> Admins { get; set; }
+        public DbSet<LostItem> LostItems { get; set; }
 
     }
 }

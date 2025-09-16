@@ -33,5 +33,10 @@ namespace MetroFlow.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        internal string CreateAdminToken(Admin admin)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
