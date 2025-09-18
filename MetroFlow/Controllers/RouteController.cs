@@ -436,6 +436,23 @@ namespace MetroFlow.Controllers
             }
         }
 
+        [HttpGet]
+        public IActionResult HeatmapAnalysis(string originStation, string destinationStation)
+        {
+            if (string.IsNullOrEmpty(originStation) || string.IsNullOrEmpty(destinationStation))
+            {
+                return RedirectToAction("RoutePlanner");
+            }
+
+            var model = new HeatmapAnalysisViewModel
+            {
+                OriginStationName = originStation,
+                DestinationStationName = destinationStation
+            };
+
+            return View(model);
+        }
+
         private string GetCurrentServicePeriod()
         {
             try
