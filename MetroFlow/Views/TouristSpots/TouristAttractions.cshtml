@@ -10,6 +10,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Add Leaflet Routing Machine -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         #map {
@@ -38,13 +43,16 @@
         }
 
         @@keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
+            0%
 
-            100% {
-                transform: rotate(360deg);
-            }
+        {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+
         }
 
         .custom-div-icon {
@@ -58,88 +66,47 @@
         }
 
         /* Disable hover effects only for selected/active filter tags */
-.filter-tag.bg-green-700:hover {
-    /* Override all hover effects for selected category */
-    transform: none !important;
-    box-shadow: none !important;
-    border-color: #15803d !important; /* Keep the green-700 border */
-    background-color: #15803d !important; /* Keep the green-700 background */
-}
-
-/* Disable hover effects for selected popular tags */
-.filter-tag.bg-amber-600:hover {
-    /* Override all hover effects for selected popular category */
-    transform: none !important;
-    box-shadow: none !important;
-    border-color: #d97706 !important; /* Keep the amber-600 border */
-    background-color: #d97706 !important; /* Keep the amber-600 background */
-    color: white !important; /* Keep white text */
-}
-
-/* Keep hover effects for non-selected categories */
-.filter-tag:not(.bg-green-700):not(.bg-amber-600):hover {
-    transform: translateY(-1px);
-    border-color: #16a34a;
-    background-color: #f0fdf4;
-}
-
-/* Special handling for popular tags that are not selected */
-.filter-tag.bg-amber-100:not(.bg-green-700):not(.bg-amber-600):hover {
-    background-color: #fbbf24;
-    border-color: #f59e0b;
-}
-
-/* Popular attraction cards hover effect */
-.border-l-amber-500:hover {
-    background-color: #fef3c7 !important;
-}
-        /* Disable hover effects only for selected/active filter tags */
         .filter-tag.bg-green-700:hover {
-            /* Override all hover effects for selected category */
             transform: none !important;
             box-shadow: none !important;
-            border-color: #15803d !important; /* Keep the green-700 border */
-            background-color: #15803d !important; /* Keep the green-700 background */
+            border-color: #15803d !important;
+            background-color: #15803d !important;
         }
 
-        /* Disable hover effects for selected popular tags */
         .filter-tag.bg-amber-600:hover {
-            /* Override all hover effects for selected popular category */
             transform: none !important;
             box-shadow: none !important;
-            border-color: #d97706 !important; /* Keep the amber-600 border */
-            background-color: #d97706 !important; /* Keep the amber-600 background */
-            color: white !important; /* Keep white text */
+            border-color: #d97706 !important;
+            background-color: #d97706 !important;
+            color: white !important;
         }
 
-        /* Keep hover effects for non-selected categories */
         .filter-tag:not(.bg-green-700):not(.bg-amber-600):hover {
             transform: translateY(-1px);
             border-color: #16a34a;
             background-color: #f0fdf4;
         }
 
-        /* Special handling for popular tags that are not selected */
         .filter-tag.bg-amber-100:not(.bg-green-700):not(.bg-amber-600):hover {
             background-color: #fbbf24;
             border-color: #f59e0b;
         }
 
-        /* Popular attraction cards hover effect */
         .border-l-amber-500:hover {
             background-color: #fef3c7 !important;
         }
 
-
-
         @@keyframes pulse-smooth {
-            0%, 100% {
-                opacity: 1;
-            }
+            0%, 100%
 
-            50% {
-                opacity: 0.3;
-            }
+        {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.3;
+        }
+
         }
 
         .animate-pulse-smooth {
@@ -199,6 +166,48 @@
                 border-bottom: none;
             }
 
+        /* Clickable attraction cards */
+        .attraction-card {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+            .attraction-card:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+            }
+
+            .attraction-card.selected {
+                border-left-color: #16a34a !important; /* Green-600 */
+                background-color: #dcfce7 !important; /* Green-100 */
+            }
+
+
+
+        /* Route controls */
+        .route-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+            .route-controls.show {
+                display: block;
+            }
+
+        /* Custom routing control styles */
+        .leaflet-routing-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
         /* Custom responsive utilities */
         @@media (min-width: 1024px) {
             .lg\:w-3\/10
@@ -227,7 +236,7 @@
                 </h1>
             </div>
             <p class="text-base sm:text-lg lg:text-xl text-gray-600 mb-6 sm:mb-8 leading-relaxed">
-                Explore the best of Dhaka with our comprehensive guide to tourist attractions, heritage sites, dining options, shopping destinations, recreational parks, and cultural landmarks accessible via the metro rail network
+                Explore the best of Dhaka with our comprehensive guide to tourist attractions, heritage sites, dining options, shopping destinations, recreational parks, and cultural landmarks accessible via the metro rail network. Click on any attraction to see the route from the selected station.
             </p>
 
             <!-- Station Selection Row -->
@@ -292,6 +301,16 @@
                     </button>
                 </div>
 
+                <!-- Route Info -->
+                <div id="routeInfo" class="mb-4 p-3 bg-green-100 border border-green-300 rounded-lg hidden">
+                    <div class="flex items-center justify-between">
+                        <span class="text-green-800 font-medium" id="routeInfoText">Click on an attraction to see the route</span>
+                        <button onclick="clearRoute()" class="text-green-800 ml-2">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Attraction Search Bar -->
                 <div class="mb-6">
                     <h3 class="text-base sm:text-lg lg:text-xl font-semibold text-green-700 mb-3">Search Attractions</h3>
@@ -348,7 +367,23 @@
                         <i class="fas fa-map mr-3 sm:mr-4 text-green-600 flex-shrink-0"></i>
                         <span>Interactive Map</span>
                     </h3>
-                    <div id="map" class="rounded-lg border border-gray-200 w-full"></div>
+                    <div class="relative">
+                        <div id="map" class="rounded-lg border border-gray-200 w-full"></div>
+                        <!-- Route Controls -->
+                        <div id="routeControls" class="route-controls">
+                            <div class="mb-2">
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Route Type:</label>
+                                <select id="routeType" class="text-xs border rounded px-2 py-1" onchange="updateRouteType()">
+                                    <option value="foot-walking">Walking</option>
+                                    <option value="driving-car">Driving</option>
+                                    <option value="cycling-regular">Cycling</option>
+                                </select>
+                            </div>
+                            <button onclick="clearRoute()" class="text-xs bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+                                Clear Route
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -358,6 +393,9 @@
         // Geoapify API Key
         const apiKey = '8f727e29868243288774b59332787cf4';
 
+        // OpenRouteService API Key (you need to get your own free API key from https://openrouteservice.org/dev/)
+        const orsApiKey = 'YOUR_ORS_API_KEY'; // Replace with your actual API key
+
         let map = L.map('map').setView([23.8103, 90.4125], 12);
         let currentMarkers = [];
         let allAttractions = [];
@@ -365,8 +403,11 @@
         let availableCategories = new Map();
         let currentFilter = 'all';
         let currentStationName = '';
+        let currentStationCoords = null;
         let allStations = [];
         let searchTimeout;
+        let routingControl = null;
+        let selectedAttraction = null;
 
         // Store all station data
         @{
@@ -466,15 +507,131 @@
             'finance': 'fas fa-university'
         };
 
+        // Route management functions
+        function showRoute(attraction) {
+            if (!currentStationCoords) {
+                alert('Please select a metro station first.');
+                return;
+            }
+
+            clearRoute();
+
+            const startPoint = L.latLng(currentStationCoords.lat, currentStationCoords.lng);
+            const endPoint = L.latLng(attraction.geometry.coordinates[1], attraction.geometry.coordinates[0]);
+
+            // Set selected attraction
+            selectedAttraction = attraction;
+
+            // Update UI to show selected attraction
+            updateSelectedAttractionUI();
+
+            // Show route controls
+            document.getElementById('routeControls').classList.add('show');
+
+            // Show route info
+            const routeInfo = document.getElementById('routeInfo');
+            const routeInfoText = document.getElementById('routeInfoText');
+            routeInfoText.textContent = `Route to: ${attraction.displayName}`;
+            routeInfo.classList.remove('hidden');
+
+            // Create route using current route type
+            createRoute(startPoint, endPoint);
+        }
+
+        function createRoute(startPoint, endPoint) {
+            const routeType = document.getElementById('routeType').value;
+
+            // If using OpenRouteService API (requires API key)
+            if (orsApiKey && orsApiKey !== 'YOUR_ORS_API_KEY') {
+                routingControl = L.Routing.control({
+                    waypoints: [startPoint, endPoint],
+                    router: L.Routing.openrouteservice(orsApiKey, {
+                        service: 'route',
+                        profile: routeType
+                    }),
+                    routeWhileDragging: false,
+                    addWaypoints: false,
+                    createMarker: function() { return null; }, // Don't create default markers
+                    lineOptions: {
+                        styles: [{ color: '#e74c3c', weight: 4, opacity: 0.8 }]
+                    },
+                    show: false, // Hide the routing panel
+                    collapsible: true
+                }).addTo(map);
+            } else {
+                // Fallback to OSRM (free, no API key required)
+                routingControl = L.Routing.control({
+                    waypoints: [startPoint, endPoint],
+                    routeWhileDragging: false,
+                    addWaypoints: false,
+                    createMarker: function() { return null; }, // Don't create default markers
+                    lineOptions: {
+                        styles: [{ color: '#e74c3c', weight: 4, opacity: 0.8 }]
+                    },
+                    show: false, // Hide the routing panel
+                    collapsible: true
+                }).addTo(map);
+            }
+
+            // Fit map to show the route
+            setTimeout(() => {
+                if (routingControl) {
+                    map.fitBounds(L.latLngBounds([startPoint, endPoint]), { padding: [20, 20] });
+                }
+            }, 1000);
+        }
+
+        function clearRoute() {
+            if (routingControl) {
+                map.removeControl(routingControl);
+                routingControl = null;
+            }
+
+            // Clear selected attraction
+            selectedAttraction = null;
+            updateSelectedAttractionUI();
+
+            // Hide route controls and info
+            document.getElementById('routeControls').classList.remove('show');
+            document.getElementById('routeInfo').classList.add('hidden');
+        }
+
+        function updateRouteType() {
+            if (routingControl && selectedAttraction && currentStationCoords) {
+                const startPoint = L.latLng(currentStationCoords.lat, currentStationCoords.lng);
+                const endPoint = L.latLng(selectedAttraction.geometry.coordinates[1], selectedAttraction.geometry.coordinates[0]);
+
+                // Remove existing route and create new one
+                map.removeControl(routingControl);
+                createRoute(startPoint, endPoint);
+            }
+        }
+
+        function updateSelectedAttractionUI() {
+            // Remove selected class from all attraction cards
+            document.querySelectorAll('.attraction-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Add selected class to current attraction
+            if (selectedAttraction) {
+                const cards = document.querySelectorAll('.attraction-card');
+                cards.forEach(card => {
+                    const cardName = card.querySelector('h3').textContent;
+                    if (cardName === selectedAttraction.displayName) {
+                        card.classList.add('selected');
+                    }
+                });
+            }
+        }
+
         // Attraction search functionality
         function onAttractionSearch() {
             const query = document.getElementById('attractionSearch').value.toLowerCase().trim();
 
             if (query === '') {
-                // Show all attractions based on current filter
                 applyCurrentFilter();
             } else {
-                // Filter attractions based on search query
                 const searchResults = allAttractions.filter(attraction =>
                     attraction.displayName.toLowerCase().includes(query) ||
                     attraction.formatted_address.toLowerCase().includes(query) ||
@@ -575,6 +732,7 @@
 
         function selectStation(lat, lng, name) {
             currentStationName = name;
+            currentStationCoords = { lat: lat, lng: lng };
 
             // Show main content
             document.getElementById('mainContent').classList.remove('hidden');
@@ -583,8 +741,9 @@
             document.getElementById('selectedStationName').textContent = name;
             document.getElementById('selectedStationCoords').textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
 
-            // Clear attraction search
+            // Clear attraction search and route
             document.getElementById('attractionSearch').value = '';
+            clearRoute();
 
             clearMapMarkers();
 
@@ -836,7 +995,7 @@
             setActiveFilter(currentFilter);
         }
 
-                function createFilterButton(category, name, icon, isPopular, count) {
+        function createFilterButton(category, name, icon, isPopular, count) {
             const button = document.createElement('button');
             const baseClasses = 'px-3 sm:px-4 py-2 text-xs sm:text-sm lg:text-base font-semibold rounded-lg border transition-all duration-200 filter-tag whitespace-nowrap';
 
@@ -852,7 +1011,6 @@
             return button;
         }
 
-
         function displayAttractions(attractions) {
             const list = document.getElementById('attractionsList');
             list.innerHTML = '';
@@ -864,14 +1022,13 @@
 
             attractions.forEach(attraction => {
                 const item = document.createElement('div');
-                let baseClass = 'bg-white rounded-lg p-6 border transition-all duration-200';
+                let baseClass = 'attraction-card bg-white rounded-lg p-6 border transition-all duration-200';
 
                 if (attraction.isPopular || attraction.monument) {
-                    baseClass += ' border-l-4 border-l-amber-500 bg-amber-50 hover:bg-amber-200 hover:border-l-amber-600';
+                    baseClass += ' border-l-4 border-l-amber-500 bg-amber-50';
                 } else {
                     baseClass += ' border-gray-200 hover:border-gray-300 hover:shadow-md';
                 }
-
 
                 item.className = baseClass;
 
@@ -904,18 +1061,30 @@
                             <p class="text-gray-800 text-[1.0rem] mb-3 break-words leading-relaxed">${attraction.formatted_address}</p>
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                 <span class="bg-green-600 text-white text-sm px-5 py-1 rounded-full flex items-center w-fit">
-                                    <i class="${iconClass} mr-1 text-xs"></i>
+                                    <i class="${iconClass} mr-2 text-sm"></i>
                                     ${categoryName}
                                 </span>
-                                <span class="bg-gray-200 text-gray-800 text-xs px-4 py-1 rounded-full border border-gray-200 w-fit">
-                                    <i class="fas fa-walking mr-1 text-xs"></i>
+                                <span class="bg-gray-200 text-gray-800 text-sm px-5 py-1 rounded-full border border-gray-200 w-fit">
+                                    <i class="fas fa-walking mr-1 text-sm"></i>
                                     ${Math.round(attraction.distance)}m
                                 </span>
                             </div>
                             ${ratingDisplay}
+                            <div class="mt-3 flex justify-end">
+                                <button class="bg-red-600 text-white text-sm px-4 py-2 rounded hover:bg-red-700 transition-colors">
+                                    <i class="fas fa-route mr-1"></i>
+                                    Show Route
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
+
+                // Add click event to show route
+                item.addEventListener('click', () => {
+                    showRoute(attraction);
+                });
+
                 list.appendChild(item);
             });
         }
@@ -967,8 +1136,19 @@
                         ${ratingInfo}
                         ${popularBadge}
                         ${closerStationInfo}
+                        <div class="mt-2 text-center">
+                            <button onclick="showRoute(${JSON.stringify(attraction).replace(/"/g, '&quot;')})" class="text-xs bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                                Show Route
+                            </button>
+                        </div>
                     </div>
                 `);
+
+                // Add click event to marker to show route
+                marker.on('click', () => {
+                    showRoute(attraction);
+                });
+
                 currentMarkers.push(marker);
             });
         }
@@ -995,7 +1175,7 @@
             filteredAttractions = filtered;
         }
 
-                function setActiveFilter(category) {
+        function setActiveFilter(category) {
             document.querySelectorAll('.filter-tag').forEach(tag => {
                 const isPopularTag = tag.classList.contains('bg-amber-100') || tag.classList.contains('bg-amber-600');
 
@@ -1024,8 +1204,6 @@
             });
         }
 
-
-
         function updateResultsCount(count) {
             document.getElementById('resultsCount').innerHTML = `
                 ${count} attraction${count !== 1 ? 's' : ''} found
@@ -1039,10 +1217,12 @@
             document.getElementById('attractionSearch').value = '';
             hideSearchDropdown();
             clearMapMarkers();
+            clearRoute();
             allAttractions = [];
             filteredAttractions = [];
             availableCategories.clear();
             currentStationName = '';
+            currentStationCoords = null;
             map.setView([23.8103, 90.4125], 12);
         }
 
