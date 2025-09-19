@@ -6,257 +6,197 @@
             <h2 class="text-5xl font-bold text-green-700 mb-4">Popular Metro Stations</h2>
             <p class="text-xl text-gray-600">Discover the most visited stations and nearby attractions</p>
         </div>
+
+        <!-- Loading State -->
+        <div id="loading-stations" class="text-center py-16">
+            <div class="animate-spin inline-block w-8 h-8 border-4 border-green-600 border-r-transparent rounded-full mb-4"></div>
+            <p class="text-gray-600">Loading popular stations...</p>
+        </div>
+
         <!-- Horizontal Slider -->
-        <div class="relative">
+        <div id="stations-container" class="relative hidden">
             <!-- Slider Container -->
-            <div id="stations-slider" class="overflow-hidden">
+            <div id="stations-slider" class="overflow-hidden w-full">
                 <div id="stations-track" class="flex gap-8 transition-transform duration-500 ease-out">
-                    <!-- Station Card 1 -->
-                    <div class="flex-none station-card">
-                        <div class="bg-white rounded-2xl shadow-lg ring-1 ring-black/10 overflow-hidden group hover:shadow-xl transition-shadow duration-300 h-full">
-                            <div class="relative h-52 overflow-hidden ">
-                                <img src="https://d2u0ktu8omkpf6.cloudfront.net/4c32ec48c8a8041a57a32a3d5a078782486a2b921b52ca56.jpg"
-                                     alt="Mirpur-10 Metro Station"
-                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                                <div class="absolute bottom-4 left-4">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-white">
-                                        Line 1
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <h3 class="text-[1.5rem] font-bold text-green-900 mb-2">Mirpur-10 Metro Station</h3>
-                                <p class="text-gray-600 mb-4 text-lg">
-                                    Major hub connecting to shopping districts and
-                                    business
-                                    centers
-                                </p>
-                                <button onclick="showRoute('mirpur-10')" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
-                                    Show Route
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Station Card 2 -->
-                    <div class="flex-none station-card">
-                        <div class="bg-white rounded-2xl shadow-lg ring-1 ring-black/10 overflow-hidden group hover:shadow-xl transition-shadow duration-300 h-full">
-                            <div class="relative h-52 overflow-hidden ">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Farmgate_metro_station_3.jpg"
-                                     alt="Farmgate Metro Station"
-                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                                <div class="absolute bottom-4 left-4">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-white">
-                                        Line 1
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <h3 class="text-[1.5rem] font-bold text-green-900 mb-2">Farmgate Metro Station</h3>
-                                <p class="text-gray-600 mb-4 text-lg">
-                                    Major hub connecting to shopping districts and
-                                    business
-                                    centers
-                                </p>
-                                <button onclick="showRoute('farmgate')" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
-                                    Show Route
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Station Card 3 -->
-                    <div class="flex-none station-card">
-                        <div class="bg-white rounded-2xl shadow-lg ring-1 ring-black/10 overflow-hidden group hover:shadow-xl transition-shadow duration-300 h-full">
-                            <div class="relative h-52 overflow-hidden ">
-                                <img src="https://media.prothomalo.com/prothomalo-english%2F2024-12-08%2Fio2fkf4l%2Fdu-metro-station.jpg?rect=0%2C288%2C1280%2C672&w=1200&ar=40%3A21&auto=format%2Ccompress&ogImage=true&mode=crop&overlay=&overlay_position=bottom&overlay_width_pct=1"
-                                     alt="Dhaka University Metro Station"
-                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                                <div class="absolute bottom-4 left-4">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-white">
-                                        Line 1
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <h3 class="text-[1.5rem] font-bold text-green-900 mb-2">Dhaka University Metro Station</h3>
-                                <p class="text-gray-600 mb-4 text-lg">
-                                    Major hub connecting to shopping districts and
-                                    business
-                                    centers
-                                </p>
-                                <button onclick="showRoute('dhaka-university')" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
-                                    Show Route
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Station Card 4 -->
-                    <div class="flex-none station-card">
-                        <div class="bg-white rounded-2xl shadow-lg ring-1 ring-black/10 overflow-hidden group hover:shadow-xl transition-shadow duration-300 h-full">
-                            <div class="relative h-52 overflow-hidden ">
-                                <img src="https://cdn.bdnews24.com/bdnews24/media/bdnews24-english/2023-11/10421368-b099-4b50-93c2-c7d6df6825a9/metro_rail_motijheel_051123_11.jpg"
-                                     alt="Motijheel Metro Station"
-                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                                <div class="absolute bottom-4 left-4">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-white">
-                                        Line 1
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <h3 class="text-[1.5rem] font-bold text-green-900 mb-2">Motijheel Metro Station</h3>
-                                <p class="text-gray-600 mb-4 text-lg">
-                                    Major hub connecting to shopping districts and
-                                    business
-                                    centers
-                                </p>
-                                <button onclick="showRoute('motijheel')" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
-                                    Show Route
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Station Card 5 -->
-                    <div class="flex-none station-card">
-                        <div class="bg-white rounded-2xl shadow-lg ring-1 ring-black/10 overflow-hidden group hover:shadow-xl transition-shadow duration-300 h-full">
-                            <div class="relative h-52 overflow-hidden ">
-                                <img src="https://tds-images.thedailystar.net/sites/default/files/styles/very_big_201/public/images/2023/12/31/karwan_bazar.jpg"
-                                     alt="Karwan-Bazar Metro Station"
-                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                                <div class="absolute bottom-4 left-4">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-white">
-                                        Line 1
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <h3 class="text-[1.5rem] font-bold text-green-900 mb-2">Karwan-Bazar Metro Station</h3>
-                                <p class="text-gray-600 mb-4 text-lg">
-                                    Major hub connecting to shopping districts and
-                                    business
-                                    centers
-                                </p>
-                                <button onclick="showRoute('karwan-bazar')" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
-                                    Show Route
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Station Card 6 -->
-                    <div class="flex-none station-card">
-                        <div class="bg-white rounded-2xl shadow-lg ring-1 ring-black/10 overflow-hidden group hover:shadow-xl transition-shadow duration-300 h-full">
-                            <div class="relative h-52 overflow-hidden ">
-                                <img src="https://d2u0ktu8omkpf6.cloudfront.net/4c32ec48c8a8041a57a32a3d5a078782486a2b921b52ca56.jpg"
-                                     alt="Mirpur-10 Metro Station"
-                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                                <div class="absolute bottom-4 left-4">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-white">
-                                        Line 1
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <h3 class="text-[1.5rem] font-bold text-green-900 mb-2">Mirpur-10 Metro Station</h3>
-                                <p class="text-gray-600 mb-4 text-lg">
-                                    Major hub connecting to shopping districts and
-                                    business
-                                    centers
-                                </p>
-                                <button onclick="showRoute('mirpur-10')" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
-                                    Show Route
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Dynamic content will be loaded here -->
                 </div>
-                <!-- Dots Indicator -->
-                <div class="flex justify-center mt-8 gap-2">
-                    <button class="station-dot w-3 h-3 rounded-full bg-green-600 transition-all duration-200"
-                            data-slide="0"></button>
-                    <button class="station-dot w-3 h-3 rounded-full bg-gray-300 hover:bg-gray-400 transition-all duration-200"
-                            data-slide="1"></button>
-                </div>
+            </div>
+            <!-- Dots Indicator -->
+            <div id="dots-container" class="flex justify-center mt-8 gap-3">
+                <!-- Dynamic dots will be created here -->
             </div>
         </div>
     </div>
 </section>
 
-<!-- Popular Metro Stations Slider Script -->
+<!-- Popular Metro Stations Script - Pure Tailwind, No Custom CSS -->
 <script>
     (function () {
-        const track = document.getElementById('stations-track');
-        const dots = document.querySelectorAll('.station-dot');
         let currentSlide = 0;
-        const totalSlides = 2; // 6 cards / 3 per slide = 2 slides
-        const cardWidth = 420 + 32; // 420px width + 32px gap (gap-8)
+        let totalSlides = 0;
+        let track = null;
+        let stationsData = [];
+
+        // Fetch popular stations
+        fetch('/Route/GetPopularStations')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.stations) {
+                    stationsData = data.stations;
+                    renderStations(data.stations);
+                    initializeSlider();
+                } else {
+                    showError('Unable to load popular stations');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading stations:', error);
+                showError('Unable to load popular stations');
+            });
+
+        function renderStations(stations) {
+            const track = document.getElementById('stations-track');
+            const dotsContainer = document.getElementById('dots-container');
+
+            // Calculate total slides for exactly 3 cards per slide
+            totalSlides = Math.ceil(stations.length / 3);
+
+            // Clear existing content
+            track.innerHTML = '';
+            dotsContainer.innerHTML = '';
+
+            // Generate station cards
+            stations.forEach((station, index) => {
+                const stationCard = createStationCard(station);
+                track.appendChild(stationCard);
+            });
+
+            // Generate dots only if more than one slide needed
+            if (totalSlides > 1) {
+                for (let i = 0; i < totalSlides; i++) {
+                    const dot = document.createElement('button');
+                    dot.className = i === 0
+                        ? 'w-3 h-3 rounded-full bg-green-600 transition-all duration-200 hover:scale-110'
+                        : 'w-3 h-3 rounded-full bg-gray-300 transition-all duration-200 hover:bg-gray-400 hover:scale-110';
+                    dot.setAttribute('data-slide', i);
+                    dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+                    dot.addEventListener('click', () => goToSlide(i));
+                    dotsContainer.appendChild(dot);
+                }
+            }
+
+            // Show the slider and hide loading
+            document.getElementById('loading-stations').classList.add('hidden');
+            document.getElementById('stations-container').classList.remove('hidden');
+        }
+
+        function createStationCard(station) {
+            const card = document.createElement('div');
+            // Using flex-shrink-0 and w-[480px] to ensure consistent card width
+            card.className = 'flex-shrink-0 w-[480px]';
+
+            card.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-lg ring-1 ring-black/10 overflow-hidden group hover:shadow-xl transition-shadow duration-300 h-full flex flex-col min-h-[480px]">
+                    <div class="relative h-52 overflow-hidden flex-shrink-0">
+                        <img src="${station.imageUrl}"
+                             alt="${station.name} Metro Station"
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                             onerror="this.src='https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                        <div class="absolute bottom-4 left-4">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-white">
+                                Line 1
+                            </span>
+                        </div>
+                        ${station.popularityIndex >= 15 ? `
+                            <div class="absolute top-4 right-4">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-500 text-white">
+                                    Most Popular
+                                </span>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="p-6 flex flex-col flex-1">
+                        <h3 class="text-2xl font-bold text-green-900 mb-3 leading-tight line-clamp-2 min-h-[3rem]">${station.name} Metro Station</h3>
+                        <p class="text-gray-600 mb-6 text-lg leading-relaxed line-clamp-3 flex-1">
+                            ${station.description}
+                        </p>
+                        <button onclick="showRoute('${station.id}')" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200 mt-auto">
+                            Show Route
+                            <svg class="h-5 w-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function initializeSlider() {
+            track = document.getElementById('stations-track');
+
+            // Set initial position
+            updateSlider();
+
+            // Auto-play (only if more than one slide)
+            if (totalSlides > 1) {
+                setInterval(() => {
+                    currentSlide = (currentSlide + 1) % totalSlides;
+                    updateSlider();
+                }, 5000);
+            }
+        }
+
         function updateSlider() {
-            const translateX = -currentSlide * cardWidth * 3; // Move by 3 cards each time
+            if (!track) return;
+
+            // Calculate translation: 420px card width + 32px gap (gap-8)
+            const cardWidth = 480;
+            const gap = 32;
+            const cardsPerSlide = 3;
+
+            const translateX = -currentSlide * (cardWidth + gap) * cardsPerSlide;
+
             track.style.transform = `translateX(${translateX}px)`;
-            // Update dots
+
+            // Update dots with Tailwind classes
+            const dots = document.querySelectorAll('#dots-container button');
             dots.forEach((dot, index) => {
                 if (index === currentSlide) {
-                    dot.className = 'station-dot w-3 h-3 rounded-full bg-green-600 transition-all duration-200';
+                    dot.className = 'w-3 h-3 rounded-full bg-green-600 transition-all duration-200 hover:scale-110 scale-110';
                 } else {
-                    dot.className = 'station-dot w-3 h-3 rounded-full bg-gray-300 hover:bg-gray-400 transition-all duration-200';
+                    dot.className = 'w-3 h-3 rounded-full bg-gray-300 transition-all duration-200 hover:bg-gray-400 hover:scale-110';
                 }
             });
         }
-        // Dot navigation
-        dots.forEach((dot, index) => {
-            dot.addEventListener('click', () => {
-                currentSlide = index;
-                updateSlider();
-            });
-        });
-        // Initialize
-        updateSlider();
-        // Auto-play
-        setInterval(() => {
-            if (currentSlide < totalSlides - 1) {
-                currentSlide++;
-            } else {
-                currentSlide = 0;
-            }
+
+        function goToSlide(slideIndex) {
+            currentSlide = slideIndex;
             updateSlider();
-        }, 4000); // Change slide every 4 seconds
+        }
+
+        function showError(message) {
+            document.getElementById('loading-stations').innerHTML = `
+                <div class="text-center py-16">
+                    <div class="text-red-500 mb-4">
+                        <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-gray-600">${message}</p>
+                </div>
+            `;
+        }
+
+        // Make functions available globally
+        window.goToSlide = goToSlide;
     })();
 
-    // Route Planner Integration Function
-        // Route Planner Integration Function
-        // Route Planner Integration Function
+    // Route Planner Integration Function (unchanged)
     function showRoute(destinationStation) {
-        // Get user's current location
         if (navigator.geolocation) {
-            // Show loading state
             const clickedButton = event.target.closest('button');
             const originalText = clickedButton.innerHTML;
             clickedButton.innerHTML = `
@@ -270,22 +210,14 @@
 
             navigator.geolocation.getCurrentPosition(
                 function(position) {
-                    // Success - got user location
                     const userLat = position.coords.latitude;
                     const userLng = position.coords.longitude;
-
-                    // Redirect to Route/RoutePlanner (correct controller/action)
                     window.location.href = `/Route/RoutePlanner?userLat=${userLat}&userLng=${userLng}&destination=${destinationStation}&autoCalculate=true`;
                 },
                 function(error) {
-                    // Error getting location - redirect without coordinates
                     console.log("Geolocation error:", error);
-
-                    // Reset button
                     clickedButton.innerHTML = originalText;
                     clickedButton.disabled = false;
-
-                    // Redirect to route planner with just destination
                     window.location.href = `/Route/RoutePlanner?destination=${destinationStation}&showLocationPrompt=true`;
                 },
                 {
@@ -295,11 +227,8 @@
                 }
             );
         } else {
-            // Geolocation not supported
             console.log("Geolocation is not supported by this browser");
             window.location.href = `/Route/RoutePlanner?destination=${destinationStation}&showLocationPrompt=true`;
         }
     }
-
-
 </script>

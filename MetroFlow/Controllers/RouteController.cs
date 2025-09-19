@@ -579,66 +579,166 @@ namespace MetroFlow.Controllers
             return View(model);
         }
 
+        [HttpGet]
+        [HttpGet]
+        public IActionResult GetPopularStations()
+        {
+            try
+            {
+                var popularStations = _locationService.GetAllStations()
+                    .OrderByDescending(s => s.PopularityIndex)
+                    .Take(2)
+                    .Select(s => new
+                    {
+                        Id = GetStationId(s.Name), // Use the helper method
+                        Name = s.Name,
+                        PopularityIndex = s.PopularityIndex,
+                        Description = GetStationDescription(s.Name),
+                        ImageUrl = GetStationImageUrl(s.Name)
+                    })
+                    .ToList();
+
+                return Json(new { success = true, stations = popularStations });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting popular stations");
+                return Json(new { success = false, error = "Unable to load popular stations" });
+            }
+        }
+
+
+        // Helper method to get station descriptions
+        // Helper method to get station descriptions
+        private string GetStationDescription(string stationName)
+        {
+            var descriptions = new Dictionary<string, string>
+    {
+        { "Agargaon", "Government administrative center with easy access to ministries, secretariat buildings, and official institutions" },
+        { "Bijoy Sarani", "Strategic commercial location connecting major roads with shopping centers, offices, and city landmarks" },
+        { "Dhaka University", "Academic hub station serving the prestigious University of Dhaka campus and surrounding educational facilities" },
+        { "Farmgate", "Central business district station providing access to offices, shopping centers, restaurants, and educational institutions" },
+        { "Karwan Bazar", "Bustling commercial area famous for wholesale markets, shopping complexes, and vibrant business activities" },
+        { "Kazipara", "Residential and commercial area serving local communities with markets, schools, and convenient metro connectivity" },
+        { "Mirpur 10", "Major residential and commercial hub connecting thousands of daily commuters to shopping malls and business centers" },
+        { "Mirpur 11", "Densely populated residential station serving the Mirpur-11 community with local markets and amenities" },
+        { "Motijheel", "Prime commercial and financial district with major banks, corporate headquarters, and government offices" },
+        { "Pallabi", "Large residential area with local markets, community facilities, and easy access to surrounding neighborhoods" },
+        { "Secretariat", "Government headquarters station providing direct access to Bangladesh Secretariat and administrative offices" },
+        { "Shahbagh", "Cultural and educational hub near museums, galleries, academic institutions, and historical landmarks" },
+        { "Shewrapara", "Local residential station providing metro access to Shewrapara neighborhood with community facilities" },
+        { "Uttara Center", "Central Uttara location with modern shopping malls, restaurants, residential complexes, and business centers" },
+        { "Uttara North", "Northern residential area in planned Uttara with modern infrastructure, schools, and commercial facilities" },
+        { "Uttara South", "Southern Uttara station connecting residential communities to the main city with convenient transport links" }
+    };
+
+            return descriptions.ContainsKey(stationName)
+                ? descriptions[stationName]
+                : "Major metro station providing excellent connectivity and access to local attractions and facilities";
+        }
+
+
+        // Helper method to get station image URLs
+        // Helper method to get station image URLs
+        private string GetStationImageUrl(string stationName)
+        {
+            var imageUrls = new Dictionary<string, string>
+    {
+        { "Agargaon", "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Agargaon_IDB_Railway_Station.jpg/1200px-Agargaon_IDB_Railway_Station.jpg" },
+        { "Bijoy Sarani", "https://www.tbsnews.net/sites/default/files/styles/infograph/public/images/2023/bijoy-sarani-metro-station.jpg" },
+        { "Dhaka University", "https://media.prothomalo.com/prothomalo-english%2F2024-12-08%2Fio2fkf4l%2Fdu-metro-station.jpg?rect=0%2C288%2C1280%2C672&w=1200&ar=40%3A21&auto=format%2Ccompress&ogImage=true&mode=crop&overlay=&overlay_position=bottom&overlay_width_pct=1" },
+        { "Farmgate", "https://upload.wikimedia.org/wikipedia/commons/0/04/Farmgate_metro_station_3.jpg" },
+        { "Karwan Bazar", "https://tds-images.thedailystar.net/sites/default/files/styles/very_big_201/public/images/2023/12/31/karwan_bazar.jpg" },
+        { "Kazipara", "https://images.daily-bangladesh.com/media/imgAll/2023December/kazipara-metro-station.jpg" },
+        { "Mirpur 10", "https://d2u0ktu8omkpf6.cloudfront.net/4c32ec48c8a8041a57a32a3d5a078782486a2b921b52ca56.jpg" },
+        { "Mirpur 11", "https://images.prothomalo.com/prothomalo-bangla%2F2023-12%2F2f8b9c4d-1a2e-4f5b-8e9f-3c4d5e6f7a8b%2Fmirpur11-metro.jpg" },
+        { "Motijheel", "https://cdn.bdnews24.com/bdnews24/media/bdnews24-english/2023-11/10421368-b099-4b50-93c2-c7d6df6825a9/metro_rail_motijheel_051123_11.jpg" },
+        { "Pallabi", "https://www.dhakatribune.com/media/2023/12/28/pallabi-metro-station.jpg" },
+        { "Secretariat", "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Segunbagicha_%28Bangladesh_Secretariat%29_metro_station.jpg/500px-Segunbagicha_%28Bangladesh_Secretariat%29_metro_station.jpg" },
+        { "Shahbagh", "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Shahbag_metro_station_building.jpg/500px-Shahbag_metro_station_building.jpg" },
+        { "Shewrapara", "https://www.newagebd.net/files/records/news/202312/190833_184.jpg" },
+        { "Uttara Center", "https://rapidpass.com.bd/storage/galleries/1748061479-29-1.jpg" },
+        { "Uttara North", "https://rapidpass.com.bd/storage/galleries/1748061479-29-1.jpg" },
+        { "Uttara South", "https://rapidpass.com.bd/storage/galleries/1748061479-29-1.jpg" }
+    };
+
+            return imageUrls.ContainsKey(stationName)
+                ? imageUrls[stationName]
+                : "https://rapidpass.com.bd/storage/galleries/1748061479-29-1.jpg"; // Default metro station image
+        }
+
+        // Helper method to convert station names to URL-friendly IDs
+        private string GetStationId(string stationName)
+        {
+            return stationName.ToLower()
+                .Replace(" ", "-")
+                .Replace("'", "")
+                .Replace(".", "")
+                .Trim();
+        }
+
+
+        // Helper method to map station identifiers to actual stations
+        // Helper method to map station identifiers to actual stations
         // Helper method to map station identifiers to actual stations
         // Helper method to map station identifiers to actual stations
         private Station? MapDestinationToStation(string destinationId)
         {
-            // First, let's try to find exact matches in your station list
             var allStations = _locationService.GetAllStations();
 
-            // Debug: Let's see what stations we actually have
-            _logger.LogInformation("Available stations: {Stations}",
-                string.Join(", ", allStations.Select(s => s.Name)));
-
-            var stationMap = new Dictionary<string, string[]>
+            // Complete mapping for all 16 stations based on your database
+            var stationMap = new Dictionary<string, string>
     {
-        { "mirpur-10", new[] { "Mirpur-10", "Mirpur 10", "Mirpur10", "মিরপুর-১০" } },
-        { "farmgate", new[] { "Farmgate", "Farm Gate", "ফার্মগেট" } },
-        { "dhaka-university", new[] { "Dhaka University", "DU", "University", "ঢাকা বিশ্ববিদ্যালয়" } },
-        { "motijheel", new[] { "Motijheel", "Moti Jheel", "মতিঝিল" } },
-        { "karwan-bazar", new[] { "Karwan Bazar", "Karwan-Bazar", "KarwanBazar", "কারওয়ান বাজার" } }
+        // Main stations (exact matches from DB)
+        { "agargaon", "Agargaon" },
+        { "bijoy-sarani", "Bijoy Sarani" },
+        { "dhaka-university", "Dhaka University" },
+        { "farmgate", "Farmgate" },
+        { "karwan-bazar", "Karwan Bazar" },
+        { "kazipara", "Kazipara" },
+        { "mirpur-10", "Mirpur 10" },
+        { "mirpur-11", "Mirpur 11" },
+        { "motijheel", "Motijheel" },
+        { "pallabi", "Pallabi" },
+        { "secretariat", "Secretariat" },
+        { "shahbagh", "Shahbagh" },
+        { "shewrapara", "Shewrapara" },
+        { "uttara-center", "Uttara Center" },
+        { "uttara-north", "Uttara North" },
+        { "uttara-south", "Uttara South" },
+        
+        // Alternative formats/names people might use
+        { "mirpur10", "Mirpur 10" },
+        { "mirpur-10-station", "Mirpur 10" },
+        { "mirpur11", "Mirpur 11" },
+        { "mirpur-11-station", "Mirpur 11" },
+        { "du", "Dhaka University" },
+        { "dhaka-uni", "Dhaka University" },
+        { "university", "Dhaka University" },
+        { "farm-gate", "Farmgate" },
+        { "karwan", "Karwan Bazar" },
+        { "karwanbazar", "Karwan Bazar" },
+        { "moti-jheel", "Motijheel" },
+        { "motijhil", "Motijheel" },
+        { "uttara-centre", "Uttara Center" },
+        { "uttara-1", "Uttara North" },
+        { "uttara-3", "Uttara South" }
     };
 
-            if (stationMap.ContainsKey(destinationId))
+            if (stationMap.ContainsKey(destinationId.ToLower()))
             {
-                var possibleNames = stationMap[destinationId];
-
-                // Try to find a station that matches any of the possible names
-                foreach (var possibleName in possibleNames)
-                {
-                    var station = allStations.FirstOrDefault(s =>
-                        s.Name.Equals(possibleName, StringComparison.OrdinalIgnoreCase));
-
-                    if (station != null)
-                    {
-                        _logger.LogInformation("Found station: {StationName} for destination: {DestinationId}",
-                            station.Name, destinationId);
-                        return station;
-                    }
-                }
-
-                // If no exact match, try contains matching
-                foreach (var possibleName in possibleNames)
-                {
-                    var station = allStations.FirstOrDefault(s =>
-                        s.Name.Contains(possibleName, StringComparison.OrdinalIgnoreCase) ||
-                        possibleName.Contains(s.Name, StringComparison.OrdinalIgnoreCase));
-
-                    if (station != null)
-                    {
-                        _logger.LogInformation("Found station via contains: {StationName} for destination: {DestinationId}",
-                            station.Name, destinationId);
-                        return station;
-                    }
-                }
+                var stationName = stationMap[destinationId.ToLower()];
+                return allStations.FirstOrDefault(s => s.Name.Equals(stationName, StringComparison.OrdinalIgnoreCase));
             }
 
-            _logger.LogWarning("No station found for destination ID: {DestinationId}", destinationId);
-            _logger.LogWarning("Available stations: {Stations}",
-                string.Join(", ", allStations.Select(s => $"'{s.Name}'")));
-
-            return null;
+            // Fallback: try direct name match
+            return allStations.FirstOrDefault(s =>
+                s.Name.Equals(destinationId, StringComparison.OrdinalIgnoreCase) ||
+                s.Name.Replace(" ", "-").ToLower().Equals(destinationId.ToLower()) ||
+                s.Name.Replace(" ", "").ToLower().Equals(destinationId.ToLower()));
         }
+
+
 
 
         private string GetCurrentServicePeriod()
