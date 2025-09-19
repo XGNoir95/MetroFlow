@@ -152,7 +152,7 @@
                     </a>
 
                     <!-- Card: Metro Museum -->
-                    <a asp-controller="TouristSpots" asp-action="TouristAttractions" class="group block rounded-2xl ring-1 ring-black/10 bg-white min-h-[7rem] px-7 py-6 shadow-sm hover:bg-green-50 hover:ring-green-200 transition-shadow transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600">
+                    <button onclick="checkTouristAuth()" class="group block rounded-2xl ring-1 ring-black/10 bg-white min-h-[7rem] px-7 py-6 shadow-sm hover:bg-green-50 hover:ring-green-200 transition-shadow transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 w-full text-left">
                         <div class="flex items-center gap-5">
                             <div class="shrink-0">
                                 <svg class="h-9 w-9 text-green-700" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -349,7 +349,7 @@
 
                     <div class="flex justify-center items-center">
                         <!-- Download Form Button -->
-                        <button onclick="downloadForm()" class="inline-flex items-center gap-3 bg-white text-green-700 font-semibold px-8 py-4 rounded-xl hover:bg-green-50 transition-colors shadow-lg">
+                        <button onclick="downloadFormWithAuth()" class="inline-flex items-center gap-3 bg-white text-green-700 font-semibold px-8 py-4 rounded-xl hover:bg-green-50 transition-colors shadow-lg">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-4-4m4 4l4-4m-6 8h8a2 2 0 002-2v-8a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                             </svg>
@@ -703,6 +703,45 @@
         </div>
     </div>
 </div>
+<!-- Login Prompt Modal -->
+<div id="loginPromptModal" class="fixed inset-0 bg-black bg-opacity-60 z-[60] hidden flex items-center justify-center backdrop-blur-sm">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300 scale-90 opacity-0" id="loginPromptContent">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-red-600 to-red-700 text-white px-8 py-6 rounded-t-3xl relative">
+            <button id="closeLoginPrompt" class="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+
+            <div class="text-center">
+                <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-lock text-3xl text-white"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white">Login Required</h3>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="px-8 py-8 text-center">
+            <p class="text-lg text-gray-700 mb-8" id="loginPromptMessage">
+                Please login to access this feature and enhance your MetroFlow experience.
+            </p>
+
+            <div class="space-y-4">
+                <a href="@Url.Action("Login", "User")" class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Login Now</span>
+                </a>
+
+                <p class="text-gray-500 text-lg">Don't have an account?</p>
+
+                <a href="@Url.Action("Signup", "User")" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-xl transition-colors duration-200 flex items-center justify-center space-x-2">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Create Account</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Scripts -->
 <script>
@@ -947,6 +986,83 @@
         document.getElementById('ticketsModal').classList.add('hidden');
         document.body.style.overflow = 'auto';
     }
+
+        // Check if user is authenticated (server-side variable)
+    const isUserAuthenticated = @(User.Identity?.IsAuthenticated == true ? "true" : "false");
+
+    // Authentication check for PDF download
+    function downloadFormWithAuth() {
+        if (isUserAuthenticated) {
+            // User is logged in, proceed with download
+            downloadForm();
+        } else {
+            // Show login prompt
+            showLoginPrompt("Please login to download the RAPID Pass registration form.");
+        }
+    }
+
+    // Authentication check for Tourist Attractions
+    function checkTouristAuth() {
+        if (isUserAuthenticated) {
+            // User is logged in, redirect to tourist attractions
+            window.location.href = '@Url.Action("TouristAttractions", "TouristSpots")';
+        } else {
+            // Show login prompt
+            showLoginPrompt("Please login to explore tourist attractions and discover amazing places near metro stations.");
+        }
+    }
+
+    // Show login prompt modal
+    function showLoginPrompt(message) {
+        const modal = document.getElementById('loginPromptModal');
+        const content = document.getElementById('loginPromptContent');
+        const messageElement = document.getElementById('loginPromptMessage');
+
+        messageElement.textContent = message;
+        modal.classList.remove('hidden');
+
+        // Trigger animation
+        setTimeout(() => {
+            content.classList.remove('scale-90', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 10);
+
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Hide login prompt modal
+    function hideLoginPrompt() {
+        const modal = document.getElementById('loginPromptModal');
+        const content = document.getElementById('loginPromptContent');
+
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-90', 'opacity-0');
+
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }, 300);
+    }
+
+    // Login prompt modal event listeners
+    document.getElementById('closeLoginPrompt').addEventListener('click', hideLoginPrompt);
+
+    document.getElementById('loginPromptModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            hideLoginPrompt();
+        }
+    });
+
+    // Update the existing escape key handler to include login prompt
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeRapidPassModal();
+            closeFareCalculatorModal();
+            closeTicketsModal();
+            hideLoginPrompt(); // Add this line
+        }
+    });
+
 
     // Close modals when clicking outside
     document.getElementById('rapidPassModal').addEventListener('click', function(e) {
