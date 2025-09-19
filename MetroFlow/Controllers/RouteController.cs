@@ -1,4 +1,4 @@
-using MetroFlow.Models;
+﻿using MetroFlow.Models;
 using MetroFlow.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
@@ -23,11 +23,90 @@ namespace MetroFlow.Controllers
         }
 
         [HttpGet]
-        public IActionResult RoutePlanner()
+        public IActionResult RoutePlanner(string userLat = null, string userLng = null, string destination = null, bool autoCalculate = false, bool showLocationPrompt = false)
         {
             var stations = _locationService.GetAllStations();
             var model = GetModelFromSession() ?? new RoutePlannerViewModel();
             model.AllStations = stations;
+
+            // Handle incoming parameters from popular stations
+            if (!string.IsNullOrEmpty(userLat) && !string.IsNullOrEmpty(userLng))
+            {
+                if (double.TryParse(userLat, out double lat) && double.TryParse(userLng, out double lng))
+                {
+                    model.CurrentLatitude = lat;
+                    model.CurrentLongitude = lng;
+                    model.CurrentLocationText = "Current Location Detected";
+                    model.NearestCurrentStation = _locationService.FindNearestStation(lat, lng);
+
+                    // Clear any previously selected origin when using current location
+                    model.SelectedOrigin = null;
+                    model.OriginQuery = string.Empty;
+                    model.OriginSuggestions.Clear();
+                    model.SuccessMessage = "Current location set from popular station selection!";
+                }
+            }
+
+            // Handle destination parameter (station name from popular stations)
+            if (!string.IsNullOrEmpty(destination))
+            {
+                var destinationStation = MapDestinationToStation(destination);
+                if (destinationStation != null)
+                {
+                    model.SelectedDestination = new Place
+                    {
+                        Name = destinationStation.Name,
+                        DisplayName = destinationStation.Name,
+                        Latitude = destinationStation.Latitude,
+                        Longitude = destinationStation.Longitude
+                    };
+                    model.DestinationQuery = destinationStation.Name;
+                    model.NearestDestinationStation = destinationStation;
+                    model.DestinationSuggestions.Clear();
+
+                    if (string.IsNullOrEmpty(model.SuccessMessage))
+                    {
+                        model.SuccessMessage = $"Destination set to {destinationStation.Name}!";
+                    }
+                    else
+                    {
+                        model.SuccessMessage += $" Destination set to {destinationStation.Name}!";
+                    }
+
+                    // Auto-calculate route if we have both origin and destination
+                    if (autoCalculate && (model.HasCurrentLocation || model.HasOrigin) && model.HasDestination)
+                    {
+                        try
+                        {
+                            SaveModelToSession(model);
+                            return PlanTrip(); // This will calculate and return the route
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error auto-calculating route from popular station");
+                            model.ErrorMessage = "Route calculated with some limitations. Please verify the details.";
+                        }
+                    }
+                }
+                else
+                {
+                    model.ErrorMessage = "Selected station not found. Please try selecting a different station.";
+                }
+            }
+
+            if (showLocationPrompt)
+            {
+                model.ErrorMessage = "Location access was denied. Please manually set your origin or enable location services.";
+            }
+
+            // Clear any previous route info if we're just setting up
+            if (!autoCalculate)
+            {
+                model.RouteInfo = null;
+                model.FareBilling = null;
+            }
+
+            SaveModelToSession(model);
             return View(model);
         }
 
@@ -53,6 +132,7 @@ namespace MetroFlow.Controllers
                 // Clear any previous route info
                 model.RouteInfo = null;
                 model.FareBilling = null;
+
                 SaveModelToSession(model);
                 return View("RoutePlanner", model);
             }
@@ -170,6 +250,7 @@ namespace MetroFlow.Controllers
                 model.ErrorMessage = null;
                 model.RouteInfo = null;
                 model.FareBilling = null;
+
                 SaveModelToSession(model);
                 return View("RoutePlanner", model);
             }
@@ -205,6 +286,7 @@ namespace MetroFlow.Controllers
                 model.ErrorMessage = null;
                 model.RouteInfo = null;
                 model.FareBilling = null;
+
                 SaveModelToSession(model);
                 return View("RoutePlanner", model);
             }
@@ -226,6 +308,7 @@ namespace MetroFlow.Controllers
             {
                 var model = GetModelFromSession() ?? new RoutePlannerViewModel();
                 model.AllStations = _locationService.GetAllStations();
+
                 Station originStation = null;
                 double originLatitude = 0, originLongitude = 0, walkingDistanceToOrigin = 0;
 
@@ -314,22 +397,19 @@ namespace MetroFlow.Controllers
                     }
                 }
 
-                // NEW - Calculate billing information
-                // NEW - Calculate billing information (FIXED CALCULATION)
+                // Calculate billing information
                 if (model.RouteInfo?.OriginStation != null && model.RouteInfo?.DestinationStation != null)
                 {
-                    // FIX: Use the correct stations count from RouteInfo.Stations which includes both endpoints
-                    // This represents the total number of stations in the journey
                     model.FareBilling = _billingService.CalculateFare(
                         model.RouteInfo.OriginStation,
                         model.RouteInfo.DestinationStation,
-                        model.RouteInfo.Stations  // Use RouteInfo.Stations directly, not Stations - 1
+                        model.RouteInfo.Stations
                     );
                 }
 
-
                 model.SuccessMessage = "Route calculated successfully!";
                 model.ErrorMessage = null;
+
                 SaveModelToSession(model);
                 return View("RoutePlanner", model);
             }
@@ -429,7 +509,6 @@ namespace MetroFlow.Controllers
             {
                 var currentPeriod = GetCurrentServicePeriod();
                 var heatmapData = _heatmapService.GetAllStationsHeatmapData(currentPeriod);
-
                 return Json(new
                 {
                     success = true,
@@ -452,7 +531,6 @@ namespace MetroFlow.Controllers
             try
             {
                 string currentPeriod;
-
                 if (timePeriod == "current")
                 {
                     currentPeriod = GetCurrentServicePeriod();
@@ -500,6 +578,68 @@ namespace MetroFlow.Controllers
 
             return View(model);
         }
+
+        // Helper method to map station identifiers to actual stations
+        // Helper method to map station identifiers to actual stations
+        private Station? MapDestinationToStation(string destinationId)
+        {
+            // First, let's try to find exact matches in your station list
+            var allStations = _locationService.GetAllStations();
+
+            // Debug: Let's see what stations we actually have
+            _logger.LogInformation("Available stations: {Stations}",
+                string.Join(", ", allStations.Select(s => s.Name)));
+
+            var stationMap = new Dictionary<string, string[]>
+    {
+        { "mirpur-10", new[] { "Mirpur-10", "Mirpur 10", "Mirpur10", "মিরপুর-১০" } },
+        { "farmgate", new[] { "Farmgate", "Farm Gate", "ফার্মগেট" } },
+        { "dhaka-university", new[] { "Dhaka University", "DU", "University", "ঢাকা বিশ্ববিদ্যালয়" } },
+        { "motijheel", new[] { "Motijheel", "Moti Jheel", "মতিঝিল" } },
+        { "karwan-bazar", new[] { "Karwan Bazar", "Karwan-Bazar", "KarwanBazar", "কারওয়ান বাজার" } }
+    };
+
+            if (stationMap.ContainsKey(destinationId))
+            {
+                var possibleNames = stationMap[destinationId];
+
+                // Try to find a station that matches any of the possible names
+                foreach (var possibleName in possibleNames)
+                {
+                    var station = allStations.FirstOrDefault(s =>
+                        s.Name.Equals(possibleName, StringComparison.OrdinalIgnoreCase));
+
+                    if (station != null)
+                    {
+                        _logger.LogInformation("Found station: {StationName} for destination: {DestinationId}",
+                            station.Name, destinationId);
+                        return station;
+                    }
+                }
+
+                // If no exact match, try contains matching
+                foreach (var possibleName in possibleNames)
+                {
+                    var station = allStations.FirstOrDefault(s =>
+                        s.Name.Contains(possibleName, StringComparison.OrdinalIgnoreCase) ||
+                        possibleName.Contains(s.Name, StringComparison.OrdinalIgnoreCase));
+
+                    if (station != null)
+                    {
+                        _logger.LogInformation("Found station via contains: {StationName} for destination: {DestinationId}",
+                            station.Name, destinationId);
+                        return station;
+                    }
+                }
+            }
+
+            _logger.LogWarning("No station found for destination ID: {DestinationId}", destinationId);
+            _logger.LogWarning("Available stations: {Stations}",
+                string.Join(", ", allStations.Select(s => $"'{s.Name}'")));
+
+            return null;
+        }
+
 
         private string GetCurrentServicePeriod()
         {

@@ -32,7 +32,7 @@
                                     business
                                     centers
                                 </p>
-                                <button class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
+                                <button onclick="showRoute('mirpur-10')" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
                                     Show Route
                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -63,7 +63,7 @@
                                     business
                                     centers
                                 </p>
-                                <button class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
+                                <button onclick="showRoute('farmgate')" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
                                     Show Route
                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -94,7 +94,7 @@
                                     business
                                     centers
                                 </p>
-                                <button class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
+                                <button onclick="showRoute('dhaka-university')" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
                                     Show Route
                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -125,7 +125,7 @@
                                     business
                                     centers
                                 </p>
-                                <button class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
+                                <button onclick="showRoute('motijheel')" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
                                     Show Route
                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -156,7 +156,7 @@
                                     business
                                     centers
                                 </p>
-                                <button class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
+                                <button onclick="showRoute('karwan-bazar')" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
                                     Show Route
                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -187,7 +187,7 @@
                                     business
                                     centers
                                 </p>
-                                <button class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
+                                <button onclick="showRoute('mirpur-10')" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
                                     Show Route
                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -249,4 +249,57 @@
             updateSlider();
         }, 4000); // Change slide every 4 seconds
     })();
+
+    // Route Planner Integration Function
+        // Route Planner Integration Function
+        // Route Planner Integration Function
+    function showRoute(destinationStation) {
+        // Get user's current location
+        if (navigator.geolocation) {
+            // Show loading state
+            const clickedButton = event.target.closest('button');
+            const originalText = clickedButton.innerHTML;
+            clickedButton.innerHTML = `
+                <svg class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Getting Location...
+            `;
+            clickedButton.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    // Success - got user location
+                    const userLat = position.coords.latitude;
+                    const userLng = position.coords.longitude;
+
+                    // Redirect to Route/RoutePlanner (correct controller/action)
+                    window.location.href = `/Route/RoutePlanner?userLat=${userLat}&userLng=${userLng}&destination=${destinationStation}&autoCalculate=true`;
+                },
+                function(error) {
+                    // Error getting location - redirect without coordinates
+                    console.log("Geolocation error:", error);
+
+                    // Reset button
+                    clickedButton.innerHTML = originalText;
+                    clickedButton.disabled = false;
+
+                    // Redirect to route planner with just destination
+                    window.location.href = `/Route/RoutePlanner?destination=${destinationStation}&showLocationPrompt=true`;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            // Geolocation not supported
+            console.log("Geolocation is not supported by this browser");
+            window.location.href = `/Route/RoutePlanner?destination=${destinationStation}&showLocationPrompt=true`;
+        }
+    }
+
+
 </script>
