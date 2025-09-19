@@ -60,7 +60,7 @@
         <!-- Success/Error Messages -->
         @if (!string.IsNullOrEmpty(Model.SuccessMessage))
         {
-            <div class="bg-green-600 text-white text-lg px-4 py-4 rounded-lg mb-6 shadow-md">
+            <div class="bg-green-600 text-white text-xl px-4 py-4 rounded-lg mb-6 shadow-md">
                 <div class="flex items-center">
                     <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -72,9 +72,9 @@
 
         @if (!string.IsNullOrEmpty(Model.ErrorMessage))
         {
-            <div class="bg-red-500 text-white px-4 py-3 rounded-lg mb-6 shadow-md">
+            <div class="bg-red-500 text-white text-xl px-4 py-4 rounded-lg mb-6 shadow-md">
                 <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     <span class="font-medium">@Model.ErrorMessage</span>
@@ -93,7 +93,7 @@
                     <div class="bg-green-600 rounded-full p-3 mr-4">
                         <svg class="w-8 h-8 text-green-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 616 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
                     </div>
                     <h1 class="text-4xl font-bold text-gray-800 text-center">Plan Your Journey Now!</h1>
@@ -111,7 +111,7 @@
                                 <button type="button" onclick="getCurrentLocation()" class="text-lg w-full bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-3 flex items-center justify-center space-x-2 transition-all duration-200 shadow-md">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 616 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     </svg>
                                     <span id="locationButtonText">Use My Current Location</span>
                                 </button>
@@ -229,7 +229,7 @@
                                     <div class="flex items-center space-x-3">
                                         <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 616 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                         </svg>
                                         <div>
                                             <div class="font-medium">@Model.SelectedDestination.Name</div>

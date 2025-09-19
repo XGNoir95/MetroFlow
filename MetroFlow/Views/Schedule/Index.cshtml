@@ -389,40 +389,7 @@
             </div>
 
             <!-- Ticket Information -->
-            <div class="grid lg:grid-cols-2 gap-6">
-                @foreach (var ticketOption in Model.TicketOptions)
-                {
-                    <div class="bg-white rounded-lg border border-gray-200 p-8 route-card">
-                        <div class="flex items-center mb-4">
-                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                <i class="@(ticketOption.Type == "SingleJourney" ? "fas fa-ticket-alt text-green-600" : "fas fa-id-card-alt text-green-700") text-lg"></i>
-                            </div>
-                            <h3 class="text-3xl font-bold text-gray-900">@ticketOption.Title</h3>
-                        </div>
-                        <p class="text-gray-700 text-lg mb-6">@ticketOption.Description</p>
-                        <div class="mb-6">
-                            <h4 class="font-medium text-xl text-gray-900 mb-4">@(ticketOption.Type == "SingleJourney" ? "Purchase Methods:" : "Purchase & Recharge Methods:")</h4>
-                            <div class="space-y-3">
-                                @foreach (var method in ticketOption.PurchaseMethods)
-                                {
-                                    <div class="flex items-center border-b border-gray-200 last:border-b-0 py-4 bg-gray-100 hover hover:bg-green-100 text-green-900 rounded-xl">
-                                        <div class="w-12 h-12 flex items-center justify-center rounded-lg text-green-600 hover text-base">
-                                            <i class="@method.IconClass"></i>
-                                        </div>
-                                        <div>
-                                            <p class="font-medium text-lg">@method.Name</p>
-                                            <p class="text-sm text-gray-500">@method.Description</p>
-                                        </div>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                        <button class="w-full py-3 bg-green-600 text-lg text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
-                            @(ticketOption.Type == "SingleJourney" ? "Purchase Single Ticket" : "Register for MRT Pass")
-                        </button>
-                    </div>
-                }
-            </div>
+            
         </div>
 
         <!-- Weekdays Content -->

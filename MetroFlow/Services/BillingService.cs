@@ -66,7 +66,8 @@ namespace MetroFlow.Services
                         "No registration required",
                         "Buy from TVM or ticket counter",
                         "Valid for one journey only",
-                        "Pay as you travel"
+                        "Pay as you travel",
+                        "Special discount for disabled(15 %)"
                     }
                 },
                 new PaymentMethod
