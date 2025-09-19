@@ -9,6 +9,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <style>
     @@keyframes float1 {
@@ -43,8 +44,8 @@
 </style>
 
 <!-- Back Button -->
-<div class="absolute top-4 left-4 z-50">
-    <a asp-action="MetYube" class="flex items-center space-x-2 px-4 py-2 bg-opacity-90 hover:bg-opacity-100 lg:text-white sm:text-green-700 md:text-green-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 backdrop-blur-sm">
+<div class="absolute top-100 left-6 z-50">
+    <a asp-action="MetYube" class="flex items-center space-x-2 px-4 py-2 bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
         </svg>
@@ -58,9 +59,9 @@
     <div class="floating-circle-1 absolute top-20 right-16 w-16 h-16 bg-green-300 rounded-full opacity-20 blur-sm"></div>
     <div class="floating-circle-2 absolute bottom-40 left-20 w-12 h-12 bg-green-200 rounded-full opacity-15 blur-sm"></div>
 
-    <div class="max-w-8xl lg: mx-40 px-6 py-8 relative z-10">
+    <div class="max-w-8xl lg: mx-40 px-6 py-8 relative z-10 mt-8">
         <!-- Video player -->
-        <div class="bg-gray-900 rounded-xl shadow-2xl overflow-hidden mb-8 border-2 border-green-700">
+        <div class="bg-gray-900 rounded-xl shadow-2xl overflow-hidden mb-8 border-2 border-green-700 mx-4 lg:mx-0">
             <iframe src="@Model.Url.Replace("watch?v=", "embed/")"
                     class="w-full h-96"
                     frameborder="0"
@@ -70,7 +71,7 @@
         </div>
 
         <!-- Video Information -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mx-4 lg:mx-0">
             <!-- Main Content -->
             <div class="lg:col-span-2">
                 <h1 class="text-3xl font-bold text-gray-800 mb-4">@Model.Title</h1>
@@ -80,7 +81,7 @@
                         @Model.Category
                     </span>
                     <span class="text-gray-500 text-sm">
-                        <i class="fas fa-clock mr-1"></i>Posted recently
+                        <i class="fas fa-clock mr-1"></i>@Model.TimeAgo
                     </span>
                 </div>
 
@@ -93,12 +94,6 @@
                 <div class="flex flex-wrap gap-4 mb-8">
                     <button class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
                         <i class="fas fa-share"></i> Share
-                    </button>
-                    <button class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2">
-                        <i class="fas fa-download"></i> Download
-                    </button>
-                    <button class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2">
-                        <i class="fas fa-bookmark"></i> Save
                     </button>
                 </div>
             </div>
@@ -115,15 +110,11 @@
                         </div>
                         <div class="flex justify-between">
                             <span class="font-medium">Duration:</span>
-                            <span>15:30</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="font-medium">Views:</span>
-                            <span>1.2K</span>
+                            <span>@Model.FormattedDuration</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="font-medium">Uploaded:</span>
-                            <span>2 days ago</span>
+                            <span>@Model.TimeAgo</span>
                         </div>
                         <div class="pt-3 border-t border-green-200">
                             <a href="@Model.Url" target="_blank" class="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
@@ -132,8 +123,6 @@
                         </div>
                     </div>
                 </div>
-
-                
             </div>
         </div>
     </div>
