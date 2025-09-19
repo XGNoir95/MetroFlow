@@ -11,13 +11,15 @@ namespace MetroFlow.Controllers
         private readonly ILocationService _locationService;
         private readonly IHeatmapService _heatmapService;
         private readonly IScheduleService _scheduleService;
+        private readonly IBillingService _billingService;
 
-        public RouteController(ILogger<RouteController> logger, ILocationService locationService, IHeatmapService heatmapService, IScheduleService scheduleService)
+        public RouteController(ILogger<RouteController> logger, ILocationService locationService, IHeatmapService heatmapService, IScheduleService scheduleService, IBillingService billingService)
         {
             _logger = logger;
             _locationService = locationService;
             _heatmapService = heatmapService;
             _scheduleService = scheduleService;
+            _billingService = billingService;
         }
 
         [HttpGet]
@@ -50,6 +52,7 @@ namespace MetroFlow.Controllers
 
                 // Clear any previous route info
                 model.RouteInfo = null;
+                model.FareBilling = null;
                 SaveModelToSession(model);
                 return View("RoutePlanner", model);
             }
@@ -166,6 +169,7 @@ namespace MetroFlow.Controllers
                 model.SuccessMessage = "Destination selected successfully!";
                 model.ErrorMessage = null;
                 model.RouteInfo = null;
+                model.FareBilling = null;
                 SaveModelToSession(model);
                 return View("RoutePlanner", model);
             }
@@ -200,6 +204,7 @@ namespace MetroFlow.Controllers
                 model.SuccessMessage = "Origin selected successfully!";
                 model.ErrorMessage = null;
                 model.RouteInfo = null;
+                model.FareBilling = null;
                 SaveModelToSession(model);
                 return View("RoutePlanner", model);
             }
@@ -309,6 +314,20 @@ namespace MetroFlow.Controllers
                     }
                 }
 
+                // NEW - Calculate billing information
+                // NEW - Calculate billing information (FIXED CALCULATION)
+                if (model.RouteInfo?.OriginStation != null && model.RouteInfo?.DestinationStation != null)
+                {
+                    // FIX: Use the correct stations count from RouteInfo.Stations which includes both endpoints
+                    // This represents the total number of stations in the journey
+                    model.FareBilling = _billingService.CalculateFare(
+                        model.RouteInfo.OriginStation,
+                        model.RouteInfo.DestinationStation,
+                        model.RouteInfo.Stations  // Use RouteInfo.Stations directly, not Stations - 1
+                    );
+                }
+
+
                 model.SuccessMessage = "Route calculated successfully!";
                 model.ErrorMessage = null;
                 SaveModelToSession(model);
@@ -334,6 +353,35 @@ namespace MetroFlow.Controllers
                 AllStations = _locationService.GetAllStations()
             };
             return View("RoutePlanner", model);
+        }
+
+        [HttpGet]
+        public IActionResult GetBillingInfo(string originStation, string destinationStation)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(originStation) || string.IsNullOrEmpty(destinationStation))
+                {
+                    return Json(new { success = false, error = "Origin and destination stations are required" });
+                }
+
+                var origin = _locationService.FindStationByName(originStation);
+                var destination = _locationService.FindStationByName(destinationStation);
+
+                if (origin == null || destination == null)
+                {
+                    return Json(new { success = false, error = "Station not found" });
+                }
+
+                var stationsCount = Math.Abs(origin.Id - destination.Id);
+                var billing = _billingService.CalculateFare(origin, destination, stationsCount);
+
+                return Json(new { success = true, billing = billing });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = "Error calculating fare: " + ex.Message });
+            }
         }
 
         // AJAX search endpoints
@@ -537,6 +585,15 @@ namespace MetroFlow.Controllers
                 TempData["RouteInfoTotalTime"] = model.RouteInfo.TotalTime.ToString();
             }
 
+            // Billing info
+            if (model.FareBilling != null)
+            {
+                TempData["BillingSingleJourneyFare"] = model.FareBilling.SingleJourneyFare.ToString();
+                TempData["BillingMrtPassFare"] = model.FareBilling.MrtPassFare.ToString();
+                TempData["BillingMrtPassSavings"] = model.FareBilling.MrtPassSavings.ToString();
+                TempData["BillingDistanceInStations"] = model.FareBilling.DistanceInStations.ToString();
+            }
+
             TempData["ErrorMessage"] = model.ErrorMessage;
             TempData["SuccessMessage"] = model.SuccessMessage;
         }
@@ -684,6 +741,29 @@ namespace MetroFlow.Controllers
                     {
                         model.RouteInfo.RouteStations = new List<Station>();
                     }
+                }
+            }
+
+            // Billing info
+            if (TempData["BillingSingleJourneyFare"] != null)
+            {
+                if (decimal.TryParse(TempData["BillingSingleJourneyFare"]?.ToString(), out decimal singleFare) &&
+                    decimal.TryParse(TempData["BillingMrtPassFare"]?.ToString(), out decimal mrtPassFare) &&
+                    decimal.TryParse(TempData["BillingMrtPassSavings"]?.ToString(), out decimal savings) &&
+                    int.TryParse(TempData["BillingDistanceInStations"]?.ToString(), out int distance))
+                {
+                    model.FareBilling = new FareBilling
+                    {
+                        SingleJourneyFare = singleFare,
+                        MrtPassFare = mrtPassFare,
+                        MrtPassSavings = savings,
+                        DistanceInStations = distance,
+                        OriginStationName = model.RouteInfo?.OriginStation?.Name ?? "",
+                        DestinationStationName = model.RouteInfo?.DestinationStation?.Name ?? "",
+                        MrtPassDiscount = 10,
+                        IsEligibleForMrtPass = true,
+                        PaymentMethods = _billingService.GetPaymentMethods(singleFare, mrtPassFare)
+                    };
                 }
             }
 

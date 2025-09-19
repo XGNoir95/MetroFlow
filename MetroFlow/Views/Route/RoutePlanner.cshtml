@@ -55,7 +55,7 @@
 </head>
 
 <body class="font-sans bg-gray-100">
-    <div class="container mx-auto px-4 py-8 pb-16">
+    <div class="container mx-auto px-4 py-8 pb-12">
 
         <!-- Success/Error Messages -->
         @if (!string.IsNullOrEmpty(Model.SuccessMessage))
@@ -758,5 +758,11 @@
             }
         });
     </script>
+    <!-- Include Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Add Billing Section -->
+    @await Html.PartialAsync("_BillingSection", Model)
+
 </body>
 </html>

@@ -17,11 +17,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Add HttpClient for external API calls
 builder.Services.AddHttpClient<ILocationService, LocationService>();
-
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<ITimeZoneService, TimeZoneService>();
 builder.Services.AddScoped<IScheduleService, ScheduleService>();
 builder.Services.AddScoped<IHeatmapService, HeatmapService>();
+builder.Services.AddScoped<IBillingService, BillingService>(); // NEW
 
 // Add session services (MUST be before AddControllersWithViews)
 builder.Services.AddDistributedMemoryCache();
@@ -34,15 +34,12 @@ builder.Services.AddSession(options =>
 
 // Add HttpContextAccessor to access HttpContext in services
 builder.Services.AddHttpContextAccessor();
-
 builder.Services.AddSingleton<MetroFlow.Services.MailService>();
-
 builder.Services.AddScoped<TokenService>();
 
 // JWT Authentication
 var jwt = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwt["Key"]!);
-
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -57,7 +54,6 @@ builder.Services
             IssuerSigningKey = new SymmetricSecurityKey(key),
             ClockSkew = TimeSpan.FromMinutes(1)
         };
-
         // Read token from HttpOnly cookie
         options.Events = new JwtBearerEvents
         {
@@ -81,9 +77,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
