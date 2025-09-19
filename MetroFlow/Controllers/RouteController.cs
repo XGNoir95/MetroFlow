@@ -587,7 +587,7 @@ namespace MetroFlow.Controllers
             {
                 var popularStations = _locationService.GetAllStations()
                     .OrderByDescending(s => s.PopularityIndex)
-                    .Take(2)
+                    .Take(7)
                     .Select(s => new
                     {
                         Id = GetStationId(s.Name), // Use the helper method
