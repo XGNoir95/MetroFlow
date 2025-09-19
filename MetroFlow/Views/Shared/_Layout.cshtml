@@ -33,6 +33,7 @@
                         <li><a class="text-2xl font-semibold text-white hover:text-green-300" asp-controller="Home" asp-action="Index">Home</a></li>
                         <li><a class="text-2xl font-semibold text-white hover:text-green-300" asp-controller="Route" asp-action="RoutePlanner">Routes</a></li>
                         <li><a class="text-2xl font-semibold text-white hover:text-green-300" asp-controller="Schedule" asp-action="Index">Schedule</a></li>
+                        <li><a class="text-2xl font-semibold text-white hover:text-green-300" asp-controller="Video" asp-action="MetYube">MetYube</a></li>
 
                         @if (User.Identity?.IsAuthenticated == true)
                         {
@@ -60,6 +61,8 @@
                             <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="Home" asp-action="Index">Home</a></li>
                             <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="Route" asp-action="RoutePlanner">Routes</a></li>
                             <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="Schedule" asp-action="Index">Schedule</a></li>
+                            <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="Video" asp-action="MetYube">MetYube</a></li>
+
 
                             @if (User.Identity?.IsAuthenticated == true)
                             {
