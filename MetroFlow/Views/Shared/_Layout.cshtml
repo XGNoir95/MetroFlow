@@ -8,6 +8,30 @@
     <link rel="stylesheet" href="~/MetroFlow.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- CSS for pulse animation -->
+    <style>
+        .pulse-animation {
+            animation: pulse-red 2s infinite;
+        }
+
+        @@keyframes pulse-red {
+            0%
+
+        {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+        }
+
+        }
+    </style>
 </head>
 <body class="min-h-screen flex flex-col bg-gray-50 text-slate-800 m-0">
     <!-- Header / Nav (gradient + glass) -->
@@ -89,11 +113,13 @@
             </nav>
         </header>
     }
+
     <!-- User Profile Popup Modal -->
     @if (User.Identity?.IsAuthenticated == true)
     {
-        <div id="userProfileModal" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center backdrop-blur-sm" style="z-index: 9999 !important;">
-            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl mx-4 transform transition-all duration-300 scale-90 opacity-0" id="profileModalContent" style="z-index: 10000 !important;">
+        <div id="userProfileModal" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-start justify-center backdrop-blur-sm p-4 overflow-y-auto" style="z-index: 9999 !important;">
+            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl my-4 transform transition-all duration-300 scale-90 opacity-0" id="profileModalContent" style="z-index: 10000 !important;">
+
                 <!-- Modal Header -->
                 <div class="bg-gradient-to-r from-green-600 to-green-800 text-white px-8 py-8 rounded-t-3xl relative">
                     <button id="closeProfileModal" class="absolute top-6 right-6 text-white hover:text-gray-200 transition-colors duration-200 z-10">
@@ -305,6 +331,227 @@
             </div>
         </footer>
     }
+    <!-- Geolocator Button (Fixed position, above emergency button) -->
+    <div id="geolocatorBtn" class="fixed bottom-52 right-4 z-40">
+        <button onclick="openGeolocatorModal()" class="bg-amber-500 hover:bg-amber-700 text-white py-4 px-6 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110" aria-label="Journey Partner">
+            <i class="fas fa-location-dot text-2xl"></i>
+        </button>
+    </div>
+
+    <!-- Emergency Button (Fixed position, above chatbot) -->
+    <div id="emergencyBtn" class="fixed bottom-28 right-4 z-40">
+        <button onclick="openEmergencyModal()" class="bg-red-600 hover:bg-red-700 text-white py-4 px-5 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 pulse-animation" aria-label="Emergency">
+            <i class="fas fa-exclamation-triangle text-2xl"></i>
+        </button>
+    </div>
+    <!-- Geolocator Modal -->
+    <div id="geolocatorModal" class="fixed inset-0 bg-black bg-opacity-70 z-[70] hidden flex items-center justify-center backdrop-blur-sm p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg my-4 transform transition-all duration-300 scale-90 opacity-0" id="geolocatorModalContent">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-6 rounded-t-3xl relative">
+                <button id="closeGeolocatorModal" class="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-location-dot text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white">Journey Partner</h3>
+                    <p class="text-green-100 text-lg mt-1">Track your metro journey to destination</p>
+                </div>
+            </div>
+
+            <!-- Setup Mode -->
+            <div id="setupMode" class="px-6 py-6">
+                <!-- Destination Selection -->
+                <div class="mb-5">
+                    <label class="block text-[1.2rem] font-medium text-gray-700 mb-3">Select Your Destination</label>
+                    <select id="destinationStation" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-[1.1rem]">
+                        <option value="">Choose destination station</option>
+                        <option value="uttara-north">Uttara North</option>
+                        <option value="uttara-center">Uttara Center</option>
+                        <option value="pallabi">Pallabi</option>
+                        <option value="mirpur-11">Mirpur 11</option>
+                        <option value="mirpur-10">Mirpur 10</option>
+                        <option value="kazipara">Kazipara</option>
+                        <option value="shewrapara">Shewrapara</option>
+                        <option value="agargaon">Agargaon</option>
+                        <option value="bijoy-sarani">Bijoy Sarani</option>
+                        <option value="farmgate">Farmgate</option>
+                        <option value="karwan-bazar">Karwan Bazar</option>
+                        <option value="shahbagh">Shahbagh</option>
+                        <option value="dhaka-university">Dhaka University</option>
+                        <option value="secretariat">Secretariat</option>
+                        <option value="motijheel">Motijheel</option>
+                    </select>
+                </div>
+
+                <!-- Start Tracking Button -->
+                <button onclick="startTracking()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg text-[1.1rem]">
+                    <i class="fas fa-play"></i>
+                    <span>Start Journey Tracking</span>
+                </button>
+            </div>
+
+            <!-- Tracking Mode -->
+            <div id="trackingMode" class="px-6 py-6 hidden">
+                <!-- Current Status -->
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-route text-green-600 text-3xl"></i>
+                    </div>
+                    <h4 class="text-2xl font-bold text-gray-800">Tracking Journey</h4>
+                    <p class="text-green-600 text-xl">Destination: <span id="currentDestination" class="font-semibold"></span></p>
+                </div>
+
+                <!-- Status Information -->
+                <div class="bg-green-50 rounded-xl p-4 mb-5 text-lg">
+                    <div class="flex items-center justify-between mb-3 ">
+                        <span class="text-gray-700 font-medium">Status:</span>
+                        <span id="trackingStatus" class="text-green-600 font-semibold">Tracking...</span>
+                    </div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-gray-700 font-medium">Distance to Destination:</span>
+                        <span id="distanceToDestination" class="text-gray-600">Calculating...</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-700 font-medium">Last Updated:</span>
+                        <span id="lastUpdated" class="text-gray-600">Now</span>
+                    </div>
+                </div>
+
+                <!-- Stop Tracking Button -->
+                <button onclick="stopTracking()" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg">
+                    <i class="fas fa-stop"></i>
+                    <span>Stop Tracking</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Destination Reached Modal -->
+    <div id="destinationReachedModal" class="fixed inset-0 bg-black bg-opacity-70 z-[80] hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300 scale-90 opacity-0" id="destinationReachedContent">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-8 rounded-t-3xl">
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-check-circle text-4xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2">Destination Reached!</h3>
+                    <p class="text-green-100">You have successfully arrived at your destination</p>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="px-8 py-8 text-center">
+                <p class="text-lg text-gray-700 mb-6">Thank you for using MetroFlow Journey Partner!</p>
+                <button onclick="closeDestinationReachedModal()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200">
+                    Complete Journey
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency Modal -->
+    <div id="emergencyModal" class="fixed inset-0 bg-black bg-opacity-70 z-[70] hidden flex items-start justify-center backdrop-blur-sm p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl my-4 transform transition-all duration-300 scale-90 opacity-0" id="emergencyModalContent">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-red-600 to-red-700 text-white px-6 py-6 rounded-t-3xl relative">
+                <button id="closeEmergencyModal" class="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-exclamation-triangle text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white">Emergency Assistance</h3>
+                    <p class="text-red-100 text-lg mt-1">Get immediate help for metro-related emergencies</p>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="px-6 py-6">
+                <!-- Emergency Type Selection -->
+                <div class="mb-5">
+                    <label class="block text-xl font-medium text-gray-700 mb-3">Type of Emergency</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="selectEmergencyType('medical')" class="emergency-type-btn p-2 border-2 border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-colors text-center">
+                            <i class="fas fa-heart-pulse text-red-500 text-2xl mb-1 py-2"></i>
+                            <div class="text-[1.1rem] font-medium">Medical</div>
+                        </button>
+                        <button onclick="selectEmergencyType('security')" class="emergency-type-btn p-2 border-2 border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-colors text-center">
+                            <i class="fas fa-shield-alt text-red-500 text-2xl mb-1 py-2"></i>
+                            <div class="text-[1.1rem] font-medium">Security</div>
+                        </button>
+                        <button onclick="selectEmergencyType('fire')" class="emergency-type-btn p-2 border-2 border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-colors text-center">
+                            <i class="fas fa-fire text-red-500 text-2xl mb-1 py-2"></i>
+                            <div class="text-[1.1rem] font-medium">Fire/Smoke</div>
+                        </button>
+                        <button onclick="selectEmergencyType('other')" class="emergency-type-btn p-2 border-2 border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-colors text-center">
+                            <i class="fas fa-question-circle text-red-500 text-2xl mb-1 py-2"></i>
+                            <div class="text-[1.1rem] font-medium">Other</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Location Input -->
+                <div class="mb-5">
+                    <label class="block text-xl font-medium text-gray-700 mb-2">Your Location</label>
+                    <select id="emergencyLocation" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-[1.orem]">
+                        <option value="">Select nearest station</option>
+                        <option value="uttara-north">Uttara North</option>
+                        <option value="uttara-center">Uttara Center</option>
+                        <option value="pallabi">Pallabi</option>
+                        <option value="mirpur-11">Mirpur 11</option>
+                        <option value="mirpur-10">Mirpur 10</option>
+                        <option value="kazipara">Kazipara</option>
+                        <option value="shewrapara">Shewrapara</option>
+                        <option value="agargaon">Agargaon</option>
+                        <option value="bijoy-sarani">Bijoy Sarani</option>
+                        <option value="farmgate">Farmgate</option>
+                        <option value="karwan-bazar">Karwan Bazar</option>
+                        <option value="shahbagh">Shahbagh</option>
+                        <option value="dhaka-university">Dhaka University</option>
+                        <option value="secretariat">Secretariat</option>
+                        <option value="motijheel">Motijheel</option>
+                    </select>
+                </div>
+
+                <!-- Brief Description -->
+                <div class="mb-5">
+                    <label class="block text-xl font-medium text-gray-700 mb-2">Brief Description</label>
+                    <textarea id="emergencyDescription" rows="5" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-[1.0rem]" placeholder="Briefly describe the situation..."></textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-2">
+                    <button onclick="callEmergency()" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold p-4 text-[1.1rem] rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg">
+                        <i class="fas fa-phone"></i>
+                        <span>Call Metro Emergency: 999</span>
+                    </button>
+
+                    <button onclick="submitEmergencyReport()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium p-4 text-[1.1rem] rounded-xl transition-colors duration-200 flex items-center justify-center space-x-2">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>Send Emergency Report</span>
+                    </button>
+
+                    <button onclick="closeEmergencyModal()" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-medium p-4 text-[1.1rem] rounded-xl transition-colors duration-200">
+                        Cancel
+                    </button>
+                </div>
+
+                <!-- Emergency Contacts -->
+                <div class="mt-4 pt-3 border-t border-gray-200">
+                    <p class="text-sm text-gray-500 text-center">
+                        <strong>Emergency Numbers:</strong> Police: 999 | Fire: 999 | Medical: 999
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Include the chatbot partial view -->
     @if (ViewData["HideLayoutParts"] == null || (bool)ViewData["HideLayoutParts"] == false)
@@ -339,26 +586,43 @@
 
             function showProfileModal() {
                 if (userProfileModal && profileModalContent) {
+                    // Ensure highest z-index
+                    userProfileModal.style.zIndex = '9999';
+                    profileModalContent.style.zIndex = '10000';
+
                     userProfileModal.classList.remove('hidden');
+
                     // Trigger animation
                     setTimeout(() => {
-                        profileModalContent.classList.remove('scale-95', 'opacity-0');
+                        profileModalContent.classList.remove('scale-90', 'opacity-0');
                         profileModalContent.classList.add('scale-100', 'opacity-100');
                     }, 10);
 
                     // Prevent body scroll
                     document.body.style.overflow = 'hidden';
+
+                    // Additional fix: ensure modal is on top of any map elements
+                    const mapElements = document.querySelectorAll('[class*="leaflet"], [class*="mapbox"], .gm-style, #map, .map');
+                    mapElements.forEach(element => {
+                        element.style.zIndex = '1';
+                    });
                 }
             }
 
             function hideProfileModal() {
                 if (userProfileModal && profileModalContent) {
                     profileModalContent.classList.remove('scale-100', 'opacity-100');
-                    profileModalContent.classList.add('scale-95', 'opacity-0');
+                    profileModalContent.classList.add('scale-90', 'opacity-0');
 
                     setTimeout(() => {
                         userProfileModal.classList.add('hidden');
                         document.body.style.overflow = 'auto';
+
+                        // Restore map z-index
+                        const mapElements = document.querySelectorAll('[class*="leaflet"], [class*="mapbox"], .gm-style, #map, .map');
+                        mapElements.forEach(element => {
+                            element.style.zIndex = '';
+                        });
                     }, 300);
                 }
             }
@@ -385,13 +649,535 @@
                 });
             }
 
-            // Close modal with Escape key
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && userProfileModal && !userProfileModal.classList.contains('hidden')) {
-                    hideProfileModal();
-                }
-            });
+            // Make hideProfileModal available globally for escape key handling
+            window.hideProfileModal = hideProfileModal;
         })();
+    </script>
+    <!-- Geolocator Modal Script -->
+    <script>
+        let isTracking = false;
+        let watchId = null;
+        let destinationCoords = null;
+        let selectedDestination = '';
+
+        // Metro station coordinates (approximate)
+        const stationCoordinates = {
+            'uttara-north': { lat: 23.8759, lng: 90.3795 },
+            'uttara-center': { lat: 23.8700, lng: 90.3797 },
+            'pallabi': { lat: 23.8291, lng: 90.3664 },
+            'mirpur-11': { lat: 23.8178, lng: 90.3684 },
+            'mirpur-10': { lat: 23.8068, lng: 90.3683 },
+            'kazipara': { lat: 23.7978, lng: 90.3717 },
+            'shewrapara': { lat: 23.7908, lng: 90.3889 },
+            'agargaon': { lat: 23.7751, lng: 90.3893 },
+            'bijoy-sarani': { lat: 23.7630, lng: 90.3892 },
+            'farmgate': { lat: 23.7562, lng: 90.3897 },
+            'karwan-bazar': { lat: 23.7505, lng: 90.3933 },
+            'shahbagh': { lat: 23.7387, lng: 90.3950 },
+            'dhaka-university': { lat: 23.7307, lng: 90.3954 },
+            'secretariat': { lat: 23.7234, lng: 90.3957 },
+            'motijheel': { lat: 23.7167, lng: 90.4176 }
+        };
+
+        // Initialize tracking on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTracking();
+            setupEventListeners();
+        });
+
+        // Initialize tracking from localStorage
+        function initializeTracking() {
+            const trackingData = localStorage.getItem('metroflow_tracking');
+
+            if (trackingData) {
+                try {
+                    const data = JSON.parse(trackingData);
+
+                    if (data.isTracking && data.destination) {
+                        selectedDestination = data.destination;
+                        destinationCoords = stationCoordinates[selectedDestination];
+                        isTracking = true;
+
+                        // Resume tracking
+                        startLocationWatching();
+                        updateTrackingButton();
+
+                        console.log('Resumed tracking to:', getStationDisplayName(selectedDestination));
+                    }
+                } catch (error) {
+                    console.error('Error loading tracking data:', error);
+                    clearTrackingData();
+                }
+            }
+        }
+
+        // Save tracking data to localStorage
+        function saveTrackingData() {
+            const data = {
+                isTracking: isTracking,
+                destination: selectedDestination,
+                timestamp: new Date().getTime()
+            };
+
+            localStorage.setItem('metroflow_tracking', JSON.stringify(data));
+        }
+
+        // Clear tracking data from localStorage
+        function clearTrackingData() {
+            localStorage.removeItem('metroflow_tracking');
+        }
+
+        // Open geolocator modal
+        function openGeolocatorModal() {
+            const modal = document.getElementById('geolocatorModal');
+            const content = document.getElementById('geolocatorModalContent');
+
+            modal.classList.remove('hidden');
+
+            setTimeout(() => {
+                content.classList.remove('scale-90', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+            document.body.style.overflow = 'hidden';
+
+            // Show appropriate mode
+            if (isTracking) {
+                showTrackingMode();
+            } else {
+                showSetupMode();
+            }
+        }
+
+        // Close geolocator modal
+        function closeGeolocatorModal() {
+            const modal = document.getElementById('geolocatorModal');
+            const content = document.getElementById('geolocatorModalContent');
+
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-90', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        // Show setup mode
+        function showSetupMode() {
+            document.getElementById('setupMode').classList.remove('hidden');
+            document.getElementById('trackingMode').classList.add('hidden');
+        }
+
+        // Show tracking mode
+        function showTrackingMode() {
+            document.getElementById('setupMode').classList.add('hidden');
+            document.getElementById('trackingMode').classList.remove('hidden');
+            document.getElementById('currentDestination').textContent = getStationDisplayName(selectedDestination);
+        }
+
+        // Start tracking
+        function startTracking() {
+            const destination = document.getElementById('destinationStation').value;
+
+            if (!destination) {
+                alert('Please select a destination station first.');
+                return;
+            }
+
+            // Check if geolocation is supported
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by this browser.');
+                return;
+            }
+
+            selectedDestination = destination;
+            destinationCoords = stationCoordinates[destination];
+            isTracking = true;
+
+            // Save tracking data
+            saveTrackingData();
+
+            // Start watching position
+            startLocationWatching();
+
+            showTrackingMode();
+            updateTrackingButton();
+        }
+
+        // Start location watching
+        function startLocationWatching() {
+            if (!navigator.geolocation) return;
+
+            watchId = navigator.geolocation.watchPosition(
+                updateLocation,
+                handleLocationError,
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 5000
+                }
+            );
+        }
+
+        // Stop tracking
+        function stopTracking() {
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+
+            isTracking = false;
+            selectedDestination = '';
+            destinationCoords = null;
+
+            // Clear saved data
+            clearTrackingData();
+
+            showSetupMode();
+            updateTrackingButton();
+            closeGeolocatorModal();
+
+            console.log('Tracking stopped by user');
+        }
+
+        // Update location
+        function updateLocation(position) {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+
+            if (destinationCoords) {
+                const distance = calculateDistance(userLat, userLng, destinationCoords.lat, destinationCoords.lng);
+
+                // Update UI if modal is open
+                const distanceElement = document.getElementById('distanceToDestination');
+                const lastUpdatedElement = document.getElementById('lastUpdated');
+
+                if (distanceElement) {
+                    distanceElement.textContent = distance < 1 ?
+                        Math.round(distance * 1000) + ' meters' :
+                        distance.toFixed(1) + ' km';
+                }
+
+                if (lastUpdatedElement) {
+                    lastUpdatedElement.textContent = new Date().toLocaleTimeString();
+                }
+
+                // Check if destination is reached (within 200 meters)
+                if (distance < 0.2) {
+                    destinationReached();
+                }
+
+                console.log(`Distance to ${getStationDisplayName(selectedDestination)}: ${distance.toFixed(2)} km`);
+            }
+        }
+
+        // Handle location error
+        function handleLocationError(error) {
+            let message = 'Unable to retrieve your location.';
+
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message = 'Location access denied. Please enable location permissions.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = 'Location information unavailable.';
+                    break;
+                case error.TIMEOUT:
+                    message = 'Location request timed out.';
+                    break;
+            }
+
+            const statusElement = document.getElementById('trackingStatus');
+            if (statusElement) {
+                statusElement.textContent = 'Error: ' + message;
+            }
+
+            console.error('Location error:', message);
+        }
+
+        // Calculate distance between two coordinates (Haversine formula)
+        function calculateDistance(lat1, lng1, lat2, lng2) {
+            const R = 6371; // Earth's radius in kilometers
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLng/2) * Math.sin(dLng/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // Get station display name
+        function getStationDisplayName(stationId) {
+            const names = {
+                'uttara-north': 'Uttara North',
+                'uttara-center': 'Uttara Center',
+                'pallabi': 'Pallabi',
+                'mirpur-11': 'Mirpur 11',
+                'mirpur-10': 'Mirpur 10',
+                'kazipara': 'Kazipara',
+                'shewrapara': 'Shewrapara',
+                'agargaon': 'Agargaon',
+                'bijoy-sarani': 'Bijoy Sarani',
+                'farmgate': 'Farmgate',
+                'karwan-bazar': 'Karwan Bazar',
+                'shahbagh': 'Shahbagh',
+                'dhaka-university': 'Dhaka University',
+                'secretariat': 'Secretariat',
+                'motijheel': 'Motijheel'
+            };
+            return names[stationId] || stationId;
+        }
+
+        // Destination reached
+        function destinationReached() {
+            // Stop tracking
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+
+            isTracking = false;
+
+            // Clear saved data
+            clearTrackingData();
+
+            // Close geolocator modal
+            closeGeolocatorModal();
+
+            // Show destination reached modal
+            setTimeout(() => {
+                showDestinationReachedModal();
+            }, 500);
+
+            updateTrackingButton();
+
+            console.log('Destination reached:', getStationDisplayName(selectedDestination));
+        }
+
+        // Show destination reached modal
+        function showDestinationReachedModal() {
+            const modal = document.getElementById('destinationReachedModal');
+            const content = document.getElementById('destinationReachedContent');
+
+            modal.classList.remove('hidden');
+
+            setTimeout(() => {
+                content.classList.remove('scale-90', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close destination reached modal
+        function closeDestinationReachedModal() {
+            const modal = document.getElementById('destinationReachedModal');
+            const content = document.getElementById('destinationReachedContent');
+
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-90', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        // Update tracking button appearance
+        function updateTrackingButton() {
+            const btn = document.querySelector('#geolocatorBtn button');
+            if (btn) {
+                if (isTracking) {
+                    btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    btn.classList.add('bg-green-500', 'hover:bg-green-600');
+                    btn.innerHTML = '<i class="fas fa-location-dot text-2xl animate-pulse"></i>';
+                } else {
+                    btn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                    btn.classList.add('bg-green-600', 'hover:bg-green-700');
+                    btn.innerHTML = '<i class="fas fa-location-dot text-2xl"></i>';
+                }
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            const closeBtn = document.getElementById('closeGeolocatorModal');
+            const modal = document.getElementById('geolocatorModal');
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeGeolocatorModal);
+            }
+
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeGeolocatorModal();
+                    }
+                });
+            }
+        }
+
+        // Handle page visibility changes (when user switches tabs or minimizes browser)
+        document.addEventListener('visibilitychange', function() {
+            if (isTracking) {
+                if (document.hidden) {
+                    console.log('Page hidden - tracking continues in background');
+                } else {
+                    console.log('Page visible - tracking active');
+                    // Refresh tracking if needed
+                    if (watchId === null && isTracking) {
+                        startLocationWatching();
+                    }
+                }
+            }
+        });
+
+        // Handle page unload (save state before leaving)
+        window.addEventListener('beforeunload', function() {
+            if (isTracking) {
+                saveTrackingData();
+                console.log('Page unloading - tracking data saved');
+            }
+        });
+
+        // Update escape key handler to include geolocator modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const geolocatorModal = document.getElementById('geolocatorModal');
+                const destinationModal = document.getElementById('destinationReachedModal');
+                const emergencyModal = document.getElementById('emergencyModal');
+                const userProfileModal = document.getElementById('userProfileModal');
+
+                if (geolocatorModal && !geolocatorModal.classList.contains('hidden')) {
+                    closeGeolocatorModal();
+                } else if (destinationModal && !destinationModal.classList.contains('hidden')) {
+                    closeDestinationReachedModal();
+                } else if (emergencyModal && !emergencyModal.classList.contains('hidden')) {
+                    closeEmergencyModal();
+                } else if (userProfileModal && !userProfileModal.classList.contains('hidden')) {
+                    if (typeof window.hideProfileModal === 'function') {
+                        window.hideProfileModal();
+                    }
+                }
+            }
+        });
+    </script>
+
+
+    <!-- Emergency Modal Script -->
+    <script>
+        let selectedEmergencyType = null;
+
+        // Open emergency modal
+        function openEmergencyModal() {
+            const modal = document.getElementById('emergencyModal');
+            const content = document.getElementById('emergencyModalContent');
+
+            modal.classList.remove('hidden');
+
+            setTimeout(() => {
+                content.classList.remove('scale-90', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close emergency modal
+        function closeEmergencyModal() {
+            const modal = document.getElementById('emergencyModal');
+            const content = document.getElementById('emergencyModalContent');
+
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-90', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+                // Reset form
+                selectedEmergencyType = null;
+                document.getElementById('emergencyLocation').value = '';
+                document.getElementById('emergencyDescription').value = '';
+                // Reset button styles
+                document.querySelectorAll('.emergency-type-btn').forEach(btn => {
+                    btn.classList.remove('border-red-500', 'bg-red-50');
+                    btn.classList.add('border-gray-200');
+                });
+            }, 300);
+        }
+
+        // Select emergency type
+        function selectEmergencyType(type) {
+            selectedEmergencyType = type;
+
+            // Reset all buttons
+            document.querySelectorAll('.emergency-type-btn').forEach(btn => {
+                btn.classList.remove('border-red-500', 'bg-red-50');
+                btn.classList.add('border-gray-200');
+            });
+
+            // Highlight selected button
+            event.target.closest('.emergency-type-btn').classList.remove('border-gray-200');
+            event.target.closest('.emergency-type-btn').classList.add('border-red-500', 'bg-red-50');
+        }
+
+        // Call emergency services
+        function callEmergency() {
+            // In a real app, this would trigger actual emergency protocols
+            alert('Connecting to Metro Emergency Services...\n\nFor immediate assistance, call 999');
+            window.location.href = 'tel:999';
+        }
+
+        // Submit emergency report
+        function submitEmergencyReport() {
+            const location = document.getElementById('emergencyLocation').value;
+            const description = document.getElementById('emergencyDescription').value;
+
+            if (!selectedEmergencyType || !location) {
+                alert('Please select emergency type and location.');
+                return;
+            }
+
+            // In a real app, this would send data to emergency response system
+            alert('Emergency report submitted successfully!\n\nReport ID: EM' + Date.now().toString().slice(-6) + '\n\nEmergency services have been notified.');
+            closeEmergencyModal();
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeBtn = document.getElementById('closeEmergencyModal');
+            const modal = document.getElementById('emergencyModal');
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeEmergencyModal);
+            }
+
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeEmergencyModal();
+                    }
+                });
+            }
+        });
+
+        // Update existing escape key handler to include emergency modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const emergencyModal = document.getElementById('emergencyModal');
+                const userProfileModal = document.getElementById('userProfileModal');
+
+                if (emergencyModal && !emergencyModal.classList.contains('hidden')) {
+                    closeEmergencyModal();
+                } else if (userProfileModal && !userProfileModal.classList.contains('hidden')) {
+                    if (typeof window.hideProfileModal === 'function') {
+                        window.hideProfileModal();
+                    }
+                }
+            }
+        });
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

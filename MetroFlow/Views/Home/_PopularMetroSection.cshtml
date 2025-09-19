@@ -92,11 +92,11 @@
 
         function createStationCard(station) {
             const card = document.createElement('div');
-            // Using flex-shrink-0 and w-[480px] to ensure consistent card width
-            card.className = 'flex-shrink-0 w-[480px]';
+            // Using flex-shrink-0 and w-[450px] to ensure consistent card width
+            card.className = 'flex-shrink-0 w-[440px]';
 
             card.innerHTML = `
-                <div class="bg-white rounded-2xl shadow-lg ring-1 ring-black/10 overflow-hidden group hover:shadow-xl transition-shadow duration-300 h-full flex flex-col min-h-[480px]">
+                <div class="bg-white rounded-2xl shadow-lg ring-1 ring-black/10 overflow-hidden group hover:shadow-xl transition-shadow duration-300 h-full flex flex-col min-h-[440px]">
                     <div class="relative h-52 overflow-hidden flex-shrink-0">
                         <img src="${station.imageUrl}"
                              alt="${station.name} Metro Station"
@@ -153,7 +153,7 @@
             if (!track) return;
 
             // Calculate translation: 420px card width + 32px gap (gap-8)
-            const cardWidth = 480;
+            const cardWidth = 440;
             const gap = 32;
             const cardsPerSlide = 3;
 
