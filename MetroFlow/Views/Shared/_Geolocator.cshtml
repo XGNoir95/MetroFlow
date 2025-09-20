@@ -9,136 +9,81 @@
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Only essential animations - everything else is Tailwind */
         @@keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
+            from
 
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+        {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
         }
 
         @@keyframes slideOutRight {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from
 
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
+        {
+            transform: translateX(0);
+            opacity: 1;
         }
 
-        .notification-enter {
-            animation: slideInRight 0.3s ease-out;
+        to {
+            transform: translateX(100%);
+            opacity: 0;
         }
 
-        .notification-exit {
-            animation: slideOutRight 0.3s ease-in;
         }
 
-        /* Pulse animation for active tracking */
-        @@keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
+        .slide-in {
+            animation: slideInRight 0.5s ease-out;
         }
 
-        .animate-pulse {
-            animation: pulse 2s infinite;
+        .slide-out {
+            animation: slideOutRight 0.5s ease-in;
         }
 
-        /* Status card hover effect */
-        #trackingStatusCard:hover {
-            transform: translateY(-2px);
-            transition: transform 0.2s ease;
+        /* Hide scrollbar */
+        #liveNotificationContainer::-webkit-scrollbar {
+            display: none;
         }
 
-        /* Notification container styling - UPDATED */
         #liveNotificationContainer {
-            max-height: 80vh;
-            overflow-y: auto;
             scrollbar-width: none;
             -ms-overflow-style: none;
-        }
-
-            #liveNotificationContainer::-webkit-scrollbar {
-                display: none;
-            }
-
-            /* Improved notification styling to match Journey Partner design */
-            #liveNotificationContainer > div {
-                background: white;
-                border-radius: 16px;
-                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-                border-left: 4px solid;
-                padding: 16px;
-                margin-bottom: 12px;
-                backdrop-filter: none; /* Remove blur effect */
-                -webkit-backdrop-filter: none;
-                transform: translateX(100%);
-                opacity: 0;
-                transition: all 0.3s ease;
-            }
-
-                #liveNotificationContainer > div.translate-x-0 {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-
-        /* Improved mobile responsiveness */
-        @@media (max-width: 640px) {
-            #trackingStatusCard {
-                left: 2px;
-                right: 2px;
-                max-width: none;
-            }
-
-            #liveNotificationContainer {
-                right: 2px;
-                max-width: calc(100vw - 16px);
-            }
-
-            .notification {
-                max-width: none;
-            }
         }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
-    
 
-    <!-- Geolocator Button (Fixed position, above emergency button) -->
-    <div id="geolocatorBtn" class="fixed bottom-52 right-4 z-40">
-        <button onclick="handleGeolocatorClick()" class="bg-green-700 hover:bg-amber-900 text-white py-4 px-6 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110" aria-label="Journey Partner">
-            <i class="fas fa-location-dot text-2xl"></i>
+    <!-- Geolocator Button -->
+    <div id="geolocatorBtn" class="fixed bottom-52 right-4" style="z-index: 9999 !important;">
+        <button onclick="handleGeolocatorClick()" class="bg-amber-600 hover:bg-amber-800 text-white py-5 px-6 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110" aria-label="Journey Partner">
+            <i class="fas fa-location-dot text-[1.8rem]"></i>
         </button>
     </div>
 
-    <!-- Live Notification Container -->
-    <div id="liveNotificationContainer" class="fixed top-20 right-4 z-50 space-y-2 max-w-sm hidden">
+    <!-- Enhanced Live Notification Container -->
+    <div id="liveNotificationContainer" class="fixed top-20 right-4 z-50 space-y-4 max-w-2xl hidden max-h-screen overflow-y-auto pr-2" style="z-index: 9998 !important;">
         <!-- Notifications will be dynamically added here -->
     </div>
 
-    <!-- Persistent Tracking Status Card -->
-    <div id="trackingStatusCard" class="fixed top-20 left-4 z-40 bg-white rounded-xl shadow-lg border-l-4 border-green-500 p-4 max-w-xs hidden">
+    <!-- Enhanced Persistent Tracking Status Card -->
+    <div id="trackingStatusCard" class="fixed top-20 left-4 z-40 bg-white rounded-xl shadow-lg border-l-4 border-green-500 p-6 max-w-2xl hidden hover:-translate-y-0.5 transition-transform duration-200" style="z-index: 9997 !important;">
         <div class="flex items-center space-x-3">
             <div class="flex-shrink-0">
-                <i class="fas fa-route text-green-600 text-lg animate-pulse"></i>
+                <i class="fas fa-route text-green-600 text-xl animate-pulse"></i>
             </div>
             <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900">
+                <p class="text-lg font-medium text-gray-900">
                     To: <span id="statusCardDestination">-</span>
                 </p>
-                <p class="text-sm text-gray-500">
+                <p class="text-lg text-gray-500">
                     <span id="statusCardDistance">Calculating...</span> • <span id="statusCardTime">Now</span>
                 </p>
             </div>
@@ -146,8 +91,8 @@
     </div>
 
     <!-- Geolocator Modal -->
-    <div id="geolocatorModal" class="fixed inset-0 bg-black bg-opacity-70 z-[70] hidden flex items-center justify-center backdrop-blur-sm p-4 overflow-y-auto">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg my-4 transform transition-all duration-300 scale-90 opacity-0" id="geolocatorModalContent">
+    <div id="geolocatorModal" class="fixed inset-0 bg-black bg-opacity-70 z-[70] hidden flex items-center justify-center backdrop-blur-sm p-4 overflow-y-auto" style="z-index: 10000 !important;">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xl my-4 transform transition-all duration-300 scale-90 opacity-0" id="geolocatorModalContent">
             <!-- Header -->
             <div class="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-6 rounded-t-3xl relative">
                 <button id="closeGeolocatorModal" class="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors">
@@ -155,7 +100,7 @@
                 </button>
 
                 <div class="text-center">
-                    <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3">
                         <i class="fas fa-location-dot text-3xl text-white"></i>
                     </div>
                     <h3 class="text-2xl font-bold text-white">Journey Partner</h3>
@@ -167,8 +112,8 @@
             <div id="setupMode" class="px-6 py-6">
                 <!-- Destination Selection -->
                 <div class="mb-5">
-                    <label class="block text-[1.2rem] font-medium text-gray-700 mb-3">Select Your Destination</label>
-                    <select id="destinationStation" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-[1.1rem]">
+                    <label class="block text-xl font-medium text-gray-700 mb-3">Select Your Destination</label>
+                    <select id="destinationStation" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-lg">
                         <option value="">Choose destination station</option>
                         <option value="uttara-north">Uttara North</option>
                         <option value="uttara-center">Uttara Center</option>
@@ -185,21 +130,17 @@
                         <option value="dhaka-university">Dhaka University</option>
                         <option value="secretariat">Secretariat</option>
                         <option value="motijheel">Motijheel</option>
-                        <option value="basa">Basa</option>
+                        <option value="home">Home</option>
                     </select>
-                </div>
-
-                <!-- Notification Preference -->
-                <div class="mb-5">
-                    <label class="flex items-center space-x-3 cursor-pointer">
-                        <input type="checkbox" id="enableNotifications" class="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500" checked>
-                        <span class="text-gray-700 font-medium">Enable live notifications</span>
-                    </label>
-                    <p class="text-sm text-gray-500 mt-1">Get real-time updates about your journey progress</p>
+                    <!-- Auto-notification info -->
+                    <p class="text-[1.0rem] text-green-700 mt-2 flex items-center mb-2">
+                        <i class="fas fa-bell mr-2"></i>
+                        You will receive live notifications automatically during your journey
+                    </p>
                 </div>
 
                 <!-- Start Tracking Button -->
-                <button onclick="startTracking()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg text-[1.1rem]">
+                <button onclick="startTracking()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg text-lg">
                     <i class="fas fa-play"></i>
                     <span>Start Journey Tracking</span>
                 </button>
@@ -209,7 +150,7 @@
             <div id="trackingMode" class="px-6 py-6 hidden">
                 <!-- Current Status -->
                 <div class="text-center mb-6">
-                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fas fa-route text-green-600 text-3xl"></i>
                     </div>
                     <h4 class="text-2xl font-bold text-gray-800">Tracking Journey</h4>
@@ -242,23 +183,23 @@
     </div>
 
     <!-- Destination Reached Modal -->
-    <div id="destinationReachedModal" class="fixed inset-0 bg-black bg-opacity-70 z-[80] hidden flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300 scale-90 opacity-0" id="destinationReachedContent">
+    <div id="destinationReachedModal" class="fixed inset-0 bg-black bg-opacity-70 z-[80] hidden flex items-center justify-center backdrop-blur-sm" style="z-index: 10000 !important;">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xl my-4 transform transition-all duration-300 scale-90 opacity-0" id="destinationReachedContent">
             <!-- Header -->
-            <div class="bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-8 rounded-t-3xl">
+            <div class="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-6 rounded-t-3xl">
                 <div class="text-center">
-                    <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-check-circle text-4xl text-white"></i>
+                    <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-check-circle text-3xl text-white"></i>
                     </div>
-                    <h3 class="text-2xl font-bold text-white mb-2">Destination Reached!</h3>
-                    <p class="text-green-100">You have successfully arrived at your destination</p>
+                    <h3 class="text-2xl font-bold text-white">Destination Reached!</h3>
+                    <p class="text-white text-xl mt-1">You have successfully arrived at your destination</p>
                 </div>
             </div>
 
             <!-- Body -->
             <div class="px-8 py-8 text-center">
-                <p class="text-lg text-gray-700 mb-6">Thank you for using MetroFlow Journey Partner!</p>
-                <button onclick="closeDestinationReachedModal()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200">
+                <p class="text-[1.2rem] text-gray-700 mb-6">Thank you for using MetroFlow Journey Partner!</p>
+                <button onclick="closeDestinationReachedModal()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 text-lg">
                     Complete Journey
                 </button>
             </div>
@@ -266,8 +207,8 @@
     </div>
 
     <!-- Geolocator Login Prompt Modal -->
-    <div id="geolocatorLoginPromptModal" class="fixed inset-0 bg-black bg-opacity-60 z-[75] hidden flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300 scale-90 opacity-0" id="geolocatorLoginPromptContent">
+    <div id="geolocatorLoginPromptModal" class="fixed inset-0 bg-black bg-opacity-60 z-[75] hidden flex items-center justify-center backdrop-blur-sm" style="z-index: 10000 !important;">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xl mx-4 transform transition-all duration-300 scale-90 opacity-0" id="geolocatorLoginPromptContent">
             <!-- Header -->
             <div class="bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-6 rounded-t-3xl relative">
                 <button id="closeGeolocatorLoginPrompt" class="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors">
@@ -275,26 +216,26 @@
                 </button>
 
                 <div class="text-center">
-                    <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fas fa-lock text-3xl text-white"></i>
                     </div>
-                    <h3 class="text-2xl font-bold text-white">Login Required</h3>
+                    <h3 class="text-3xl font-bold text-white">Login Required</h3>
                 </div>
             </div>
 
             <!-- Body -->
             <div class="px-8 py-8 text-center">
-                <p class="text-lg text-gray-700 mb-8">Please login to use Journey Partner and track your metro journey with personalized features.</p>
+                <p class="text-xl text-gray-700 mb-8">Please login to use Journey Partner and track your metro journey with personalized features.</p>
 
                 <div class="space-y-4">
-                    <a href="/User/Login" class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg">
+                    <a href="/User/Login" class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg text-[1.2rem]">
                         <i class="fas fa-sign-in-alt"></i>
                         <span>Login Now</span>
                     </a>
 
-                    <p class="text-gray-500 text-sm">Don't have an account?</p>
+                    <p class="text-gray-500 text-lg">Don't have an account?</p>
 
-                    <a href="/User/Signup" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-xl transition-colors duration-200 flex items-center justify-center space-x-2">
+                    <a href="/User/Signup" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-xl transition-colors duration-200 flex items-center justify-center space-x-2 text-[1.2rem]">
                         <i class="fas fa-user-plus"></i>
                         <span>Create Account</span>
                     </a>
@@ -308,7 +249,7 @@
         let watchId = null;
         let destinationCoords = null;
         let selectedDestination = '';
-        let notificationsEnabled = true;
+        let notificationsEnabled = true; // Always enabled
         let lastDistance = null;
         let notificationPermission = 'default';
 
@@ -329,7 +270,7 @@
             'dhaka-university': { lat: 23.7307, lng: 90.3954 },
             'secretariat': { lat: 23.7234, lng: 90.3957 },
             'motijheel': { lat: 23.7167, lng: 90.4176 },
-            'basa': { lat: 23.7551698, lng: 90.4051142 }
+            'home': { lat: 23.8256128, lng: 90.3708672 }
         };
 
         // Check if user is logged in (mock function - replace with actual implementation)
@@ -345,7 +286,7 @@
                 try {
                     notificationPermission = await Notification.requestPermission();
                     if (notificationPermission === 'granted') {
-                        showLiveNotification('🔔 Notifications enabled!', 'You will receive live updates about your journey.', 'success');
+                        showLiveNotification('🔔 Notifications Ready!', 'You will receive live updates about your journey automatically.', 'success');
                     }
                 } catch (error) {
                     console.error('Error requesting notification permission:', error);
@@ -353,60 +294,98 @@
             }
         }
 
-        // Show live notification
-        function showLiveNotification(title, message, type = 'info', duration = 4000) {
-            if (!notificationsEnabled) return;
-
+        // Enhanced live notification with pure Tailwind CSS
+        function showLiveNotification(title, message, type = 'info', duration = 5000) {
             const container = document.getElementById('liveNotificationContainer');
             container.classList.remove('hidden');
 
             const notification = document.createElement('div');
-            notification.className = `
-                transform transition-all duration-300 translate-x-full opacity-0
-                bg-white rounded-xl shadow-lg border-l-4 p-4 mb-3 max-w-sm
-                ${type === 'success' ? 'border-green-500' :
-                  type === 'warning' ? 'border-yellow-500' :
-                  type === 'error' ? 'border-red-500' : 'border-blue-500'}
-            `;
 
-            const icon = type === 'success' ? 'fa-check-circle text-green-500' :
-                        type === 'warning' ? 'fa-exclamation-triangle text-yellow-500' :
-                        type === 'error' ? 'fa-times-circle text-red-500' : 'fa-info-circle text-blue-500';
+            // Base Tailwind classes
+            const baseClasses = 'transform transition-all duration-2000 translate-x-full opacity-0 rounded-2xl p-6 mb-4 max-w-xl text-white hover:scale-105 cursor-pointer min-h-[100px] flex items-center border-l-4';
+
+            // Type-specific Tailwind classes
+            const typeClasses = {
+                'success': 'bg-green-600',
+                'info': 'bg-green-600',
+                'warning': 'bg-gradient-to-br from-yellow-600 to-orange-500 border-yellow-300',
+                'error': 'bg-red-600'
+            };
+
+            notification.className = `${baseClasses} ${typeClasses[type]}`;
+
+            // Icon mapping
+            const iconMapping = {
+                'success': 'fa-check-circle',
+                'warning': 'fa-exclamation-triangle',
+                'error': 'fa-times-circle',
+                'info': 'fa-info-circle'
+            };
 
             notification.innerHTML = `
-                <div class="flex items-start space-x-3">
-                    <i class="fas ${icon} text-lg mt-0.5 flex-shrink-0"></i>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="text-sm font-semibold text-gray-900">${title}</h4>
-                        <p class="text-sm text-gray-600 mt-1">${message}</p>
+                <div class="flex items-start space-x-4 w-full">
+                    <div class="flex-shrink-0 mt-1">
+                        <i class="fas ${iconMapping[type]} text-white text-2xl opacity-90"></i>
                     </div>
-                    <button onclick="this.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600 transition-colors">
-                        <i class="fas fa-times text-sm"></i>
+                    <div class="flex-1 min-w-0 pr-2">
+                        <h4 class="text-white font-bold text-xl mb-2 leading-tight tracking-wide">${title}</h4>
+                        <p class="text-gray-100 text-lg leading-relaxed opacity-95 font-medium">${message}</p>
+                    </div>
+                    <button onclick="removeNotification(this)"
+                            class="text-white hover:text-gray-200 transition-all duration-200 ml-2 rounded-full hover:bg-white hover:bg-opacity-20 flex-shrink-0">
+                        <i class="fas fa-times text-lg"></i>
                     </button>
                 </div>
             `;
 
             container.appendChild(notification);
 
+            // Add slide-in animation class
+            notification.classList.add('slide-in');
+
             // Animate in
             setTimeout(() => {
                 notification.classList.remove('translate-x-full', 'opacity-0');
                 notification.classList.add('translate-x-0', 'opacity-100');
-            }, 10);
+            }, 100);
 
             // Auto remove after duration
             setTimeout(() => {
+                removeNotificationElement(notification);
+            }, duration);
+
+            // Click to dismiss functionality
+            notification.addEventListener('click', function(e) {
+                if (!e.target.closest('button')) {
+                    removeNotificationElement(this);
+                }
+            });
+        }
+
+        // Helper function to remove notification
+        function removeNotification(button) {
+            const notification = button.closest('div[class*="transform"]');
+            removeNotificationElement(notification);
+        }
+
+        // Helper function to remove notification element
+        function removeNotificationElement(notification) {
+            if (notification && notification.parentElement) {
+                // Add slide-out animation
+                notification.classList.add('slide-out');
                 notification.classList.remove('translate-x-0', 'opacity-100');
                 notification.classList.add('translate-x-full', 'opacity-0');
+
                 setTimeout(() => {
                     if (notification.parentElement) {
                         notification.remove();
+                        const container = document.getElementById('liveNotificationContainer');
                         if (container.children.length === 0) {
                             container.classList.add('hidden');
                         }
                     }
-                }, 300);
-            }, duration);
+                }, 500);
+            }
         }
 
         // Show browser notification
@@ -506,14 +485,14 @@
                         selectedDestination = data.destination;
                         destinationCoords = stationCoordinates[selectedDestination];
                         isTracking = true;
-                        notificationsEnabled = data.notificationsEnabled !== false;
+                        notificationsEnabled = true; // Always enabled
 
                         startLocationWatching();
                         updateTrackingButton();
 
                         showLiveNotification(
                             '🚇 Journey Resumed',
-                            `Continuing tracking to ${getStationDisplayName(selectedDestination)}`,
+                            `Continuing tracking to ${getStationDisplayName(selectedDestination)} with live notifications`,
                             'info'
                         );
 
@@ -531,7 +510,7 @@
             const data = {
                 isTracking: isTracking,
                 destination: selectedDestination,
-                notificationsEnabled: notificationsEnabled,
+                notificationsEnabled: true, // Always enabled
                 timestamp: new Date().getTime()
             };
             localStorage.setItem('metroflow_tracking', JSON.stringify(data));
@@ -579,7 +558,6 @@
         function showSetupMode() {
             document.getElementById('setupMode').classList.remove('hidden');
             document.getElementById('trackingMode').classList.add('hidden');
-            document.getElementById('enableNotifications').checked = notificationsEnabled;
         }
 
         // Show tracking mode
@@ -592,7 +570,6 @@
         // Start tracking
         function startTracking() {
             const destination = document.getElementById('destinationStation').value;
-            const enableNotifs = document.getElementById('enableNotifications').checked;
 
             if (!destination) {
                 alert('Please select a destination station first.');
@@ -607,7 +584,7 @@
             selectedDestination = destination;
             destinationCoords = stationCoordinates[destination];
             isTracking = true;
-            notificationsEnabled = enableNotifs;
+            notificationsEnabled = true; // Always enabled
             lastDistance = null;
 
             saveTrackingData();
@@ -618,7 +595,7 @@
             // Show start notification
             showLiveNotification(
                 '🚀 Journey Started!',
-                `Tracking your journey to ${getStationDisplayName(selectedDestination)}`,
+                `Tracking your journey to ${getStationDisplayName(selectedDestination)} with automatic live notifications`,
                 'success'
             );
 
@@ -694,13 +671,13 @@
                 // Update tracking status card
                 updateTrackingStatusCard(selectedDestination, distanceText, currentTime);
 
-                // Check for distance-based notifications
-                if (lastDistance !== null && notificationsEnabled) {
+                // Enhanced distance-based notifications (always enabled)
+                if (lastDistance !== null) {
                     // Approaching destination notifications
                     if (lastDistance > 0.5 && distance <= 0.5) {
                         showLiveNotification(
                             '🎯 Approaching Destination',
-                            `You're within 500m of ${getStationDisplayName(selectedDestination)}!`,
+                            `You're within 500m of ${getStationDisplayName(selectedDestination)}! Get ready to exit.`,
                             'warning'
                         );
                         showBrowserNotification(
@@ -712,7 +689,7 @@
                     if (lastDistance > 0.2 && distance <= 0.2) {
                         showLiveNotification(
                             '🚇 Almost There!',
-                            `${getStationDisplayName(selectedDestination)} is just ${Math.round(distance * 1000)}m away!`,
+                            `${getStationDisplayName(selectedDestination)} is just ${Math.round(distance * 1000)}m away! Prepare to disembark.`,
                             'warning'
                         );
                         showBrowserNotification(
@@ -727,7 +704,7 @@
                             '📍 Distance Update',
                             `${distance.toFixed(1)} km remaining to ${getStationDisplayName(selectedDestination)}`,
                             'info',
-                            3000
+                            4000
                         );
                     }
                 }
@@ -803,7 +780,7 @@
                 'dhaka-university': 'Dhaka University',
                 'secretariat': 'Secretariat',
                 'motijheel': 'Motijheel',
-                'basa': 'Basa'
+                'home': 'Home'
             };
             return names[stationId] || stationId;
         }
@@ -820,12 +797,12 @@
             clearTrackingData();
             closeGeolocatorModal();
 
-            // Show destination notifications
+            // Show enhanced destination notifications
             showLiveNotification(
                 '🎉 Destination Reached!',
-                `Welcome to ${getStationDisplayName(selectedDestination)}! Journey completed successfully.`,
+                `Welcome to ${getStationDisplayName(selectedDestination)}! Your journey has been completed successfully. Thank you for using MetroFlow Journey Partner.`,
                 'success',
-                6000
+                8000
             );
 
             showBrowserNotification(
@@ -876,13 +853,13 @@
             const btn = document.querySelector('#geolocatorBtn button');
             if (btn) {
                 if (isTracking) {
-                    btn.classList.remove('bg-green-700', 'hover:bg-amber-900');
-                    btn.classList.add('bg-green-500', 'hover:bg-green-600');
-                    btn.innerHTML = '<i class="fas fa-location-dot text-2xl animate-pulse"></i>';
+                    btn.classList.remove('bg-amber-600', 'hover:bg-amber-800');
+                    btn.classList.add('bg-amber-600', 'hover:bg-amber-800');
+                    btn.innerHTML = '<i class="fas fa-location-dot text-[1.8rem] animate-pulse"></i>';
                 } else {
-                    btn.classList.remove('bg-green-500', 'hover:bg-green-600');
-                    btn.classList.add('bg-green-700', 'hover:bg-amber-900');
-                    btn.innerHTML = '<i class="fas fa-location-dot text-2xl"></i>';
+                    btn.classList.remove('bg-amber-600', 'hover:bg-amber-800');
+                    btn.classList.add('bg-amber-600', 'hover:bg-amber-800');
+                    btn.innerHTML = '<i class="fas fa-location-dot text-[1.8rem]"></i>';
                 }
             }
         }
@@ -940,12 +917,10 @@
                 if (document.hidden) {
                     console.log('Page hidden - tracking continues in background');
                     // Show notification that tracking continues in background
-                    if (notificationsEnabled) {
-                        showBrowserNotification(
-                            'MetroFlow - Background Tracking',
-                            'Journey tracking continues in the background'
-                        );
-                    }
+                    showBrowserNotification(
+                        'MetroFlow - Background Tracking',
+                        'Journey tracking continues in the background with live notifications'
+                    );
                 } else {
                     console.log('Page visible - tracking active');
                     // Refresh tracking if needed
@@ -956,7 +931,7 @@
                     if (isTracking) {
                         showLiveNotification(
                             '👋 Welcome Back!',
-                            `Still tracking to ${getStationDisplayName(selectedDestination)}`,
+                            `Still tracking to ${getStationDisplayName(selectedDestination)} with live notifications`,
                             'info',
                             3000
                         );
@@ -973,21 +948,12 @@
             }
         });
 
-        // Service Worker registration for better background tracking (optional)
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                // Register service worker for background notifications
-                // This would need a separate service worker file
-                console.log('Service Worker support detected');
-            });
-        }
-
         // Handle online/offline status
         window.addEventListener('online', function() {
             if (isTracking) {
                 showLiveNotification(
                     '🌐 Connection Restored',
-                    'Back online - tracking resumed',
+                    'Back online - tracking resumed with live notifications',
                     'success',
                     3000
                 );
@@ -1009,12 +975,12 @@
         if ('getBattery' in navigator) {
             navigator.getBattery().then(function(battery) {
                 battery.addEventListener('levelchange', function() {
-                    if (isTracking && battery.level < 0.15 && notificationsEnabled) {
+                    if (isTracking && battery.level < 0.15) {
                         showLiveNotification(
                             '🔋 Low Battery Warning',
-                            'Battery is below 15%. Consider stopping tracking to save power.',
+                            'Battery is below 15%. Consider stopping tracking to save power or charge your device.',
                             'warning',
-                            5000
+                            6000
                         );
                     }
                 });
@@ -1028,6 +994,7 @@
         window.handleGeolocatorClick = handleGeolocatorClick;
         window.startTracking = startTracking;
         window.stopTracking = stopTracking;
+        window.removeNotification = removeNotification;
 
         // Auto-clear old notifications (cleanup)
         setInterval(function() {
@@ -1044,7 +1011,7 @@
             if (notifications.length === 0) {
                 container.classList.add('hidden');
             }
-        }, 10000); // Check every 10 seconds
+        }, 15000); // Check every 15 seconds
     </script>
 </body>
 </html>
