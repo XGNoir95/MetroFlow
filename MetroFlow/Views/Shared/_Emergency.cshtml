@@ -1,0 +1,301 @@
+<!-- Emergency Button (Fixed position, above chatbot) -->
+<div id="emergencyBtn" class="fixed bottom-28 right-4 z-40">
+    <button onclick="handleEmergencyClick()" class="bg-red-600 hover:bg-red-700 text-white py-4 px-5 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 pulse-animation" aria-label="Emergency">
+        <i class="fas fa-exclamation-triangle text-2xl"></i>
+    </button>
+</div>
+
+<!-- Emergency Modal -->
+<div id="emergencyModal" class="fixed inset-0 bg-black bg-opacity-70 z-[70] hidden flex items-start justify-center backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl my-4 transform transition-all duration-300 scale-90 opacity-0" id="emergencyModalContent">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-red-600 to-red-700 text-white px-6 py-6 rounded-t-3xl relative">
+            <button id="closeEmergencyModal" class="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+
+            <div class="text-center">
+                <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-exclamation-triangle text-2xl text-white"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white">Emergency Assistance</h3>
+                <p class="text-red-100 text-lg mt-1">Get immediate help for metro-related emergencies</p>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="px-6 py-6">
+            <!-- Emergency Type Selection -->
+            <div class="mb-5">
+                <label class="block text-xl font-medium text-gray-700 mb-3">Type of Emergency</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="selectEmergencyType('medical')" class="emergency-type-btn p-2 border-2 border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-colors text-center">
+                        <i class="fas fa-heart-pulse text-red-500 text-2xl mb-1 py-2"></i>
+                        <div class="text-sm font-medium">Medical</div>
+                    </button>
+                    <button onclick="selectEmergencyType('security')" class="emergency-type-btn p-2 border-2 border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-colors text-center">
+                        <i class="fas fa-shield-alt text-red-500 text-2xl mb-1 py-2"></i>
+                        <div class="text-sm font-medium">Security</div>
+                    </button>
+                    <button onclick="selectEmergencyType('fire')" class="emergency-type-btn p-2 border-2 border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-colors text-center">
+                        <i class="fas fa-fire text-red-500 text-2xl mb-1 py-2"></i>
+                        <div class="text-sm font-medium">Fire/Smoke</div>
+                    </button>
+                    <button onclick="selectEmergencyType('other')" class="emergency-type-btn p-2 border-2 border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-colors text-center">
+                        <i class="fas fa-question-circle text-red-500 text-2xl mb-1 py-2"></i>
+                        <div class="text-sm font-medium">Other</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Location Input -->
+            <div class="mb-5">
+                <label class="block text-xl font-medium text-gray-700 mb-2">Your Location</label>
+                <select id="emergencyLocation" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-base">
+                    <option value="">Select nearest station</option>
+                    <option value="uttara-north">Uttara North</option>
+                    <option value="uttara-center">Uttara Center</option>
+                    <option value="pallabi">Pallabi</option>
+                    <option value="mirpur-11">Mirpur 11</option>
+                    <option value="mirpur-10">Mirpur 10</option>
+                    <option value="kazipara">Kazipara</option>
+                    <option value="shewrapara">Shewrapara</option>
+                    <option value="agargaon">Agargaon</option>
+                    <option value="bijoy-sarani">Bijoy Sarani</option>
+                    <option value="farmgate">Farmgate</option>
+                    <option value="karwan-bazar">Karwan Bazar</option>
+                    <option value="shahbagh">Shahbagh</option>
+                    <option value="dhaka-university">Dhaka University</option>
+                    <option value="secretariat">Secretariat</option>
+                    <option value="motijheel">Motijheel</option>
+                </select>
+            </div>
+
+            <!-- Brief Description -->
+            <div class="mb-5">
+                <label class="block text-xl font-medium text-gray-700 mb-2">Brief Description</label>
+                <textarea id="emergencyDescription" rows="5" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-base" placeholder="Briefly describe the situation..."></textarea>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="space-y-2">
+                <button onclick="callEmergency()" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold p-4 text-lg rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg">
+                    <i class="fas fa-phone"></i>
+                    <span>Call Metro Emergency: 999</span>
+                </button>
+
+                <button onclick="submitEmergencyReport()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium p-4 text-lg rounded-xl transition-colors duration-200 flex items-center justify-center space-x-2">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Send Emergency Report</span>
+                </button>
+
+                <button onclick="closeEmergencyModal()" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-medium p-4 text-lg rounded-xl transition-colors duration-200">
+                    Cancel
+                </button>
+            </div>
+
+            <!-- Emergency Contacts -->
+            <div class="mt-4 pt-3 border-t border-gray-200">
+                <p class="text-sm text-gray-500 text-center">
+                    <strong>Emergency Numbers:</strong> Police: 999 | Fire: 999 | Medical: 999
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Emergency Login Prompt Modal -->
+<div id="emergencyLoginPromptModal" class="fixed inset-0 bg-black bg-opacity-60 z-[75] hidden flex items-center justify-center backdrop-blur-sm">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300 scale-90 opacity-0" id="emergencyLoginPromptContent">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-red-600 to-red-700 text-white px-8 py-6 rounded-t-3xl relative">
+            <button id="closeEmergencyLoginPrompt" class="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+
+            <div class="text-center">
+                <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-lock text-3xl text-white"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white">Login Required</h3>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="px-8 py-8 text-center">
+            <p class="text-lg text-gray-700 mb-8">Please login to access Emergency Assistance and help keep our metro system safe and secure.</p>
+
+            <div class="space-y-4">
+                <a href="/User/Login?returnUrl=@Uri.EscapeDataString(Context.Request.Path + Context.Request.QueryString)" class="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Login Now</span>
+                </a>
+
+                <p class="text-gray-500 text-sm">Don't have an account?</p>
+
+                <a href="/User/Signup" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-xl transition-colors duration-200 flex items-center justify-center space-x-2">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Create Account</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedEmergencyType = null;
+
+    // Check if user is logged in (server-side value)
+    function isUserLoggedIn() {
+        return @(User.Identity?.IsAuthenticated == true ? "true" : "false");
+    }
+
+    // Handle emergency button click with authentication check
+    function handleEmergencyClick() {
+        if (isUserLoggedIn()) {
+            // User is logged in, show the emergency modal
+            openEmergencyModal();
+        } else {
+            // User is not logged in, show login prompt
+            showEmergencyLoginPrompt();
+        }
+    }
+
+    // Show emergency login prompt
+    function showEmergencyLoginPrompt() {
+        const modal = document.getElementById('emergencyLoginPromptModal');
+        const content = document.getElementById('emergencyLoginPromptContent');
+
+        modal.classList.remove('hidden');
+
+        setTimeout(() => {
+            content.classList.remove('scale-90', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 10);
+
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Hide emergency login prompt
+    function hideEmergencyLoginPrompt() {
+        const modal = document.getElementById('emergencyLoginPromptModal');
+        const content = document.getElementById('emergencyLoginPromptContent');
+
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-90', 'opacity-0');
+
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }, 300);
+    }
+
+    // Open emergency modal (only called when user is authenticated)
+    function openEmergencyModal() {
+        const modal = document.getElementById('emergencyModal');
+        const content = document.getElementById('emergencyModalContent');
+
+        modal.classList.remove('hidden');
+
+        setTimeout(() => {
+            content.classList.remove('scale-90', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 10);
+
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Close emergency modal
+    function closeEmergencyModal() {
+        const modal = document.getElementById('emergencyModal');
+        const content = document.getElementById('emergencyModalContent');
+
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-90', 'opacity-0');
+
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            // Reset form
+            selectedEmergencyType = null;
+            document.getElementById('emergencyLocation').value = '';
+            document.getElementById('emergencyDescription').value = '';
+            // Reset button styles
+            document.querySelectorAll('.emergency-type-btn').forEach(btn => {
+                btn.classList.remove('border-red-500', 'bg-red-50');
+                btn.classList.add('border-gray-200');
+            });
+        }, 300);
+    }
+
+    // Select emergency type
+    function selectEmergencyType(type) {
+        selectedEmergencyType = type;
+
+        // Reset all buttons
+        document.querySelectorAll('.emergency-type-btn').forEach(btn => {
+            btn.classList.remove('border-red-500', 'bg-red-50');
+            btn.classList.add('border-gray-200');
+        });
+
+        // Highlight selected button
+        event.target.closest('.emergency-type-btn').classList.remove('border-gray-200');
+        event.target.closest('.emergency-type-btn').classList.add('border-red-500', 'bg-red-50');
+    }
+
+    // Call emergency services
+    function callEmergency() {
+        alert('Connecting to Metro Emergency Services...\n\nFor immediate assistance, call 999');
+        window.location.href = 'tel:999';
+    }
+
+    // Submit emergency report
+    function submitEmergencyReport() {
+        const location = document.getElementById('emergencyLocation').value;
+        const description = document.getElementById('emergencyDescription').value;
+
+        if (!selectedEmergencyType || !location) {
+            alert('Please select emergency type and location.');
+            return;
+        }
+
+        alert('Emergency report submitted successfully!\n\nReport ID: EM' + Date.now().toString().slice(-6) + '\n\nEmergency services have been notified.');
+        closeEmergencyModal();
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        const closeBtn = document.getElementById('closeEmergencyModal');
+        const modal = document.getElementById('emergencyModal');
+        const closeLoginPromptBtn = document.getElementById('closeEmergencyLoginPrompt');
+        const loginPromptModal = document.getElementById('emergencyLoginPromptModal');
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeEmergencyModal);
+        }
+
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeEmergencyModal();
+                }
+            });
+        }
+
+        if (closeLoginPromptBtn) {
+            closeLoginPromptBtn.addEventListener('click', hideEmergencyLoginPrompt);
+        }
+
+        if (loginPromptModal) {
+            loginPromptModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideEmergencyLoginPrompt();
+                }
+            });
+        }
+    });
+
+    // Make functions available globally for escape key handling
+    window.closeEmergencyModal = closeEmergencyModal;
+    window.hideEmergencyLoginPrompt = hideEmergencyLoginPrompt;
+</script>
