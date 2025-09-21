@@ -1,3 +1,5 @@
+using System;
+
 namespace MetroFlow.Models
 {
     public class Schedule

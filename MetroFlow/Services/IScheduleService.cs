@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using MetroFlow.Models;
-using MetroFlow.Services;
+
 namespace MetroFlow.Services
 {
     public interface IScheduleService
@@ -8,5 +8,8 @@ namespace MetroFlow.Services
         List<Schedule> GetSchedules();
         List<SchedulePeriod> GetSchedulePeriods(int scheduleId);
         List<TicketOption> GetTicketOptions();
+        string GetCurrentPeriodType();
+        List<Schedule> GetCurrentSchedules();
+        object GetCurrentTimeInfo();
     }
 }

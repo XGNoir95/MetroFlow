@@ -1,0 +1,50 @@
+<!-- HERO Section (Full Bleed) -->
+<section class="relative overflow-hidden min-h-[720px]">
+    <!-- Background image + dark wash -->
+    <img src="~/hero-metro.png" alt="Metro background" class="absolute inset-0 h-full w-full object-cover" />
+    <div class="absolute inset-0 bg-black/50"></div>
+    <!-- Content -->
+    <div class="relative max-w-8xl lg:mx-40 px-6 mt-8 pt-16 lg:pt-24 pb-0">
+        <!-- Title -->
+        <h1 class="mt-2 text-white text-5xl md:text-7xl font-extrabold leading-[1.05] tracking-tight">
+            Your City, Your Metro<br />
+            <span class="text-white/90">Fast, Reliable, Affordable.</span>
+        </h1>
+        <!-- Stats Card -->
+        <div class="mt-8 rounded-3xl bg-white/10 backdrop-blur-xs ring-1 ring-white/20 shadow-xl p-6 md:p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/20">
+                <!-- Stat 1 -->
+                <div class="py-4 md:px-8">
+                    <div class="text-white text-5xl md:text-7xl font-extrabold leading-none tracking-tight">20.1</div>
+                    <div class="mt-1 text-sm text-white/80">
+                        Total Network Length (km) <span class="text-rose-300">*</span>
+                    </div>
+                </div>
+                <!-- Stat 2 -->
+                <div class="py-4 md:px-8">
+                    <div class="text-white text-5xl md:text-7xl font-extrabold leading-none tracking-tight">6</div>
+                    <div class="mt-1 text-sm text-white/80">
+                        Total no of Lines <span class="text-rose-300">*</span>
+                    </div>
+                </div>
+                <!-- Stat 3 -->
+                <div class="py-4 md:px-8">
+                    <div class="text-white text-5xl md:text-7xl font-extrabold leading-none tracking-tight">16</div>
+                    <div class="mt-1 text-sm text-white/80">
+                        Total no of Stations <span class="text-rose-300">*</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- CTA Button -->
+        <div class="mt-6 flex justify-center md:justify-end">
+            <a href="@Url.Action("RoutePlanner", "Route")"
+               class="text-xl inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-900 to-green-600 px-9 py-3 font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black/50">
+                Plan your trip now!
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5">
+                    <path d="M13 5a1 1 0 0 1 1.7-.7l6 6a1 1 0 0 1 0 1.4l-6 6a1 1 0 1 1-1.4-1.4L17.59 13H4a1 1 0 1 1 0-2h13.59L13.3 6.7A1 1 0 0 1 13 5Z" />
+                </svg>
+            </a>
+        </div>
+    </div>
+</section>
