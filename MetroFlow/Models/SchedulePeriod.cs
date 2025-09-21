@@ -1,3 +1,5 @@
+using System;
+
 namespace MetroFlow.Models
 {
     public class SchedulePeriod
@@ -6,7 +8,7 @@ namespace MetroFlow.Models
         public int ScheduleId { get; set; }
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }
-        public string PeriodType { get; set; } // "Peak", "Off-Peak"
+        public string PeriodType { get; set; } // "Peak Hour", "Normal Hour", "OffPeak Hour"
         public string Frequency { get; set; }
     }
 }

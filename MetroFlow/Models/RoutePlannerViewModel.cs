@@ -22,12 +22,18 @@ namespace MetroFlow.Models
         public RouteInfo? RouteInfo { get; set; }
         public List<Station> AllStations { get; set; } = new();
 
+        // NEW - Billing Information
+        public FareBilling? FareBilling { get; set; }
+
         public bool HasCurrentLocation => CurrentLatitude.HasValue && CurrentLongitude.HasValue;
         public bool HasOrigin => SelectedOrigin != null;
         public bool HasDestination => SelectedDestination != null;
         public bool CanPlanRoute => (HasCurrentLocation || HasOrigin) && HasDestination &&
                                    (NearestCurrentStation != null || NearestOriginStation != null) &&
                                    NearestDestinationStation != null;
+
+        // NEW - Billing computed property
+        public bool HasBillingInfo => FareBilling != null && RouteInfo != null;
 
         public string? ErrorMessage { get; set; }
         public string? SuccessMessage { get; set; }

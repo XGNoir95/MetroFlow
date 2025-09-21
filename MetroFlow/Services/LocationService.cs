@@ -19,14 +19,27 @@ namespace MetroFlow.Services
 
             // Initialize Dhaka Metro Rail Stations
             _stations = _db.Stations
-                            .AsNoTracking()
-                            .OrderByDescending(s => s.Latitude)
-                            .ToList();
+                    .AsNoTracking()
+                    .OrderByDescending(s => s.Latitude)
+                    .Select(s => new Station
+                    {
+                        Id = s.Id,
+                        Name = s.Name,
+                        Latitude = s.Latitude,
+                        Longitude = s.Longitude,
+                        PopularityIndex = s.PopularityIndex
+                    })
+                    .ToList();
         }
 
         public List<Station> GetAllStations()
         {
             return _stations.ToList();
+        }
+
+        public Station? FindStationByName(string stationName)
+        {
+            return _stations.FirstOrDefault(s => s.Name.Equals(stationName, StringComparison.OrdinalIgnoreCase));
         }
 
         public async Task<List<Place>> SearchPlacesAsync(string query)
@@ -79,10 +92,12 @@ namespace MetroFlow.Services
                     minDistance = distance;
                     nearestStation = new Station
                     {
+                        Id = station.Id,
                         Name = station.Name,
                         Latitude = station.Latitude,
                         Longitude = station.Longitude,
-                        Distance = distance
+                        Distance = distance,
+                        PopularityIndex = station.PopularityIndex
                     };
                 }
             }

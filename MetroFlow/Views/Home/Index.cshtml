@@ -1,10 +1,8 @@
 ﻿@{
     ViewData["Title"] = "Home";
 }
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,621 +20,63 @@
             height: 420px;
             /* Increased height */
         }
+
+        /* Fix dropdown positioning */
+        select {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Smooth transition for layout changes */
+        .layout-transition {
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Loading animation */
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @@keyframes spin {
+            from
+
+        {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+
+        }
+
+        /* Pulse animation for loading states */
+        .pulse-loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @@keyframes pulse {
+            0%, 100%
+
+        {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.7;
+        }
+
+        }
     </style>
 </head>
-<!-- HERO Section (Full Bleed) -->
-<section class="relative overflow-hidden min-h-[720px]">
-    <!-- Background image + dark wash -->
-    <img src="~/hero-metro.png" alt="Metro background" class="absolute inset-0 h-full w-full object-cover" />
-    <div class="absolute inset-0 bg-black/50"></div>
+<body>
+    <!-- Hero Section -->
+    @await Html.PartialAsync("_HeroSection")
 
-    <!-- Content -->
-    <div class="relative max-w-8xl lg:mx-40 px-6 mt-8 pt-16 lg:pt-24 pb-0">
-        <!-- Title -->
-        <h1 class="mt-2 text-white text-5xl md:text-7xl font-extrabold leading-[1.05] tracking-tight">
-            Your City, Your Metro<br />
-            <span class="text-white/90">Fast, Reliable, Affordable.</span>
-        </h1>
+    <!-- Planner Section -->
+    @await Html.PartialAsync("_PlannerSection")
 
-        <!-- Stats Card -->
-        <div class="mt-8 rounded-3xl bg-white/10 backdrop-blur-xs ring-1 ring-white/20 shadow-xl p-6 md:p-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/20">
-                <!-- Stat 1 -->
-                <div class="py-4 md:px-8">
-                    <div class="text-white text-5xl md:text-7xl font-extrabold leading-none tracking-tight">20.1</div>
-                    <div class="mt-1 text-sm text-white/80">
-                        Total Network Length (km) <span class="text-rose-300">*</span>
-                    </div>
-                </div>
-
-                <!-- Stat 2 -->
-                <div class="py-4 md:px-8">
-                    <div class="text-white text-5xl md:text-7xl font-extrabold leading-none tracking-tight">6</div>
-                    <div class="mt-1 text-sm text-white/80">
-                        Total no of Lines <span class="text-rose-300">*</span>
-                    </div>
-                </div>
-
-                <!-- Stat 3 -->
-                <div class="py-4 md:px-8">
-                    <div class="text-white text-5xl md:text-7xl font-extrabold leading-none tracking-tight">16</div>
-                    <div class="mt-1 text-sm text-white/80">
-                        Total no of Stations <span class="text-rose-300">*</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- CTA Button -->
-
-        <div class="mt-6 flex justify-center md:justify-end">
-            <a href="@Url.Action("RoutePlanner", "Route")"
-               class="text-xl inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-900 to-green-600 px-9 py-3 font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black/50">
-                Plan your trip now!
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5">
-                    <path d="M13 5a1 1 0 0 1 1.7-.7l6 6a1 1 0 0 1 0 1.4l-6 6a1 1 0 1 1-1.4-1.4L17.59 13H4a1 1 0 1 1 0-2h13.59L13.3 6.7A1 1 0 0 1 13 5Z" />
-                </svg>
-            </a>
-        </div>
-    </div>
-</section>
-
-<!-- PLANNER SECTION (Two equal columns) -->
-<section id="plan" class="bg-white py-16">
-    <div class="max-w-8xl lg:mx-40 px-6 md:mx-auto sm:mx-auto">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            <!-- LEFT: Interactive Map -->
-            <div>
-                <h2 class="text-5xl font-bold text-green-700 mb-6">Interactive Metro Map</h2>
-                <!-- Subheader directly under heading -->
-                <p class="text-gray-600 text-xl font mb-8">
-                    Zoom and drag on the map to explore stations and lines. Use the controls to zoom in/out or reset the
-                    view.
-                </p>
-
-                <div class="rounded-2xl bg-white ring-1 ring-black/10 shadow-lg p-3 md:p-4">
-                    <!-- Zoom/Pan canvas -->
-                    <div id="map-wrapper"
-                         class="relative aspect-[4/3] overflow-hidden rounded-xl bg-neutral-50 select-none">
-                        <!-- The map image we'll transform -->
-                        <img id="metro-map" src="/metro-map.png" alt="Interactive metro map"
-                             class="absolute left-0 top-0 h-full w-full object-contain will-change-transform transform-gpu pointer-events-none"
-                             draggable="false" />
-
-                        <!-- Invisible overlay to capture interaction -->
-                        <div id="map-overlay" class="absolute inset-0 cursor-grab active:cursor-grabbing" role="img"
-                             aria-label="Drag to pan, scroll to zoom. Use plus and minus buttons to zoom.">
-                        </div>
-                    </div>
-
-                    <!-- Controls -->
-                    <div class="mt-4 flex items-center justify-between gap-3">
-                        <div class="inline-flex items-stretch overflow-hidden rounded-xl ring-1 ring-black/10 shadow-sm">
-                            <button id="zoom-out" type="button"
-                                    class="px-4 py-3 text-base font-semibold hover:bg-neutral-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600"
-                                    aria-label="Zoom out">
-                                −
-                            </button>
-                            <div id="zoom-indicator" class="px-4 py-3 text-base border-x border-black/10 bg-white"
-                                 aria-live="polite">
-                                100%
-                            </div>
-                            <button id="zoom-in" type="button"
-                                    class="px-4 py-3 text-base font-semibold hover:bg-neutral-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600"
-                                    aria-label="Zoom in">
-                                +
-                            </button>
-                            <button id="zoom-reset" type="button"
-                                    class="px-4 py-3 text-base font-semibold hover:bg-neutral-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600"
-                                    aria-label="Reset zoom">
-                                Reset
-                            </button>
-                        </div>
-
-                        <a href="/metro-map.png" download
-                           class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-green-900 to-green-600 px-5 py-3 text-base font-semibold text-white shadow-md hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2">
-                            Download map
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
-                                 fill="currentColor">
-                                <path d="M12 3a1 1 0 0 1 1 1v9.59l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4A1 1 0 0 1 8.7 11.3L11 13.59V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 1 1 0-2h14a1 1 0 1 1 0 2H5Z" />
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- RIGHT: Tools / Cards (links) -->
-            <div class="flex flex-col justify-start">
-                <!-- Match left heading color -->
-                <h3 class="text-5xl font-bold text-green-700 mb-3">Plan your journey</h3>
-                <p class="mt-3 text-lg text-gray-600">
-                    Zoom and drag on the map to explore stations and lines. Use the tools below for fares, tickets,
-                    and guides.
-                </p>
-
-                <!-- Clickable cards: icon (left) + title + subheading; no dropdowns -->
-                <div class="mt-8 space-y-4">
-                    <!-- Card: National Common Mobility Card -->
-                    <a href="#" data-route="ncmc"
-                       class="group block rounded-2xl ring-1 ring-black/10 bg-white min-h-28 px-7 py-6 shadow-sm hover:bg-green-50 hover:ring-green-200 transition-shadow transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600">
-                        <div class="flex items-center gap-5">
-                            <div class="shrink-0">
-                                <svg class="h-9 w-9 text-green-700" viewBox="0 0 24 24" fill="currentColor"
-                                     aria-hidden="true">
-                                    <path d="M4 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v7a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V5Zm4 14a1 1 0 1 1 0-2h8a1 1 0 1 1 0 2H8Z" />
-                                </svg>
-                            </div>
-                            <div class="flex-1">
-                                <div class="text-xl font-semibold text-gray-900">National Common Mobility Card</div>
-                                <div class="mt-1 text-base text-gray-600">
-                                    One card for seamless payments across transit
-                                    systems.
-                                </div>
-                            </div>
-                            <svg class="h-6 w-6 opacity-60 group-hover:opacity-100 transition" viewBox="0 0 24 24"
-                                 fill="currentColor" aria-hidden="true">
-                                <path d="M13 5a1 1 0 0 1 1.7-.7l6 6a1 1 0 0 1 0 1.4l-6 6a1 1 0 1 1-1.4-1.4L17.59 13H4a1 1 0 1 1 0-2h13.59L13.3 6.7A1 1 0 0 1 13 5Z" />
-                            </svg>
-                        </div>
-                    </a>
-
-                    <!-- Card: Fare Calculator -->
-                    <a href="#" data-route="fare-calculator"
-                       class="group block rounded-2xl ring-1 ring-black/10 bg-white min-h-28 px-7 py-6 shadow-sm hover:bg-green-50 hover:ring-green-200 transition-shadow transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600">
-                        <div class="flex items-center gap-5">
-                            <div class="shrink-0">
-                                <svg class="h-9 w-9 text-green-700" viewBox="0 0 24 24" fill="currentColor"
-                                     aria-hidden="true">
-                                    <path d="M4 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v4H4V5Zm0 6h16v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-4Z" />
-                                </svg>
-                            </div>
-                            <div class="flex-1">
-                                <div class="text-xl font-semibold text-gray-900">Fare Calculator</div>
-                                <div class="mt-1 text-base text-gray-600">
-                                    Quickly estimate costs between any two
-                                    stations.
-                                </div>
-                            </div>
-                            <svg class="h-6 w-6 opacity-60 group-hover:opacity-100 transition" viewBox="0 0 24 24"
-                                 fill="currentColor" aria-hidden="true">
-                                <path d="M13 5a1 1 0 0 1 1.7-.7l6 6a1 1 0 0 1 0 1.4l-6 6a1 1 0 1 1-1.4-1.4L17.59 13H4a1 1 0 1 1 0-2h13.59L13.3 6.7A1 1 0 0 1 13 5Z" />
-                            </svg>
-                        </div>
-                    </a>
-
-                    <!-- Card: Tickets -->
-                    <a href="#" data-route="tickets"
-                       class="group block rounded-2xl ring-1 ring-black/10 bg-white min-h-28 px-7 py-6 shadow-sm hover:bg-green-50 hover:ring-green-200 transition-shadow transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600">
-                        <div class="flex items-center gap-5">
-                            <div class="shrink-0">
-                                <svg class="h-9 w-9 text-green-700" viewBox="0 0 24 24" fill="currentColor"
-                                     aria-hidden="true">
-                                    <path d="M3 6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v6H3V6Zm0 8h18v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4Z" />
-                                </svg>
-                            </div>
-                            <div class="flex-1">
-                                <div class="text-xl font-semibold text-gray-900">Tickets</div>
-                                <div class="mt-1 text-base text-gray-600">
-                                    Buy single rides or passes online or at
-                                    stations.
-                                </div>
-                            </div>
-                            <svg class="h-6 w-6 opacity-60 group-hover:opacity-100 transition" viewBox="0 0 24 24"
-                                 fill="currentColor" aria-hidden="true">
-                                <path d="M13 5a1 1 0 0 1 1.7-.7l6 6a1 1 0 0 1 0 1.4l-6 6a1 1 0 1 1-1.4-1.4L17.59 13H4a1 1 0 1 1 0-2h13.59L13.3 6.7A1 1 0 0 1 13 5Z" />
-                            </svg>
-                        </div>
-                    </a>
-
-                    <!-- Card: Tour Guide -->
-                    <a href="@Url.Action("Index", "Schedule")" data-route="tour-guide"
-                       class="group block rounded-2xl ring-1 ring-black/10 bg-white min-h-28 px-7 py-6 shadow-sm hover:bg-green-50 hover:ring-green-200 transition-shadow transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600">
-                        <div class="flex items-center gap-5">
-                            <div class="shrink-0">
-                                <svg class="h-9 w-9 text-green-700" viewBox="0 0 24 24" fill="currentColor"
-                                     aria-hidden="true">
-                                    <path d="M12 3a9 9 0 1 1 0 18A9 9 0 0 1 12 3Zm1 5h-2v6h5v-2h-3V8Z" />
-                                </svg>
-                            </div>
-                            <div class="flex-1">
-                                <div class="text-xl font-semibold text-gray-900">Schedules</div>
-                                <div class="mt-1 text-base text-gray-600">
-                                    Find out the schedules of your nearest metro station.
-                                </div>
-                            </div>
-                            <svg class="h-6 w-6 opacity-60 group-hover:opacity-100 transition" viewBox="0 0 24 24"
-                                 fill="currentColor" aria-hidden="true">
-                                <path d="M13 5a1 1 0 0 1 1.7-.7l6 6a1 1 0 0 1 0 1.4l-6 6a1 1 0 1 1-1.4-1.4L17.59 13H4a1 1 0 1 1 0-2h13.59L13.3 6.7A1 1 0 0 1 13 5Z" />
-                            </svg>
-                        </div>
-                    </a>
-
-                    <!-- Card: Metro Museum -->
-                    <a href="#" data-route="metro-museum"
-                       class="group block rounded-2xl ring-1 ring-black/10 bg-white min-h-28 px-7 py-6 shadow-sm hover:bg-green-50 hover:ring-green-200 transition-shadow transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600">
-                        <div class="flex items-center gap-5">
-                            <div class="shrink-0">
-                                <svg class="h-9 w-9 text-green-700" viewBox="0 0 24 24" fill="currentColor"
-                                     aria-hidden="true">
-                                    <path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12H4V6Zm3 3h10v2H7V9Zm0 4h7v2H7v-2Z" />
-                                </svg>
-                            </div>
-                            <div class="flex-1">
-                                <div class="text-xl font-semibold text-gray-900">Tourist Attractions</div>
-                                <div class="mt-1 text-base text-gray-600">
-                                    Explore the history and attractions within the country.
-                                </div>
-                            </div>
-                            <svg class="h-6 w-6 opacity-60 group-hover:opacity-100 transition" viewBox="0 0 24 24"
-                                 fill="currentColor" aria-hidden="true">
-                                <path d="M13 5a1 1 0 0 1 1.7-.7l6 6a1 1 0 0 1 0 1.4l-6 6a1 1 0 1 1-1.4-1.4L17.59 13H4a1 1 0 1 1 0-2h13.59L13.3 6.7A1 1 0 0 1 13 5Z" />
-                            </svg>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- POPULAR METRO STATIONS SECTION -->
-<section class="bg-gray-50 py-16">
-    <div class="max-w-8xl lg:mx-40 sm:mx-auto md:mx-auto px-6">
-        <!-- Section Header -->
-        <div class="mb-12 text-center">
-            <h2 class="text-5xl font-bold text-green-700 mb-4">Popular Metro Stations</h2>
-            <p class="text-xl text-gray-600">Discover the most visited stations and nearby attractions</p>
-        </div>
-
-        <!-- Horizontal Slider -->
-        <div class="relative">
-            <!-- Slider Container -->
-            <div id="stations-slider" class="overflow-hidden">
-                <div id="stations-track" class="flex gap-8 transition-transform duration-500 ease-out">
-                    <!-- Station Card 1 -->
-                    <div class="flex-none station-card">
-                        <div class="bg-white rounded-2xl shadow-lg ring-1 ring-black/10 overflow-hidden group hover:shadow-xl transition-shadow duration-300 h-full">
-                            <div class="relative h-52 overflow-hidden ">
-                                <img src="https://d2u0ktu8omkpf6.cloudfront.net/4c32ec48c8a8041a57a32a3d5a078782486a2b921b52ca56.jpg"
-                                     alt="Mirpur-10 Metro Station"
-                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                                <div class="absolute bottom-4 left-4">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-white">
-                                        Line 1
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <h3 class="text-[1.5rem] font-bold text-green-900 mb-2">Mirpur-10 Metro Station</h3>
-                                <p class="text-gray-600 mb-4 text-lg">
-                                    Major hub connecting to shopping districts and
-                                    business
-                                    centers
-                                </p>
-                                <button class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
-                                    Show Route
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Station Card 2 -->
-                    <div class="flex-none station-card">
-                        <div class="bg-white rounded-2xl shadow-lg ring-1 ring-black/10 overflow-hidden group hover:shadow-xl transition-shadow duration-300 h-full">
-                            <div class="relative h-52 overflow-hidden ">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Farmgate_metro_station_3.jpg"
-                                     alt="Farmgate Metro Station"
-                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                                <div class="absolute bottom-4 left-4">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-white">
-                                        Line 1
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <h3 class="text-[1.5rem] font-bold text-green-900 mb-2">Farmgate Metro Station</h3>
-                                <p class="text-gray-600 mb-4 text-lg">
-                                    Major hub connecting to shopping districts and
-                                    business
-                                    centers
-                                </p>
-                                <button class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
-                                    Show Route
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Station Card 3 -->
-                    <div class="flex-none station-card">
-                        <div class="bg-white rounded-2xl shadow-lg ring-1 ring-black/10 overflow-hidden group hover:shadow-xl transition-shadow duration-300 h-full">
-                            <div class="relative h-52 overflow-hidden ">
-                                <img src="https://media.prothomalo.com/prothomalo-english%2F2024-12-08%2Fio2fkf4l%2Fdu-metro-station.jpg?rect=0%2C288%2C1280%2C672&w=1200&ar=40%3A21&auto=format%2Ccompress&ogImage=true&mode=crop&overlay=&overlay_position=bottom&overlay_width_pct=1"
-                                     alt="Dhaka University Metro Station"
-                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                                <div class="absolute bottom-4 left-4">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-white">
-                                        Line 1
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <h3 class="text-[1.5rem] font-bold text-green-900 mb-2">Dhaka University Metro Station</h3>
-                                <p class="text-gray-600 mb-4 text-lg">
-                                    Major hub connecting to shopping districts and
-                                    business
-                                    centers
-                                </p>
-                                <button class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
-                                    Show Route
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Station Card 4 -->
-                    <div class="flex-none station-card">
-                        <div class="bg-white rounded-2xl shadow-lg ring-1 ring-black/10 overflow-hidden group hover:shadow-xl transition-shadow duration-300 h-full">
-                            <div class="relative h-52 overflow-hidden ">
-                                <img src="https://cdn.bdnews24.com/bdnews24/media/bdnews24-english/2023-11/10421368-b099-4b50-93c2-c7d6df6825a9/metro_rail_motijheel_051123_11.jpg"
-                                     alt="Motijheel Metro Station"
-                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                                <div class="absolute bottom-4 left-4">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-white">
-                                        Line 1
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <h3 class="text-[1.5rem] font-bold text-green-900 mb-2">Motijheel Metro Station</h3>
-                                <p class="text-gray-600 mb-4 text-lg">
-                                    Major hub connecting to shopping districts and
-                                    business
-                                    centers
-                                </p>
-                                <button class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
-                                    Show Route
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Station Card 5 -->
-                    <div class="flex-none station-card">
-                        <div class="bg-white rounded-2xl shadow-lg ring-1 ring-black/10 overflow-hidden group hover:shadow-xl transition-shadow duration-300 h-full">
-                            <div class="relative h-52 overflow-hidden ">
-                                <img src="https://tds-images.thedailystar.net/sites/default/files/styles/very_big_201/public/images/2023/12/31/karwan_bazar.jpg"
-                                     alt="Karwan-Bazar Metro Station"
-                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                                <div class="absolute bottom-4 left-4">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-white">
-                                        Line 1
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <h3 class="text-[1.5rem] font-bold text-green-900 mb-2">Karwan-Bazar Metro Station</h3>
-                                <p class="text-gray-600 mb-4 text-lg">
-                                    Major hub connecting to shopping districts and
-                                    business
-                                    centers
-                                </p>
-                                <button class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
-                                    Show Route
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Station Card 6 -->
-                    <div class="flex-none station-card">
-                        <div class="bg-white rounded-2xl shadow-lg ring-1 ring-black/10 overflow-hidden group hover:shadow-xl transition-shadow duration-300 h-full">
-                            <div class="relative h-52 overflow-hidden ">
-                                <img src="https://d2u0ktu8omkpf6.cloudfront.net/4c32ec48c8a8041a57a32a3d5a078782486a2b921b52ca56.jpg"
-                                     alt="Mirpur-10 Metro Station"
-                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                                <div class="absolute bottom-4 left-4">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-white">
-                                        Line 1
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <h3 class="text-[1.5rem] font-bold text-green-900 mb-2">Mirpur-10 Metro Station</h3>
-                                <p class="text-gray-600 mb-4 text-lg">
-                                    Major hub connecting to shopping districts and
-                                    business
-                                    centers
-                                </p>
-                                <button class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 text-lg rounded-lg inline-flex items-center justify-center gap-2 transition-colors duration-200">
-                                    Show Route
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Dots Indicator -->
-                <div class="flex justify-center mt-8 gap-2">
-                    <button class="station-dot w-3 h-3 rounded-full bg-green-600 transition-all duration-200"
-                            data-slide="0"></button>
-                    <button class="station-dot w-3 h-3 rounded-full bg-gray-300 hover:bg-gray-400 transition-all duration-200"
-                            data-slide="1"></button>
-                </div>
-            </div>
-        </div>
-</section>
-
-
-<!-- Minimal, dependency-free zoom/pan for the map -->
-<script>
-    (function () {
-        const wrapper = document.getElementById('map-wrapper');
-        const img = document.getElementById('metro-map');
-        const overlay = document.getElementById('map-overlay');
-        const indicator = document.getElementById('zoom-indicator');
-        const btnIn = document.getElementById('zoom-in');
-        const btnOut = document.getElementById('zoom-out');
-        const btnReset = document.getElementById('zoom-reset');
-
-        const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
-
-        let scale = 1, min = 1, max = 4;
-        let tx = 0, ty = 0; // translation
-        let dragging = false, sx = 0, sy = 0;
-
-        function apply() {
-            img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
-            indicator.textContent = Math.round(scale * 100) + '%';
-        }
-
-        function bound() {
-            const rect = wrapper.getBoundingClientRect();
-            const w = rect.width, h = rect.height;
-            const minTx = w - w * scale;
-            const minTy = h - h * scale;
-            tx = clamp(tx, minTx, 0);
-            ty = clamp(ty, minTy, 0);
-        }
-
-        function zoomAt(clientX, clientY, factor) {
-            const rect = wrapper.getBoundingClientRect();
-            const x = clientX - rect.left - tx;
-            const y = clientY - rect.top - ty;
-            const newScale = clamp(scale * factor, min, max);
-
-            tx = (clientX - rect.left) - x * (newScale / scale);
-            ty = (clientY - rect.top) - y * (newScale / scale);
-
-            scale = newScale;
-            bound();
-            apply();
-        }
-
-        overlay.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            const factor = e.deltaY < 0 ? 1.12 : 0.9;
-            zoomAt(e.clientX, e.clientY, factor);
-        }, { passive: false });
-
-        overlay.addEventListener('pointerdown', (e) => {
-            dragging = true;
-            sx = e.clientX; sy = e.clientY;
-            overlay.setPointerCapture(e.pointerId);
-        });
-
-        overlay.addEventListener('pointermove', (e) => {
-            if (!dragging) return;
-            tx += e.clientX - sx;
-            ty += e.clientY - sy;
-            sx = e.clientX; sy = e.clientY;
-            bound();
-            apply();
-        });
-
-        function endDrag(e) {
-            dragging = false;
-            try { overlay.releasePointerCapture(e.pointerId); } catch { }
-        }
-        overlay.addEventListener('pointerup', endDrag);
-        overlay.addEventListener('pointercancel', endDrag);
-        overlay.tabIndex = 0;
-
-        btnIn.addEventListener('click', () => {
-            const r = wrapper.getBoundingClientRect();
-            zoomAt(r.left + r.width / 2, r.top + r.height / 2, 1.2);
-        });
-        btnOut.addEventListener('click', () => {
-            const r = wrapper.getBoundingClientRect();
-            zoomAt(r.left + r.width / 2, r.top + r.height / 2, 0.83);
-        });
-        btnReset.addEventListener('click', () => {
-            scale = 1; tx = 0; ty = 0; apply();
-        });
-
-        overlay.addEventListener('keydown', (e) => {
-            if (e.key === '+' || e.key === '=') btnIn.click();
-            if (e.key === '-' || e.key === '_') btnOut.click();
-            if (e.key === '0') btnReset.click();
-        });
-
-        apply();
-    })();
-</script>
-
-<!-- Popular Metro Stations Slider Script -->
-<script>
-    (function () {
-        const track = document.getElementById('stations-track');
-        const dots = document.querySelectorAll('.station-dot');
-
-        let currentSlide = 0;
-        const totalSlides = 2; // 6 cards / 3 per slide = 2 slides
-        const cardWidth = 420 + 32; // 420px width + 32px gap (gap-8)
-
-        function updateSlider() {
-            const translateX = -currentSlide * cardWidth * 3; // Move by 3 cards each time
-            track.style.transform = `translateX(${translateX}px)`;
-
-            // Update dots
-            dots.forEach((dot, index) => {
-                if (index === currentSlide) {
-                    dot.className = 'station-dot w-3 h-3 rounded-full bg-green-600 transition-all duration-200';
-                } else {
-                    dot.className = 'station-dot w-3 h-3 rounded-full bg-gray-300 hover:bg-gray-400 transition-all duration-200';
-                }
-            });
-        }
-
-        // Dot navigation
-        dots.forEach((dot, index) => {
-            dot.addEventListener('click', () => {
-                currentSlide = index;
-                updateSlider();
-            });
-        });
-
-        // Initialize
-        updateSlider();
-
-        // Auto-play
-        setInterval(() => {
-            if (currentSlide < totalSlides - 1) {
-                currentSlide++;
-            } else {
-                currentSlide = 0;
-            }
-            updateSlider();
-        }, 4000); // Change slide every 4 seconds
-    })();
-</script>
+    <!-- Popular Metro Stations Section -->
+    @await Html.PartialAsync("_PopularMetroSection")
+</body>
+</html>

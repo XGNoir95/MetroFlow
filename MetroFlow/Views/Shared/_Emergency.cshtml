@@ -1,0 +1,149 @@
+@{
+    ViewData["Title"] = "Emergency Assistance";
+}
+
+<!-- Emergency Button -->
+<div id="distressBtn" class="fixed bottom-28 right-4 z-40">
+    <button onclick="openDistressModal()"
+            class="bg-red-600 hover:bg-red-700 text-white py-4 px-5 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110"
+            aria-label="Emergency">
+        <i class="fas fa-exclamation-triangle text-2xl"></i>
+    </button>
+</div>
+
+<!-- Distress Modal -->
+<div id="distressModal" class="fixed inset-0 bg-black bg-opacity-70 z-[70] hidden flex items-start justify-center backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl my-4 transform transition-all duration-300 scale-90 opacity-0" id="distressModalContent">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-red-600 to-red-700 text-white px-6 py-6 rounded-t-3xl relative">
+            <button onclick="closeDistressModal()" class="absolute top-4 right-4 text-white hover:text-gray-200">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <div class="text-center">
+                <h3 class="text-2xl font-bold">Emergency Assistance</h3>
+                <p class="text-red-100 text-lg mt-1">Get immediate help for metro-related emergencies</p>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="px-6 py-6">
+            <!-- Emergency Type -->
+            <div class="mb-5">
+                <label class="block text-xl font-medium text-gray-700 mb-3">Type of Emergency</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="selectDistressType('Medical', event)" class="distress-type-btn p-2 border-2 border-gray-200 rounded-lg">Medical</button>
+                    <button onclick="selectDistressType('Security', event)" class="distress-type-btn p-2 border-2 border-gray-200 rounded-lg">Security</button>
+                    <button onclick="selectDistressType('Fire', event)" class="distress-type-btn p-2 border-2 border-gray-200 rounded-lg">Fire/Smoke</button>
+                    <button onclick="selectDistressType('Other', event)" class="distress-type-btn p-2 border-2 border-gray-200 rounded-lg">Other</button>
+                </div>
+            </div>
+
+            <!-- Station -->
+            <div class="mb-5">
+                <label class="block text-xl font-medium text-gray-700 mb-2">Your Location</label>
+                <select id="distressStationName" class="w-full p-4 border border-gray-300 rounded-lg">
+                    <option value="">Select nearest station</option>
+                    <option value="Uttara North">Uttara North</option>
+                    <option value="Pallabi">Pallabi</option>
+                    <option value="Mirpur 10">Mirpur 10</option>
+                    <option value="Farmgate">Farmgate</option>
+                    <option value="Shahbagh">Shahbagh</option>
+                    <option value="Motijheel">Motijheel</option>
+                </select>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-5">
+                <label class="block text-xl font-medium text-gray-700 mb-2">Brief Description</label>
+                <textarea id="distressDescription" rows="5" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Describe the situation..."></textarea>
+            </div>
+
+            <!-- Submit -->
+            <div class="space-y-2">
+                <button onclick="submitDistressReport()" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold p-4 rounded-xl">
+                    Send Distress Report
+                </button>
+                <button onclick="closeDistressModal()" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-medium p-4 rounded-xl">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        let selectedDistressType = null;
+
+        function openDistressModal() {
+            const modal = document.getElementById('distressModal');
+            const content = document.getElementById('distressModalContent');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-90', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDistressModal() {
+            const modal = document.getElementById('distressModal');
+            const content = document.getElementById('distressModalContent');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-90', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+                selectedDistressType = null;
+                document.getElementById('distressStationName').value = '';
+                document.getElementById('distressDescription').value = '';
+            }, 300);
+        }
+
+        function selectDistressType(type, event) {
+            selectedDistressType = type;
+            document.querySelectorAll('.distress-type-btn').forEach(btn => {
+                btn.classList.remove('border-red-500', 'bg-red-50');
+                btn.classList.add('border-gray-200');
+            });
+            event.currentTarget.classList.remove('border-gray-200');
+            event.currentTarget.classList.add('border-red-500', 'bg-red-50');
+        }
+
+        async function submitDistressReport() {
+            const stationName = document.getElementById('distressStationName').value;
+            const description = document.getElementById('distressDescription').value;
+
+            if (!selectedDistressType || !stationName) {
+                alert("Please select emergency type and station.");
+                return;
+            }
+
+            const distress = {
+                EmergencyType: selectedDistressType,
+                StationName: stationName,
+                Description: description
+            };
+
+            try {
+                const response = await fetch('/api/distress/report', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(distress)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(`Distress report submitted successfully!\nReport ID: ${data.reportId}`);
+                    closeDistressModal();
+                } else {
+                    alert("Failed to submit report.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Error submitting report.");
+            }
+        }
+    </script>
+}
+    

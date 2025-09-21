@@ -1,0 +1,1050 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetroFlow Journey Partner</title>
+    <!-- FontAwesome CDN for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @@keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @@keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .notification-enter {
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .notification-exit {
+            animation: slideOutRight 0.3s ease-in;
+        }
+
+        /* Pulse animation for active tracking */
+        @@keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .animate-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Status card hover effect */
+        #trackingStatusCard:hover {
+            transform: translateY(-2px);
+            transition: transform 0.2s ease;
+        }
+
+        /* Notification container styling - UPDATED */
+        #liveNotificationContainer {
+            max-height: 80vh;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+            #liveNotificationContainer::-webkit-scrollbar {
+                display: none;
+            }
+
+            /* Improved notification styling to match Journey Partner design */
+            #liveNotificationContainer > div {
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+                border-left: 4px solid;
+                padding: 16px;
+                margin-bottom: 12px;
+                backdrop-filter: none; /* Remove blur effect */
+                -webkit-backdrop-filter: none;
+                transform: translateX(100%);
+                opacity: 0;
+                transition: all 0.3s ease;
+            }
+
+                #liveNotificationContainer > div.translate-x-0 {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+
+        /* Improved mobile responsiveness */
+        @@media (max-width: 640px) {
+            #trackingStatusCard {
+                left: 2px;
+                right: 2px;
+                max-width: none;
+            }
+
+            #liveNotificationContainer {
+                right: 2px;
+                max-width: calc(100vw - 16px);
+            }
+
+            .notification {
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    
+
+    <!-- Geolocator Button (Fixed position, above emergency button) -->
+    <div id="geolocatorBtn" class="fixed bottom-52 right-4 z-40">
+        <button onclick="handleGeolocatorClick()" class="bg-green-700 hover:bg-amber-900 text-white py-4 px-6 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110" aria-label="Journey Partner">
+            <i class="fas fa-location-dot text-2xl"></i>
+        </button>
+    </div>
+
+    <!-- Live Notification Container -->
+    <div id="liveNotificationContainer" class="fixed top-20 right-4 z-50 space-y-2 max-w-sm hidden">
+        <!-- Notifications will be dynamically added here -->
+    </div>
+
+    <!-- Persistent Tracking Status Card -->
+    <div id="trackingStatusCard" class="fixed top-20 left-4 z-40 bg-white rounded-xl shadow-lg border-l-4 border-green-500 p-4 max-w-xs hidden">
+        <div class="flex items-center space-x-3">
+            <div class="flex-shrink-0">
+                <i class="fas fa-route text-green-600 text-lg animate-pulse"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900">
+                    To: <span id="statusCardDestination">-</span>
+                </p>
+                <p class="text-sm text-gray-500">
+                    <span id="statusCardDistance">Calculating...</span> • <span id="statusCardTime">Now</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Geolocator Modal -->
+    <div id="geolocatorModal" class="fixed inset-0 bg-black bg-opacity-70 z-[70] hidden flex items-center justify-center backdrop-blur-sm p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg my-4 transform transition-all duration-300 scale-90 opacity-0" id="geolocatorModalContent">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-6 rounded-t-3xl relative">
+                <button id="closeGeolocatorModal" class="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-location-dot text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white">Journey Partner</h3>
+                    <p class="text-green-100 text-lg mt-1">Track your metro journey to destination</p>
+                </div>
+            </div>
+
+            <!-- Setup Mode -->
+            <div id="setupMode" class="px-6 py-6">
+                <!-- Destination Selection -->
+                <div class="mb-5">
+                    <label class="block text-[1.2rem] font-medium text-gray-700 mb-3">Select Your Destination</label>
+                    <select id="destinationStation" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-[1.1rem]">
+                        <option value="">Choose destination station</option>
+                        <option value="uttara-north">Uttara North</option>
+                        <option value="uttara-center">Uttara Center</option>
+                        <option value="pallabi">Pallabi</option>
+                        <option value="mirpur-11">Mirpur 11</option>
+                        <option value="mirpur-10">Mirpur 10</option>
+                        <option value="kazipara">Kazipara</option>
+                        <option value="shewrapara">Shewrapara</option>
+                        <option value="agargaon">Agargaon</option>
+                        <option value="bijoy-sarani">Bijoy Sarani</option>
+                        <option value="farmgate">Farmgate</option>
+                        <option value="karwan-bazar">Karwan Bazar</option>
+                        <option value="shahbagh">Shahbagh</option>
+                        <option value="dhaka-university">Dhaka University</option>
+                        <option value="secretariat">Secretariat</option>
+                        <option value="motijheel">Motijheel</option>
+                        <option value="basa">Basa</option>
+                    </select>
+                </div>
+
+                <!-- Notification Preference -->
+                <div class="mb-5">
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" id="enableNotifications" class="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500" checked>
+                        <span class="text-gray-700 font-medium">Enable live notifications</span>
+                    </label>
+                    <p class="text-sm text-gray-500 mt-1">Get real-time updates about your journey progress</p>
+                </div>
+
+                <!-- Start Tracking Button -->
+                <button onclick="startTracking()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg text-[1.1rem]">
+                    <i class="fas fa-play"></i>
+                    <span>Start Journey Tracking</span>
+                </button>
+            </div>
+
+            <!-- Tracking Mode -->
+            <div id="trackingMode" class="px-6 py-6 hidden">
+                <!-- Current Status -->
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-route text-green-600 text-3xl"></i>
+                    </div>
+                    <h4 class="text-2xl font-bold text-gray-800">Tracking Journey</h4>
+                    <p class="text-green-600 text-xl">Destination: <span id="currentDestination" class="font-semibold"></span></p>
+                </div>
+
+                <!-- Status Information -->
+                <div class="bg-green-50 rounded-xl p-4 mb-5 text-lg">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-gray-700 font-medium">Status:</span>
+                        <span id="trackingStatus" class="text-green-600 font-semibold">Tracking...</span>
+                    </div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-gray-700 font-medium">Distance to Destination:</span>
+                        <span id="distanceToDestination" class="text-gray-600">Calculating...</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-700 font-medium">Last Updated:</span>
+                        <span id="lastUpdated" class="text-gray-600">Now</span>
+                    </div>
+                </div>
+
+                <!-- Stop Tracking Button -->
+                <button onclick="stopTracking()" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg">
+                    <i class="fas fa-stop"></i>
+                    <span>Stop Tracking</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Destination Reached Modal -->
+    <div id="destinationReachedModal" class="fixed inset-0 bg-black bg-opacity-70 z-[80] hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300 scale-90 opacity-0" id="destinationReachedContent">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-8 rounded-t-3xl">
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-check-circle text-4xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2">Destination Reached!</h3>
+                    <p class="text-green-100">You have successfully arrived at your destination</p>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="px-8 py-8 text-center">
+                <p class="text-lg text-gray-700 mb-6">Thank you for using MetroFlow Journey Partner!</p>
+                <button onclick="closeDestinationReachedModal()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200">
+                    Complete Journey
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Geolocator Login Prompt Modal -->
+    <div id="geolocatorLoginPromptModal" class="fixed inset-0 bg-black bg-opacity-60 z-[75] hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300 scale-90 opacity-0" id="geolocatorLoginPromptContent">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-6 rounded-t-3xl relative">
+                <button id="closeGeolocatorLoginPrompt" class="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-lock text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white">Login Required</h3>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="px-8 py-8 text-center">
+                <p class="text-lg text-gray-700 mb-8">Please login to use Journey Partner and track your metro journey with personalized features.</p>
+
+                <div class="space-y-4">
+                    <a href="/User/Login" class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Login Now</span>
+                    </a>
+
+                    <p class="text-gray-500 text-sm">Don't have an account?</p>
+
+                    <a href="/User/Signup" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-xl transition-colors duration-200 flex items-center justify-center space-x-2">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Create Account</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isTracking = false;
+        let watchId = null;
+        let destinationCoords = null;
+        let selectedDestination = '';
+        let notificationsEnabled = true;
+        let lastDistance = null;
+        let notificationPermission = 'default';
+
+        // Metro station coordinates (approximate)
+        const stationCoordinates = {
+            'uttara-north': { lat: 23.8759, lng: 90.3795 },
+            'uttara-center': { lat: 23.8700, lng: 90.3797 },
+            'pallabi': { lat: 23.8291, lng: 90.3664 },
+            'mirpur-11': { lat: 23.8178, lng: 90.3684 },
+            'mirpur-10': { lat: 23.8068, lng: 90.3683 },
+            'kazipara': { lat: 23.7978, lng: 90.3717 },
+            'shewrapara': { lat: 23.7908, lng: 90.3889 },
+            'agargaon': { lat: 23.7751, lng: 90.3893 },
+            'bijoy-sarani': { lat: 23.7630, lng: 90.3892 },
+            'farmgate': { lat: 23.7562, lng: 90.3897 },
+            'karwan-bazar': { lat: 23.7505, lng: 90.3933 },
+            'shahbagh': { lat: 23.7387, lng: 90.3950 },
+            'dhaka-university': { lat: 23.7307, lng: 90.3954 },
+            'secretariat': { lat: 23.7234, lng: 90.3957 },
+            'motijheel': { lat: 23.7167, lng: 90.4176 },
+            'basa': { lat: 23.7551698, lng: 90.4051142 }
+        };
+
+        // Check if user is logged in (mock function - replace with actual implementation)
+        function isUserLoggedIn() {
+            // This should be replaced with actual server-side check
+            // return @(User.Identity?.IsAuthenticated == true ? "true" : "false");
+            return true; // For demo purposes
+        }
+
+        // Request notification permission
+        async function requestNotificationPermission() {
+            if ('Notification' in window) {
+                try {
+                    notificationPermission = await Notification.requestPermission();
+                    if (notificationPermission === 'granted') {
+                        showLiveNotification('🔔 Notifications enabled!', 'You will receive live updates about your journey.', 'success');
+                    }
+                } catch (error) {
+                    console.error('Error requesting notification permission:', error);
+                }
+            }
+        }
+
+        // Show live notification
+        function showLiveNotification(title, message, type = 'info', duration = 4000) {
+            if (!notificationsEnabled) return;
+
+            const container = document.getElementById('liveNotificationContainer');
+            container.classList.remove('hidden');
+
+            const notification = document.createElement('div');
+            notification.className = `
+                transform transition-all duration-300 translate-x-full opacity-0
+                bg-white rounded-xl shadow-lg border-l-4 p-4 mb-3 max-w-sm
+                ${type === 'success' ? 'border-green-500' :
+                  type === 'warning' ? 'border-yellow-500' :
+                  type === 'error' ? 'border-red-500' : 'border-blue-500'}
+            `;
+
+            const icon = type === 'success' ? 'fa-check-circle text-green-500' :
+                        type === 'warning' ? 'fa-exclamation-triangle text-yellow-500' :
+                        type === 'error' ? 'fa-times-circle text-red-500' : 'fa-info-circle text-blue-500';
+
+            notification.innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <i class="fas ${icon} text-lg mt-0.5 flex-shrink-0"></i>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-sm font-semibold text-gray-900">${title}</h4>
+                        <p class="text-sm text-gray-600 mt-1">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+            `;
+
+            container.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full', 'opacity-0');
+                notification.classList.add('translate-x-0', 'opacity-100');
+            }, 10);
+
+            // Auto remove after duration
+            setTimeout(() => {
+                notification.classList.remove('translate-x-0', 'opacity-100');
+                notification.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                        if (container.children.length === 0) {
+                            container.classList.add('hidden');
+                        }
+                    }
+                }, 300);
+            }, duration);
+        }
+
+        // Show browser notification
+        function showBrowserNotification(title, message, icon = null) {
+            if (notificationPermission === 'granted' && 'Notification' in window) {
+                try {
+                    new Notification(title, {
+                        body: message,
+                        icon: icon || '/favicon.ico',
+                        tag: 'metroflow-journey',
+                        requireInteraction: title.includes('Reached'),
+                        silent: false
+                    });
+                } catch (error) {
+                    console.error('Error showing browser notification:', error);
+                }
+            }
+        }
+
+        // Update tracking status card
+        function updateTrackingStatusCard(destination, distance, time) {
+            const card = document.getElementById('trackingStatusCard');
+            const destinationEl = document.getElementById('statusCardDestination');
+            const distanceEl = document.getElementById('statusCardDistance');
+            const timeEl = document.getElementById('statusCardTime');
+
+            if (isTracking && destination) {
+                destinationEl.textContent = getStationDisplayName(destination);
+                distanceEl.textContent = distance;
+                timeEl.textContent = time;
+                card.classList.remove('hidden');
+            } else {
+                card.classList.add('hidden');
+            }
+        }
+
+        // Handle geolocator button click with authentication check
+        function handleGeolocatorClick() {
+            if (isUserLoggedIn()) {
+                openGeolocatorModal();
+            } else {
+                showGeolocatorLoginPrompt();
+            }
+        }
+
+        // Show geolocator login prompt
+        function showGeolocatorLoginPrompt() {
+            const modal = document.getElementById('geolocatorLoginPromptModal');
+            const content = document.getElementById('geolocatorLoginPromptContent');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-90', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Hide geolocator login prompt
+        function hideGeolocatorLoginPrompt() {
+            const modal = document.getElementById('geolocatorLoginPromptModal');
+            const content = document.getElementById('geolocatorLoginPromptContent');
+
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-90', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        // Initialize tracking on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (isUserLoggedIn()) {
+                initializeTracking();
+            }
+            setupGeolocatorEventListeners();
+
+            // Request notification permission if not already granted
+            if ('Notification' in window && Notification.permission === 'default') {
+                setTimeout(requestNotificationPermission, 2000);
+            } else {
+                notificationPermission = Notification.permission;
+            }
+        });
+
+        // Initialize tracking from localStorage (only for logged-in users)
+        function initializeTracking() {
+            const trackingData = localStorage.getItem('metroflow_tracking');
+
+            if (trackingData) {
+                try {
+                    const data = JSON.parse(trackingData);
+
+                    if (data.isTracking && data.destination) {
+                        selectedDestination = data.destination;
+                        destinationCoords = stationCoordinates[selectedDestination];
+                        isTracking = true;
+                        notificationsEnabled = data.notificationsEnabled !== false;
+
+                        startLocationWatching();
+                        updateTrackingButton();
+
+                        showLiveNotification(
+                            '🚇 Journey Resumed',
+                            `Continuing tracking to ${getStationDisplayName(selectedDestination)}`,
+                            'info'
+                        );
+
+                        console.log('Resumed tracking to:', getStationDisplayName(selectedDestination));
+                    }
+                } catch (error) {
+                    console.error('Error loading tracking data:', error);
+                    clearTrackingData();
+                }
+            }
+        }
+
+        // Save tracking data to localStorage
+        function saveTrackingData() {
+            const data = {
+                isTracking: isTracking,
+                destination: selectedDestination,
+                notificationsEnabled: notificationsEnabled,
+                timestamp: new Date().getTime()
+            };
+            localStorage.setItem('metroflow_tracking', JSON.stringify(data));
+        }
+
+        // Clear tracking data from localStorage
+        function clearTrackingData() {
+            localStorage.removeItem('metroflow_tracking');
+        }
+
+        // Open geolocator modal (only called when user is authenticated)
+        function openGeolocatorModal() {
+            const modal = document.getElementById('geolocatorModal');
+            const content = document.getElementById('geolocatorModalContent');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-90', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+
+            if (isTracking) {
+                showTrackingMode();
+            } else {
+                showSetupMode();
+            }
+        }
+
+        // Close geolocator modal
+        function closeGeolocatorModal() {
+            const modal = document.getElementById('geolocatorModal');
+            const content = document.getElementById('geolocatorModalContent');
+
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-90', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        // Show setup mode
+        function showSetupMode() {
+            document.getElementById('setupMode').classList.remove('hidden');
+            document.getElementById('trackingMode').classList.add('hidden');
+            document.getElementById('enableNotifications').checked = notificationsEnabled;
+        }
+
+        // Show tracking mode
+        function showTrackingMode() {
+            document.getElementById('setupMode').classList.add('hidden');
+            document.getElementById('trackingMode').classList.remove('hidden');
+            document.getElementById('currentDestination').textContent = getStationDisplayName(selectedDestination);
+        }
+
+        // Start tracking
+        function startTracking() {
+            const destination = document.getElementById('destinationStation').value;
+            const enableNotifs = document.getElementById('enableNotifications').checked;
+
+            if (!destination) {
+                alert('Please select a destination station first.');
+                return;
+            }
+
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by this browser.');
+                return;
+            }
+
+            selectedDestination = destination;
+            destinationCoords = stationCoordinates[destination];
+            isTracking = true;
+            notificationsEnabled = enableNotifs;
+            lastDistance = null;
+
+            saveTrackingData();
+            startLocationWatching();
+            showTrackingMode();
+            updateTrackingButton();
+
+            // Show start notification
+            showLiveNotification(
+                '🚀 Journey Started!',
+                `Tracking your journey to ${getStationDisplayName(selectedDestination)}`,
+                'success'
+            );
+
+            showBrowserNotification(
+                'MetroFlow Journey Partner',
+                `Started tracking your journey to ${getStationDisplayName(selectedDestination)}`
+            );
+        }
+
+        // Start location watching
+        function startLocationWatching() {
+            if (!navigator.geolocation) return;
+
+            watchId = navigator.geolocation.watchPosition(
+                updateLocation,
+                handleLocationError,
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 5000
+                }
+            );
+        }
+
+        // Stop tracking
+        function stopTracking() {
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+
+            isTracking = false;
+            selectedDestination = '';
+            destinationCoords = null;
+            lastDistance = null;
+
+            clearTrackingData();
+            showSetupMode();
+            updateTrackingButton();
+            updateTrackingStatusCard('', '', '');
+            closeGeolocatorModal();
+
+            showLiveNotification(
+                '⏹️ Tracking Stopped',
+                'Your journey tracking has been stopped.',
+                'info'
+            );
+
+            console.log('Tracking stopped by user');
+        }
+
+        // Update location
+        function updateLocation(position) {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+
+            if (destinationCoords) {
+                const distance = calculateDistance(userLat, userLng, destinationCoords.lat, destinationCoords.lng);
+                const distanceText = distance < 1 ? Math.round(distance * 1000) + ' meters' : distance.toFixed(1) + ' km';
+                const currentTime = new Date().toLocaleTimeString();
+
+                // Update UI elements
+                const distanceElement = document.getElementById('distanceToDestination');
+                const lastUpdatedElement = document.getElementById('lastUpdated');
+
+                if (distanceElement) {
+                    distanceElement.textContent = distanceText;
+                }
+                if (lastUpdatedElement) {
+                    lastUpdatedElement.textContent = currentTime;
+                }
+
+                // Update tracking status card
+                updateTrackingStatusCard(selectedDestination, distanceText, currentTime);
+
+                // Check for distance-based notifications
+                if (lastDistance !== null && notificationsEnabled) {
+                    // Approaching destination notifications
+                    if (lastDistance > 0.5 && distance <= 0.5) {
+                        showLiveNotification(
+                            '🎯 Approaching Destination',
+                            `You're within 500m of ${getStationDisplayName(selectedDestination)}!`,
+                            'warning'
+                        );
+                        showBrowserNotification(
+                            'Approaching Destination',
+                            `You're within 500m of ${getStationDisplayName(selectedDestination)}!`
+                        );
+                    }
+
+                    if (lastDistance > 0.2 && distance <= 0.2) {
+                        showLiveNotification(
+                            '🚇 Almost There!',
+                            `${getStationDisplayName(selectedDestination)} is just ${Math.round(distance * 1000)}m away!`,
+                            'warning'
+                        );
+                        showBrowserNotification(
+                            'Almost There!',
+                            `${getStationDisplayName(selectedDestination)} is just ${Math.round(distance * 1000)}m away!`
+                        );
+                    }
+
+                    // Progress updates every 1km
+                    if (distance >= 1 && Math.floor(lastDistance) !== Math.floor(distance)) {
+                        showLiveNotification(
+                            '📍 Distance Update',
+                            `${distance.toFixed(1)} km remaining to ${getStationDisplayName(selectedDestination)}`,
+                            'info',
+                            3000
+                        );
+                    }
+                }
+
+                lastDistance = distance;
+
+                // Check if destination is reached (within 200 meters)
+                if (distance < 0.2) {
+                    destinationReached();
+                }
+
+                console.log(`Distance to ${getStationDisplayName(selectedDestination)}: ${distance.toFixed(2)} km`);
+            }
+        }
+
+        // Handle location error
+        function handleLocationError(error) {
+            let message = 'Unable to retrieve your location.';
+
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message = 'Location access denied. Please enable location permissions.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = 'Location information unavailable.';
+                    break;
+                case error.TIMEOUT:
+                    message = 'Location request timed out.';
+                    break;
+            }
+
+            const statusElement = document.getElementById('trackingStatus');
+            if (statusElement) {
+                statusElement.textContent = 'Error: ' + message;
+            }
+
+            showLiveNotification(
+                '❌ Location Error',
+                message,
+                'error'
+            );
+
+            console.error('Location error:', message);
+        }
+
+        // Calculate distance between two coordinates (Haversine formula)
+        function calculateDistance(lat1, lng1, lat2, lng2) {
+            const R = 6371; // Earth's radius in kilometers
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLng/2) * Math.sin(dLng/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // Get station display name
+        function getStationDisplayName(stationId) {
+            const names = {
+                'uttara-north': 'Uttara North',
+                'uttara-center': 'Uttara Center',
+                'pallabi': 'Pallabi',
+                'mirpur-11': 'Mirpur 11',
+                'mirpur-10': 'Mirpur 10',
+                'kazipara': 'Kazipara',
+                'shewrapara': 'Shewrapara',
+                'agargaon': 'Agargaon',
+                'bijoy-sarani': 'Bijoy Sarani',
+                'farmgate': 'Farmgate',
+                'karwan-bazar': 'Karwan Bazar',
+                'shahbagh': 'Shahbagh',
+                'dhaka-university': 'Dhaka University',
+                'secretariat': 'Secretariat',
+                'motijheel': 'Motijheel',
+                'basa': 'Basa'
+            };
+            return names[stationId] || stationId;
+        }
+
+        // Destination reached
+        function destinationReached() {
+            // Stop tracking
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+
+            isTracking = false;
+            clearTrackingData();
+            closeGeolocatorModal();
+
+            // Show destination notifications
+            showLiveNotification(
+                '🎉 Destination Reached!',
+                `Welcome to ${getStationDisplayName(selectedDestination)}! Journey completed successfully.`,
+                'success',
+                6000
+            );
+
+            showBrowserNotification(
+                'Destination Reached!',
+                `You have arrived at ${getStationDisplayName(selectedDestination)}. Journey completed!`
+            );
+
+            // Show destination reached modal
+            setTimeout(() => {
+                showDestinationReachedModal();
+            }, 500);
+
+            updateTrackingButton();
+            updateTrackingStatusCard('', '', '');
+
+            console.log('Destination reached:', getStationDisplayName(selectedDestination));
+        }
+
+        // Show destination reached modal
+        function showDestinationReachedModal() {
+            const modal = document.getElementById('destinationReachedModal');
+            const content = document.getElementById('destinationReachedContent');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-90', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close destination reached modal
+        function closeDestinationReachedModal() {
+            const modal = document.getElementById('destinationReachedModal');
+            const content = document.getElementById('destinationReachedContent');
+
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-90', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        // Update tracking button appearance
+        function updateTrackingButton() {
+            const btn = document.querySelector('#geolocatorBtn button');
+            if (btn) {
+                if (isTracking) {
+                    btn.classList.remove('bg-green-700', 'hover:bg-amber-900');
+                    btn.classList.add('bg-green-500', 'hover:bg-green-600');
+                    btn.innerHTML = '<i class="fas fa-location-dot text-2xl animate-pulse"></i>';
+                } else {
+                    btn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                    btn.classList.add('bg-green-700', 'hover:bg-amber-900');
+                    btn.innerHTML = '<i class="fas fa-location-dot text-2xl"></i>';
+                }
+            }
+        }
+
+        // Setup event listeners
+        function setupGeolocatorEventListeners() {
+            const closeBtn = document.getElementById('closeGeolocatorModal');
+            const modal = document.getElementById('geolocatorModal');
+            const closeLoginPromptBtn = document.getElementById('closeGeolocatorLoginPrompt');
+            const loginPromptModal = document.getElementById('geolocatorLoginPromptModal');
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeGeolocatorModal);
+            }
+
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeGeolocatorModal();
+                    }
+                });
+            }
+
+            if (closeLoginPromptBtn) {
+                closeLoginPromptBtn.addEventListener('click', hideGeolocatorLoginPrompt);
+            }
+
+            if (loginPromptModal) {
+                loginPromptModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        hideGeolocatorLoginPrompt();
+                    }
+                });
+            }
+
+            // Escape key handling
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (!document.getElementById('geolocatorModal').classList.contains('hidden')) {
+                        closeGeolocatorModal();
+                    }
+                    if (!document.getElementById('geolocatorLoginPromptModal').classList.contains('hidden')) {
+                        hideGeolocatorLoginPrompt();
+                    }
+                    if (!document.getElementById('destinationReachedModal').classList.contains('hidden')) {
+                        closeDestinationReachedModal();
+                    }
+                }
+            });
+        }
+
+        // Handle page visibility changes (when user switches tabs or minimizes browser)
+        document.addEventListener('visibilitychange', function() {
+            if (isTracking && isUserLoggedIn()) {
+                if (document.hidden) {
+                    console.log('Page hidden - tracking continues in background');
+                    // Show notification that tracking continues in background
+                    if (notificationsEnabled) {
+                        showBrowserNotification(
+                            'MetroFlow - Background Tracking',
+                            'Journey tracking continues in the background'
+                        );
+                    }
+                } else {
+                    console.log('Page visible - tracking active');
+                    // Refresh tracking if needed
+                    if (watchId === null && isTracking) {
+                        startLocationWatching();
+                    }
+                    // Welcome back notification
+                    if (isTracking) {
+                        showLiveNotification(
+                            '👋 Welcome Back!',
+                            `Still tracking to ${getStationDisplayName(selectedDestination)}`,
+                            'info',
+                            3000
+                        );
+                    }
+                }
+            }
+        });
+
+        // Handle page unload (save state before leaving)
+        window.addEventListener('beforeunload', function() {
+            if (isTracking && isUserLoggedIn()) {
+                saveTrackingData();
+                console.log('Page unloading - tracking data saved');
+            }
+        });
+
+        // Service Worker registration for better background tracking (optional)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                // Register service worker for background notifications
+                // This would need a separate service worker file
+                console.log('Service Worker support detected');
+            });
+        }
+
+        // Handle online/offline status
+        window.addEventListener('online', function() {
+            if (isTracking) {
+                showLiveNotification(
+                    '🌐 Connection Restored',
+                    'Back online - tracking resumed',
+                    'success',
+                    3000
+                );
+            }
+        });
+
+        window.addEventListener('offline', function() {
+            if (isTracking) {
+                showLiveNotification(
+                    '📴 Connection Lost',
+                    'Tracking will resume when back online',
+                    'warning',
+                    4000
+                );
+            }
+        });
+
+        // Battery status monitoring (if supported)
+        if ('getBattery' in navigator) {
+            navigator.getBattery().then(function(battery) {
+                battery.addEventListener('levelchange', function() {
+                    if (isTracking && battery.level < 0.15 && notificationsEnabled) {
+                        showLiveNotification(
+                            '🔋 Low Battery Warning',
+                            'Battery is below 15%. Consider stopping tracking to save power.',
+                            'warning',
+                            5000
+                        );
+                    }
+                });
+            });
+        }
+
+        // Make functions available globally
+        window.closeGeolocatorModal = closeGeolocatorModal;
+        window.hideGeolocatorLoginPrompt = hideGeolocatorLoginPrompt;
+        window.closeDestinationReachedModal = closeDestinationReachedModal;
+        window.handleGeolocatorClick = handleGeolocatorClick;
+        window.startTracking = startTracking;
+        window.stopTracking = stopTracking;
+
+        // Auto-clear old notifications (cleanup)
+        setInterval(function() {
+            const container = document.getElementById('liveNotificationContainer');
+            const notifications = container.children;
+
+            if (notifications.length > 5) {
+                // Remove oldest notifications if more than 5
+                for (let i = 0; i < notifications.length - 5; i++) {
+                    notifications[i].remove();
+                }
+            }
+
+            if (notifications.length === 0) {
+                container.classList.add('hidden');
+            }
+        }, 10000); // Check every 10 seconds
+    </script>
+</body>
+</html>

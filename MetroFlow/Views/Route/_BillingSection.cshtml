@@ -1,0 +1,806 @@
+﻿@model MetroFlow.Models.RoutePlannerViewModel
+@if (Model.HasBillingInfo)
+{
+    <!-- Billing Section with proper container alignment -->
+    <div class="container mx-auto px-4 py-8">
+        <!-- Billing & Fare Section -->
+        <div id="billingSection" class="bg-white rounded-2xl p-8 shadow-2xl">
+            <!-- Header -->
+            <div class="flex items-center justify-center mb-8 mt-2">
+                <div class="bg-green-600 rounded-full p-3 mr-4">
+                    <svg class="w-8 h-8 text-green-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                </div>
+                <h2 class="text-4xl font-bold text-gray-800 text-center">Fare & Payment Options</h2>
+            </div>
+            <!-- Enhanced Route Summary with Green Theme -->
+            <div class="bg-gradient-to-br from-green-600 via-green-700 to-emerald-800 rounded-2xl p-8 mb-8 text-white shadow-xl relative overflow-hidden">
+                <!-- Background Pattern -->
+                <div class="absolute inset-0 opacity-10">
+                    <svg class="w-full h-full" fill="currentColor" viewBox="0 0 100 100">
+                        <defs>
+                            <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" stroke-width="0.5" />
+                            </pattern>
+                        </defs>
+                        <rect width="100" height="100" fill="url(#grid)" />
+                    </svg>
+                </div>
+                <!-- Journey Header -->
+                <div class="relative z-10 mb-6">
+                    <div class="flex items-center justify-center">
+                        <div class="flex items-center space-x-2">
+                            <div class="bg-white bg-opacity-20 rounded-full p-3 mr-2">
+                                <svg class="w-8 h-8 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 01.553-.894L9 2l6 3 6-3v15l-6 3-6-3z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-3xl font-bold">Your Metro Journey</h3>
+                        </div>
+                    </div>
+                </div>
+                <!-- Route Path -->
+                <div class="relative z-10 bg-white bg-opacity-15 rounded-xl p-6 backdrop-blur-sm border border-white border-opacity-20">
+                    <div class="flex items-center justify-between mt-3">
+                        <!-- Origin Station -->
+                        <div class="flex flex-col items-center space-y-2">
+                            <div class="bg-green-500 text-white pr-6 pl-5 py-2 rounded-full text-[1.0rem] font-bold shadow-lg">
+                                <svg class="w-4 h-4 inline mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                FROM
+                            </div>
+                            <div class="text-center">
+                                <div class="font-bold text-[1.2rem]">@Model.FareBilling.OriginStationName</div>
+                                <div class="text-gray-100 text-[1.0rem]">Origin Station</div>
+                            </div>
+                        </div>
+                        <!-- Journey Line with Train Icon -->
+                        <div class="flex-1 mx-8 relative">
+                            <div class="border-t-2 border-dashed border-green-200 relative">
+                                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400 rounded-full p-2 shadow-lg">
+                                    <svg class="w-12 h-12 text-gray-700 text-xs" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M4 15.5C4 17.43 5.57 19 7.5 19L6 20.5H7.5L9 19H15L16.5 20.5H18L16.5 19C18.43 19 20 17.43 20 15.5V5C20 3.57 18.43 2 16.5 2H7.5C5.57 2 4 3.57 4 5V15.5M7.5 4H16.5C17.33 4 18 4.67 18 5.5V10H6V5.5C6 4.67 6.67 4 7.5 4M6 12H18V15.5C18 16.33 17.33 17 16.5 17H7.5C6.67 17 6 16.33 6 15.5V12M7.5 13.5C8.33 13.5 9 14.17 9 15S8.33 16.5 7.5 16.5 6 15.83 6 15 6.67 13.5 7.5 13.5M16.5 13.5C17.33 13.5 18 14.17 18 15S17.33 16.5 16.5 16.5 15 15.83 15 15 15.67 13.5 16.5 13.5Z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="text-center mt-10">
+                                <div class="text-gray-100 text-[1.2rem] font-medium">Metro Rail Journey</div>
+                            </div>
+                        </div>
+                        <!-- Destination Station -->
+                        <div class="flex flex-col items-center space-y-2">
+                            <div class=" bg-red-500 text-white pr-6 pl-5 py-2 rounded-full text-[1.0rem] font-bold shadow-lg">
+                                <svg class="w-4 h-4 inline mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                TO
+                            </div>
+                            <div class="text-center">
+                                <div class="font-bold text-[1.2rem]">@Model.FareBilling.DestinationStationName</div>
+                                <div class="text-green-100 text-[1.0rem]">Destination Station</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Journey Stats - Only Metro Time and Stations -->
+                    <div class="grid grid-cols-2 gap-6 mt-6 pt-6 border-t border-white border-opacity-20">
+                        <div class="text-center">
+                            <div class="text-4xl font-bold text-gray-100">@Model.RouteInfo.MetroTime</div>
+                            <div class="text-gray-100 text-lg">Minutes by Metro</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-4xl font-bold text-amber-400">@Model.FareBilling.DistanceInStations</div>
+                            <div class="text-amber-100 text-lg">Total Stations</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Payment Methods with Uniform Styling - Both start neutral -->
+            <div class="grid md:grid-cols-2 gap-6 mb-2">
+                @foreach (var method in Model.FareBilling.PaymentMethods)
+                {
+                    <div class="relative group h-full">
+                        <!-- All cards start with neutral styling -->
+                        <div class="payment-option bg-white border-2 border-gray-200 rounded-xl p-6 h-full group-hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer"
+                             onclick="selectPaymentMethod('@method.Type')"
+                             id="card-@method.Type">
+                            <!-- Method Header -->
+                            <div class="mt-2 flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="card-icon bg-gray-100 p-3 rounded-full">
+                                        <i class="@method.IconClass text-2xl mt-1 mx-1 text-gray-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold text-gray-800 mb-1">@method.Title</h3>
+                                        <p class="text-[1.0rem] text-gray-600">@method.Description</p>
+                                    </div>
+                                </div>
+                                <!-- Selection indicator (initially hidden) -->
+                                <div class="selection-check hidden">
+                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <!-- Price Display -->
+                            <div class="mb-6 text-center py-4">
+                                <div class="card-price text-5xl font-bold text-gray-600 mb-2">
+                                    ৳@method.Amount
+                                </div>
+                                @if (method.Type == "MRTPass")
+                                {
+                                    <div class="text-sm text-gray-600">
+                                        <span class="line-through text-gray-400 text-lg">৳@Model.FareBilling.SingleJourneyFare</span>
+                                        <span class="card-savings ml-2 font-semibold bg-gray-100 px-4 py-1 rounded-full">Save ৳@Model.FareBilling.MrtPassSavings</span>
+                                    </div>
+                                }
+                            </div>
+                            <!-- Benefits - Flex grow to fill space -->
+                            <div class="mb-10 flex-grow">
+                                <h4 class="text-xl font-bold text-gray-700 mb-3 flex items-center">
+                                    <svg class="benefits-icon w-7 h-7 mr-2 mt-0.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Benefits:
+                                </h4>
+                                <ul class="space-y-2">
+                                    @foreach (var benefit in method.Benefits)
+                                    {
+                                        <li class="flex items-start text-[1.1rem] text-gray-600">
+                                            <svg class="benefit-check w-4 h-4 text-gray-400 mr-3 flex-shrink-0 mt-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                            @benefit
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                            <!-- Action Button - Always at bottom, Initially Disabled -->
+                            <button type="button"
+                                    onclick="event.stopPropagation(); handleButtonClick('@method.Type')"
+                                    disabled
+                                    class="card-button w-full bg-gray-400 text-gray-300 cursor-not-allowed font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg text-lg mb-3"
+                                    id="button-@method.Type">
+                                <span>Select Card First</span>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Single Journey Modal with Green Theme -->
+    <div id="singleJourneyModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-green-600 to-green-900 text-white p-6 px-10 rounded-t-2xl">
+                <div class="flex items-center justify-between my-1">
+                    <h3 class="text-[1.8rem] font-bold">How to Buy Single Journey Ticket</h3>
+                    <button onclick="closeSingleJourneyModal()" class="text-white hover:text-green-200 transition-colors">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <!-- Modal Content -->
+            <div class="p-6 px-10">
+                <!-- Purchase Methods -->
+                <div class="mb-8">
+                    <h4 class="text-2xl font-bold text-gray-800 mb-4">Purchase Methods</h4>
+                    <div class="grid md:grid-cols-2 gap-4 ">
+                        <div class="bg-green-100 rounded-xl pt-5 py-6 px-6 border border-green-200">
+                            <div class="flex items-center mb-3">
+                                <div class="bg-green-700 rounded-full p-2 mr-3">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                                    </svg>
+                                </div>
+                                <h5 class="text-[1.2rem] font-bold text-green-800">Ticket Vending Machine (TVM)</h5>
+                            </div>
+                            <ul class="text-[1.0rem] text-green-700 space-y-2">
+                                <li>• Available at all metro stations</li>
+                                <li>• Touch screen interface</li>
+                                <li>• Accept cash and cards</li>
+                                <li>• Buy up to 5 tickets at once</li>
+                                <li>• 24/7 availability</li>
+                            </ul>
+                        </div>
+                        <div class="bg-green-100 rounded-xl pt-5 py-6 px-6 border border-green-200">
+                            <div class="flex items-center mb-3">
+                                <div class="bg-green-700 rounded-full p-2 mr-3">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                </div>
+                                <h5 class="text-[1.2rem] font-bold text-green-800">Ticket Counter</h5>
+                            </div>
+                            <ul class="text-[1.0rem] text-green-700 space-y-1">
+                                <li>• Human assistance available</li>
+                                <li>• Help for elderly & disabled</li>
+                                <li>• Cash payments accepted</li>
+                                <li>• Operating hours: 7:00 AM - 9:00 PM</li>
+                                <li>• Special discount for disabled (15%)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- Usage Instructions -->
+                <div class="mb-8">
+                    <h4 class="text-2xl font-bold text-gray-800 mb-4">How to Use Your Ticket</h4>
+                    <div class="bg-yellow-50 rounded-xl p-6 border border-yellow-200">
+                        <div class="space-y-4">
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-yellow-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-[1.0rem] font-bold mt-0.5">1</div>
+                                <div>
+                                    <p class="text-[1.2rem] font-semibold text-gray-800">Touch at Entry Gate</p>
+                                    <p class="text-[1.0rem] text-gray-600">Tap your ticket on the designated reader above the entry gate</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-yellow-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-[1.0rem] font-bold mt-0.5">2</div>
+                                <div>
+                                    <p class="text-[1.2rem] font-semibold text-gray-800">Valid for 60 Minutes</p>
+                                    <p class="text-[1.0rem] text-gray-600">Complete your journey within 60 minutes or pay ৳200 fine</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-yellow-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-[1.0rem] font-bold mt-0.5">3</div>
+                                <div>
+                                    <p class="text-[1.2rem] font-semibold text-gray-800">Insert at Exit Gate</p>
+                                    <p class="text-[1.0rem] text-gray-600">Insert your ticket into the slot at the exit gate when leaving</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Important Notes -->
+                <div class="bg-red-50 rounded-xl p-6 border border-red-200">
+                    <h4 class="text-2xl font-semibold text-red-800 mb-3">Important Notes</h4>
+                    <ul class="text-[1.1rem] text-red-700 space-y-2">
+                        <li class="flex items-start space-x-2">
+                            <svg class="w-5 h-5 text-red-600 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                            <span>Tickets are valid only on the date of purchase</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <svg class="w-5 h-5 text-red-600 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                            <span>Additional fare required if traveling beyond selected distance</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <svg class="w-5 h-5 text-red-600 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                            <span>Freedom fighters get free tickets with valid ID</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <svg class="w-5 h-5 text-red-600 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                            <span>Carrying unused ticket from previous day is punishable</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <!-- Modal Footer -->
+            <div class="bg-gradient-to-r from-green-600 to-green-900 p-6 px-10 rounded-b-2xl">
+                <div class="flex justify-center items-center">
+                    <div class="text-2xl font-bold text-gray-100 my-1">
+                        Your Fare: <span class="text-white" id="modalFareAmount">৳@Model.FareBilling.SingleJourneyFare</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MRT Pass Modal with Green Theme -->
+    <div id="mrtPassModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-green-600 to-green-900 text-white p-6 px-10 rounded-t-2xl">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3 my-1">
+                        <h3 class="text-[1.8rem] font-bold">Apply for RAPID Pass</h3>
+                    </div>
+                    <button onclick="closeMrtPassModal()" class="text-white hover:text-green-200 transition-colors">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="p-6 px-10">
+                <!-- Card Costs -->
+                <div class="mb-8 bg-green-700 rounded-xl p-6 border border-gray-400">
+                    <h4 class="text-[1.5rem] font-bold text-gray-100 mb-4">Card Pricing</h4>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-lg p-4 border border-green-700">
+                            <h5 class="text-xl font-bold text-gray-800 mb-2">Initial Cost</h5>
+                            <div class="text-xl font-bold text-green-700 mb-2">৳400</div>
+                            <p class="text-sm text-gray-600">
+                                ৳200 refundable card deposit + ৳200 initial balance
+                            </p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 border border-green-100">
+                            <h5 class="text-xl font-bold text-gray-800 mb-2">Top-up Range</h5>
+                            <div class="text-xl font-bold text-green-700 mb-2">৳100 - ৳10,000</div>
+                            <p class="text-sm text-gray-600">
+                                Minimum ৳100, Maximum ৳10,000 balance
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Application Process -->
+                <div class="mb-8">
+                    <h4 class="text-2xl font-bold text-gray-800 mb-4">Application Process</h4>
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-4 p-4 bg-gray-100 rounded-lg">
+                            <div class="bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-lg mt-3">1</div>
+                            <div>
+                                <h5 class="font-bold text-gray-800 text-[1.2rem]">Download & Fill Form</h5>
+                                <p class="text-gray-600 text-[1.0rem]">Download the RAPID Pass registration form and fill it completely</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4 p-4 bg-gray-100 rounded-lg">
+                            <div class="bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-lg mt-3">2</div>
+                            <div>
+                                <h5 class="font-bold text-gray-800 text-[1.2rem]">Required Documents</h5>
+                                <p class="text-gray-600 text-[1.0rem]">Attach photocopy of National ID card and passport-size photograph</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4 p-4 bg-gray-100 rounded-lg">
+                            <div class="bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-lg mt-3">3</div>
+                            <div>
+                                <h5 class="font-bold text-gray-800 text-[1.2rem]">Submit at Metro Station</h5>
+                                <p class="text-gray-600 text-[1.0rem]">Submit the completed form at any metro station ticket counter</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4 p-4 bg-gray-100 rounded-lg">
+                            <div class="bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-lg mt-3">4</div>
+                            <div>
+                                <h5 class="font-bold text-gray-800 text-[1.2rem]">Collect Your Card</h5>
+                                <p class="text-gray-600 text-[1.0rem]">Pay ৳400 and receive your RAPID Pass card immediately</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Preview -->
+                <div class="mb-8 bg-gray-100 rounded-xl p-6 border border-gray-200">
+                    <h4 class="text-2xl font-bold text-gray-800 mb-4">Registration Form Preview</h4>
+                    <div class="bg-white rounded-lg p-6 border-2 border-dashed border-gray-300 max-h-64 overflow-y-auto">
+                        <div class="text-center mb-4">
+                            <h5 class="text-lg font-bold text-green-800">RAPID PASS CARD REGISTRATION FORM</h5>
+                            <p class="text-sm text-gray-600">র‍্যাপিড পাস কার্ড নিবন্ধন ফরম</p>
+                        </div>
+                        <div class="space-y-3 text-sm">
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="font-semibold">1.* Applicant Name (আবেদনকারীর নাম):</label>
+                                    <div class="border-b border-gray-300 mt-1 h-6"></div>
+                                </div>
+                                <div>
+                                    <label class="font-semibold">2. Gender (লিঙ্গ):</label>
+                                    <div class="mt-1">☐ Male (পুরুষ) ☐ Female (মহিলা)</div>
+                                </div>
+                            </div>
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="font-semibold">3. Nationality (জাতীয়তা):</label>
+                                    <div class="border-b border-gray-300 mt-1 h-6"></div>
+                                </div>
+                                <div>
+                                    <label class="font-semibold">4. National ID No. (জাতীয় পরিচয় পত্র):</label>
+                                    <div class="border-b border-gray-300 mt-1 h-6"></div>
+                                </div>
+                            </div>
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="font-semibold">5. Date of Birth (জন্ম তারিখ):</label>
+                                    <div class="border-b border-gray-300 mt-1 h-6"></div>
+                                </div>
+                                <div>
+                                    <label class="font-semibold">7.* Mobile No. (মোবাইল নম্বর):</label>
+                                    <div class="border-b border-gray-300 mt-1 h-6"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="font-semibold">6. Permanent Address (স্থায়ী ঠিকানা):</label>
+                                <div class="border-b border-gray-300 mt-1 h-12"></div>
+                            </div>
+                            <div>
+                                <label class="font-semibold">8. Occupation (পেশা):</label>
+                                <div class="mt-1 text-xs">
+                                    ☐ Government Service ☐ Private Service ☐ Business ☐ Student ☐ Others
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-4 text-xs text-gray-500">
+                            * Minimum required fields
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="bg-gradient-to-r from-green-600 to-green-900 p-6 px-10 py-5 rounded-b-2xl border-t border-green-200">
+                <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                    <div class="text-center md:text-left my-1">
+                        <div class="text-xl font-bold text-white">Ready to save 10% on every trip?</div>
+                        <div class="text-lg text-gray-100">Your journey to smart commuting starts here!</div>
+                    </div>
+                    <div class="flex space-x-4">
+                        <button onclick="downloadForm()" class="bg-yellow-600 hover:underline text-white px-6 py-3 rounded-xl font-semibold transition-colors flex items-center space-x-2 text-[1.1rem]">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-4-4m4 4l4-4m-6 8h8a2 2 0 002-2v-8a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                            <span>Download Form</span>
+                        </button>
+                        @* <button onclick="closeMrtPassModal()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
+                            Got It!
+                        </button> *@
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Login Prompt Modal -->
+    <div id="loginPromptModal" class="fixed inset-0 bg-black bg-opacity-60 z-[60] hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300 scale-90 opacity-0" id="loginPromptContent">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-red-600 to-red-700 text-white px-8 py-6 rounded-t-3xl relative">
+                <button id="closeLoginPrompt" class="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-lock text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white">Login Required</h3>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="px-8 py-8 text-center">
+                <p class="text-lg text-gray-700 mb-8" id="loginPromptMessage">
+                    Please login to access this feature and enhance your MetroFlow experience.
+                </p>
+
+                <div class="space-y-4">
+                    <a href="/User/Login?returnUrl=@Uri.EscapeDataString(Context.Request.Path + Context.Request.QueryString)" class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Login Now</span>
+                    </a>
+
+                    <p class="text-gray-500 text-sm">Don't have an account?</p>
+
+                    <a href="/User/Signup" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-xl transition-colors duration-200 flex items-center justify-center space-x-2">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Create Account</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- JavaScript with All Fixes -->
+    <script>
+        let selectedPaymentMethod = null;
+
+        // Check if user is logged in
+        function isUserLoggedIn() {
+            return @((User.Identity?.IsAuthenticated == true).ToString().ToLower());
+        }
+
+        // Function for card selection (clicking on card area)
+        function selectPaymentMethod(methodType) {
+            // Reset all cards to neutral state
+            document.querySelectorAll('.payment-option').forEach(card => {
+                card.classList.remove('border-green-600', 'shadow-lg');
+                card.classList.add('border-gray-200');
+
+                // Reset all icons and colors to neutral
+                const icon = card.querySelector('.card-icon');
+                const price = card.querySelector('.card-price');
+                const button = card.querySelector('.card-button');
+                const benefitsIcon = card.querySelector('.benefits-icon');
+                const benefitChecks = card.querySelectorAll('.benefit-check');
+                const selectionCheck = card.querySelector('.selection-check');
+                const savings = card.querySelector('.card-savings');
+
+                icon.className = 'card-icon bg-gray-100 p-3 rounded-full';
+                icon.querySelector('i').className = icon.querySelector('i').className.replace('text-green-700', 'text-gray-600');
+                price.className = 'card-price text-5xl font-bold text-gray-600 mb-2';
+
+                // Reset button to disabled state
+                button.disabled = true;
+                button.className = 'card-button w-full bg-gray-400 text-gray-300 cursor-not-allowed font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg text-lg mb-3';
+                button.querySelector('span').textContent = 'Select Card First';
+
+                benefitsIcon.className = 'benefits-icon w-7 h-7 mr-2 mt-0.5 text-gray-500';
+                benefitChecks.forEach(check => {
+                    check.className = 'benefit-check w-4 h-4 text-gray-400 mr-3 flex-shrink-0 mt-2';
+                });
+                selectionCheck.classList.add('hidden');
+                if (savings) {
+                    savings.className = 'card-savings ml-2 font-semibold bg-gray-100 px-4 py-1 rounded-full';
+                }
+            });
+
+            // Apply green selection to clicked card
+            const selectedCard = document.getElementById(`card-${methodType}`);
+            selectedCard.classList.remove('border-gray-200');
+            selectedCard.classList.add('border-green-600', 'shadow-lg');
+
+            // Update selected card to green theme
+            const icon = selectedCard.querySelector('.card-icon');
+            const price = selectedCard.querySelector('.card-price');
+            const button = selectedCard.querySelector('.card-button');
+            const benefitsIcon = selectedCard.querySelector('.benefits-icon');
+            const benefitChecks = selectedCard.querySelectorAll('.benefit-check');
+            const selectionCheck = selectedCard.querySelector('.selection-check');
+            const savings = selectedCard.querySelector('.card-savings');
+
+            icon.className = 'card-icon bg-green-100 p-3 rounded-full';
+            icon.querySelector('i').className = icon.querySelector('i').className.replace('text-gray-600', 'text-green-700');
+            price.className = 'card-price text-5xl font-bold text-green-700 mb-2';
+
+            // Enable button and update styling
+            button.disabled = false;
+            button.className = 'card-button w-full bg-green-600 hover:bg-green-800 text-white cursor-pointer font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg transform hover:scale-[1.02] text-lg mb-3';
+
+            // Update button text based on method type
+            if (methodType === 'SingleJourney') {
+                button.querySelector('span').textContent = 'Choose Single Journey Ticket';
+            } else if (methodType === 'MRTPass') {
+                button.querySelector('span').textContent = 'Choose MRT Pass';
+            }
+
+            benefitsIcon.className = 'benefits-icon w-7 h-7 mr-2 mt-0.5 text-green-500';
+            benefitChecks.forEach(check => {
+                check.className = 'benefit-check w-4 h-4 text-green-500 mr-3 flex-shrink-0 mt-2';
+            });
+            selectionCheck.classList.remove('hidden');
+            if (savings) {
+                savings.className = 'card-savings ml-2 text-green-600 font-semibold bg-green-50 px-4 py-1 rounded-full';
+            }
+
+            selectedPaymentMethod = methodType;
+        }
+
+                // Show login prompt modal
+        function showLoginPrompt(message) {
+            const modal = document.getElementById('loginPromptModal');
+            const content = document.getElementById('loginPromptContent');
+            const messageElement = document.getElementById('loginPromptMessage');
+
+            messageElement.textContent = message;
+            modal.classList.remove('hidden');
+
+            // Trigger animation
+            setTimeout(() => {
+                content.classList.remove('scale-90', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Hide login prompt modal
+        function hideLoginPrompt() {
+            const modal = document.getElementById('loginPromptModal');
+            const content = document.getElementById('loginPromptContent');
+
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-90', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        // Login prompt modal event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeLoginPrompt = document.getElementById('closeLoginPrompt');
+            const loginPromptModal = document.getElementById('loginPromptModal');
+
+            if (closeLoginPrompt) {
+                closeLoginPrompt.addEventListener('click', hideLoginPrompt);
+            }
+
+            if (loginPromptModal) {
+                loginPromptModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        hideLoginPrompt();
+                    }
+                });
+            }
+        });
+
+
+        // Function for button clicks (triggering actual actions)
+        function handleButtonClick(methodType) {
+            // Check if card is selected first
+            if (selectedPaymentMethod !== methodType) {
+                alert('Please select the card first by clicking on it.');
+                return;
+            }
+
+            // Then trigger the appropriate action
+            if (methodType === 'SingleJourney') {
+                showSingleJourneyModal();
+            } else if (methodType === 'MRTPass') {
+                handleMrtPassClick();
+            }
+        }
+
+        // Handle MRT Pass button click with authentication check
+        function handleMrtPassClick() {
+            if (isUserLoggedIn()) {
+                // User is logged in, show the MRT Pass modal
+                showMrtPassModal();
+            } else {
+                // User is not logged in, show professional login prompt
+                showLoginPrompt("Please login to apply for your RAPID Pass and start saving on every metro journey.");
+            }
+        }
+
+
+        function showSingleJourneyModal() {
+            document.getElementById('singleJourneyModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSingleJourneyModal() {
+            document.getElementById('singleJourneyModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function showMrtPassModal() {
+            document.getElementById('mrtPassModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMrtPassModal() {
+            document.getElementById('mrtPassModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Multiple fallback methods for PDF download
+        function downloadForm() {
+            try {
+                // Method 1: Try direct wwwroot path
+                const link = document.createElement('a');
+                link.href = '/RAPID_Registration_Form.pdf';
+                link.download = 'RAPID_Pass_Registration_Form.pdf';
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Show success message
+                // setTimeout(() => {
+                //     alert('Form download started! If download doesn\'t start automatically, please check your browser\'s download folder or visit any Metro station to get the form.');
+                // }, 1000);
+
+            } catch (error) {
+                console.error('PDF download failed:', error);
+                // Fallback: Try alternative paths
+                downloadFormFallback();
+            }
+        }
+
+        // Fallback download methods
+        function downloadFormFallback() {
+            const fallbackPaths = [
+                '/files/RAPID_Registration_Form.pdf',
+                '/downloads/RAPID_Registration_Form.pdf',
+                '/assets/RAPID_Registration_Form.pdf',
+                '/documents/RAPID_Registration_Form.pdf'
+            ];
+
+            let attempted = 0;
+
+            function tryNextPath() {
+                if (attempted < fallbackPaths.length) {
+                    const link = document.createElement('a');
+                    link.href = fallbackPaths[attempted];
+                    link.download = 'RAPID_Pass_Registration_Form.pdf';
+                    link.target = '_blank';
+
+                    link.onerror = () => {
+                        attempted++;
+                        tryNextPath();
+                    };
+
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    attempted++;
+                } else {
+                    // All paths failed - show manual instructions
+                    showDownloadInstructions();
+                }
+            }
+
+            tryNextPath();
+        }
+
+        // Show download instructions as final fallback
+        function showDownloadInstructions() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+            modal.innerHTML = `
+                <div class="bg-white rounded-2xl max-w-md w-full p-6">
+                    <div class="text-center">
+                        <div class="bg-yellow-100 rounded-full p-3 w-12 h-12 mx-auto mb-4 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Form Download Instructions</h3>
+                        <p class="text-gray-600 mb-4">
+                            The registration form is temporarily unavailable for download. You can get the RAPID Pass registration form by:
+                        </p>
+                        <div class="text-left space-y-2 mb-6">
+                            <div class="flex items-start space-x-2">
+                                <span class="text-green-600 font-bold">1.</span>
+                                <span class="text-sm">Visit any Metro Rail station ticket counter</span>
+                            </div>
+                            <div class="flex items-start space-x-2">
+                                <span class="text-green-600 font-bold">2.</span>
+                                <span class="text-sm">Ask for RAPID Pass registration form</span>
+                            </div>
+                            <div class="flex items-start space-x-2">
+                                <span class="text-green-600 font-bold">3.</span>
+                                <span class="text-sm">Contact: +88-02-55004800 for assistance</span>
+                            </div>
+                        </div>
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()"
+                                class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors w-full">
+                            Got It!
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Close modals when clicking outside
+        document.getElementById('singleJourneyModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSingleJourneyModal();
+            }
+        });
+
+        document.getElementById('mrtPassModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeMrtPassModal();
+            }
+        });
+
+        // Close modals with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSingleJourneyModal();
+                closeMrtPassModal();
+            }
+        });
+    </script>
+}
