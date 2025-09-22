@@ -44,8 +44,8 @@
 </style>
 
 <!-- Back Button -->
-<div class="absolute top-100 left-6 z-50">
-    <a asp-action="MetYube" class="flex items-center space-x-2 px-4 py-2 bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+<div class="absolute top-500 left-6 z-50">
+    <a asp-action="MetYube" class="mt-5 flex items-center space-x-2 px-4 py-2 bg-green-700 text-white bg-opacity-90 hover:bg-opacity-100 text-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
         </svg>
@@ -54,7 +54,7 @@
 </div>
 
 <!-- Video Detail Section -->
-<section class="min-h-screen bg-gradient-to-b from-green-50 to-white py-8 relative overflow-hidden">
+<section class="h-auto bg-gradient-to-b from-green-50 to-white py-8 relative overflow-hidden">
     <!-- Floating circles -->
     <div class="floating-circle-1 absolute top-20 right-16 w-16 h-16 bg-green-300 rounded-full opacity-20 blur-sm"></div>
     <div class="floating-circle-2 absolute bottom-40 left-20 w-12 h-12 bg-green-200 rounded-full opacity-15 blur-sm"></div>
@@ -74,39 +74,32 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mx-4 lg:mx-0">
             <!-- Main Content -->
             <div class="lg:col-span-2">
-                <h1 class="text-3xl font-bold text-gray-800 mb-4">@Model.Title</h1>
+                <h1 class="text-4xl font-bold text-green-800 mb-4">@Model.Title</h1>
 
                 <div class="flex items-center gap-4 mb-6">
-                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                    <span class="bg-green-100 text-green-800 px-6 py-2 text-lg rounded-full font-medium">
                         @Model.Category
                     </span>
-                    <span class="text-gray-500 text-sm">
-                        <i class="fas fa-clock mr-1"></i>@Model.TimeAgo
+                    <span class="text-gray-500 text-lg">
+                        <i class="fas fa-clock mr-1 text-lg"></i>@Model.TimeAgo
                     </span>
                 </div>
 
                 <div class="bg-white rounded-xl p-6 shadow-md mb-8">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-3">Description</h3>
-                    <p class="text-gray-700 leading-relaxed">@Model.Description</p>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex flex-wrap gap-4 mb-8">
-                    <button class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
-                        <i class="fas fa-share"></i> Share
-                    </button>
+                    <h3 class="text-[1.6rem] font-bold text-green-800 mb-3">Description</h3>
+                    <p class="text-gray-700 text-xl leading-relaxed">@Model.Description</p>
                 </div>
             </div>
 
             <!-- Sidebar -->
             <div class="lg:col-span-1">
                 <!-- Video Info Card -->
-                <div class="bg-green-50 rounded-xl p-6 shadow-md border border-green-200">
-                    <h3 class="text-xl font-semibold text-green-800 mb-4">Video Details</h3>
-                    <div class="space-y-3 text-gray-700">
+                <div class="bg-green-50 rounded-xl p-6 py-10 shadow-md">
+                    <h3 class="text-2xl font-bold text-green-800 mb-4">Video Details</h3>
+                    <div class="space-y-3 text-gray-700 text-lg">
                         <div class="flex justify-between">
                             <span class="font-medium">Category:</span>
-                            <span class="text-green-700">@Model.Category</span>
+                            <span class="text-green-900">@Model.Category</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="font-medium">Duration:</span>
@@ -116,8 +109,8 @@
                             <span class="font-medium">Uploaded:</span>
                             <span>@Model.TimeAgo</span>
                         </div>
-                        <div class="pt-3 border-t border-green-200">
-                            <a href="@Model.Url" target="_blank" class="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        <div class="pt-5 border-t border-green-600">
+                            <a href="@Model.Url" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-green-800 text-white rounded-lg hover:bg-green-700 transition-colors">
                                 <i class="fab fa-youtube"></i> Watch on YouTube
                             </a>
                         </div>

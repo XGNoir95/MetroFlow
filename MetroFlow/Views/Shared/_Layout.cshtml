@@ -31,6 +31,54 @@
         }
 
         }
+
+        /* Complete Map Override CSS - Fix all modals and buttons above maps */
+
+        /* Fixed Buttons - Highest priority */
+        #geolocatorBtn,
+        #emergencyBtn,
+        #chatbotBtn {
+            z-index: 9999 !important;
+        }
+
+        /* All Modal Backdrops */
+        #geolocatorModal,
+        #destinationReachedModal,
+        #geolocatorLoginPromptModal,
+        #emergencyModal,
+        #emergencyLoginPromptModal,
+        #userProfileModal,
+        #chatbotModal {
+            z-index: 10000 !important;
+        }
+
+        /* All Modal Content */
+        #geolocatorModalContent,
+        #destinationReachedContent,
+        #geolocatorLoginPromptContent,
+        #emergencyModalContent,
+        #emergencyLoginPromptContent,
+        #profileModalContent,
+        #chatbotModalContent {
+            z-index: 10001 !important;
+        }
+
+        /* Force all maps to lower z-index */
+        .leaflet-container,
+        .leaflet-map-pane,
+        .leaflet-control-container,
+        .mapbox-gl-map,
+        .mapboxgl-map,
+        .gm-style,
+        .google-map,
+        #map,
+        .map-container,
+        .map-wrapper,
+        [class*="map"],
+        [id*="map"] {
+            z-index: 1 !important;
+        }
+
         /* Ensure modal consistency across all pages */
         .modal-backdrop {
             position: fixed !important;
@@ -115,6 +163,19 @@
             position: relative !important;
         }
 
+        /* Chatbot Modal Styles */
+        .chatbot-modal {
+            max-width: 28rem !important;
+        }
+
+        .chatbot-header {
+            background: linear-gradient(to right, #1d4ed8, #1e40af) !important;
+            color: white !important;
+            padding: 1.5rem !important;
+            border-radius: 1.5rem 1.5rem 0 0 !important;
+            position: relative !important;
+        }
+
         /* Profile Modal Styles */
         .profile-modal {
             max-width: 48rem !important;
@@ -149,11 +210,19 @@
             position: relative !important;
         }
 
+        .login-prompt-header-blue {
+            background: linear-gradient(to right, #1d4ed8, #1e40af) !important;
+            color: white !important;
+            padding: 2rem 2rem 1.5rem !important;
+            border-radius: 1.5rem 1.5rem 0 0 !important;
+            position: relative !important;
+        }
+
         /* Fixed Button Styles */
         .fixed-button {
             position: fixed !important;
             right: 1rem !important;
-            z-index: 40 !important;
+            z-index: 9999 !important;
             padding: 1rem !important;
             border-radius: 50% !important;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
@@ -195,6 +264,15 @@
                     background: linear-gradient(to right, #059669, #047857) !important;
                 }
 
+        .chatbot-button {
+            bottom: 1rem !important;
+            background: linear-gradient(to right, #1d4ed8, #1e40af) !important;
+        }
+
+            .chatbot-button:hover {
+                background: linear-gradient(to right, #1e40af, #1e3a8a) !important;
+            }
+
         /* Form Input Styles */
         .modal-input, .modal-select, .modal-textarea {
             width: 100% !important;
@@ -219,6 +297,11 @@
             .modal-input.focus-green:focus, .modal-select.focus-green:focus, .modal-textarea.focus-green:focus {
                 border-color: #10b981 !important;
                 box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+            }
+
+            .modal-input.focus-blue:focus, .modal-select.focus-blue:focus, .modal-textarea.focus-blue:focus {
+                border-color: #1d4ed8 !important;
+                box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1) !important;
             }
 
         /* Button Styles */
@@ -253,6 +336,15 @@
 
                 .modal-button.green:hover {
                     background: linear-gradient(to right, #047857, #065f46) !important;
+                }
+
+            .modal-button.blue {
+                background: linear-gradient(to right, #1d4ed8, #1e40af) !important;
+                color: white !important;
+            }
+
+                .modal-button.blue:hover {
+                    background: linear-gradient(to right, #1e40af, #1e3a8a) !important;
                 }
 
             .modal-button.orange {
@@ -297,6 +389,10 @@
             max-width: none !important;
         }
 
+        .chatbot-modal {
+            max-width: none !important;
+        }
+
         }
     </style>
 </head>
@@ -321,7 +417,7 @@
                         <li><a class="text-2xl font-semibold text-white hover:text-green-300" asp-controller="Home" asp-action="Index">Home</a></li>
                         <li><a class="text-2xl font-semibold text-white hover:text-green-300" asp-controller="Route" asp-action="RoutePlanner">Routes</a></li>
                         <li><a class="text-2xl font-semibold text-white hover:text-green-300" asp-controller="Schedule" asp-action="Index">Schedule</a></li>
-                        <li><a class="text-2xl font-semibold text-white hover:text-green-300" asp-controller="Video" asp-action="MetYube">MetYube</a></li>
+                        <li><a class="text-2xl font-semibold text-white hover:text-green-300" asp-controller="Video" asp-action="MetYube">Metro Learning</a></li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <!-- User Profile Icon -->
@@ -349,7 +445,7 @@
                             <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="Home" asp-action="Index">Home</a></li>
                             <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="Route" asp-action="RoutePlanner">Routes</a></li>
                             <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="Schedule" asp-action="Index">Schedule</a></li>
-                            <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="Video" asp-action="MetYube">MetYube</a></li>
+                            <li><a class="block rounded-md px-3 py-2 text-2xl font-semibold hover:bg-white/10" asp-controller="Video" asp-action="MetYube">Metro Learning</a></li>
                             @if (User.Identity?.IsAuthenticated == true)
                             {
                                 <li class="border-t border-white/20 pt-2 mt-2">
@@ -381,10 +477,12 @@
         </header>
     }
 
-    <!-- Include Modals -->
+    <!-- Include All Modals and Fixed Elements (ALWAYS VISIBLE) -->
     @await Html.PartialAsync("_UserProfile")
     @await Html.PartialAsync("_Geolocator")
-    @await Html.PartialAsync("_Emergency")
+
+  @*   @await Html.PartialAsync("_Emergency")
+    @await Html.PartialAsync("_Chatbot") *@
 
     <!-- Main fills the remaining height (no extra padding/margins) -->
     <main role="main" class="flex-1 p-0 m-0">
@@ -418,7 +516,6 @@
                             </a>
                         </div>
                     </div>
-
                     <!-- Explore Section -->
                     <div class="md:col-span-1">
                         <h3 class="text-4xl font-bold mb-4 text-white text-center border-b border-green-600 pb-4">Explore</h3>
@@ -451,8 +548,6 @@
                             </ul>
                         </div>
                     </div>
-
-
                     <!-- Support Section -->
                     <div class="md:col-span-1">
                         <h3 class="text-4xl font-bold text-center mb-4 text-white border-b border-green-600 pb-4">Support</h3>
@@ -485,10 +580,8 @@
                             </ul>
                         </div>
                     </div>
-
                 </div>
             </div>
-
             <!-- Bottom Bar -->
             <div class="border-t border-green-600 pt-8 pb-10">
                 <div class="max-w-8xl lg:mx-40 px-6">
@@ -497,14 +590,12 @@
                             <i class="fas fa-copyright mr-2 text-white"></i>
                             2025 MetroFlow. All rights reserved.
                         </p>
-
                         <div class="flex space-x-8">
                             <!-- Privacy Policy -->
                             <a href="#" class="flex items-center group transition-colors duration-300">
                                 <i class="fas fa-shield-alt mr-2 text-white group-hover:text-green-300"></i>
                                 <span class="text-white group-hover:text-amber-400 text-lg font-bold">Privacy Policy</span>
                             </a>
-
                             <!-- Terms of Service -->
                             <a href="#" class="flex items-center group transition-colors duration-300">
                                 <i class="fas fa-file-contract mr-2 text-white group-hover:text-green-300"></i>
@@ -514,14 +605,7 @@
                     </div>
                 </div>
             </div>
-
         </footer>
-    }
-
-    <!-- Include the chatbot partial view -->
-    @if (ViewData["HideLayoutParts"] == null || (bool)ViewData["HideLayoutParts"] == false)
-    {
-        @await Html.PartialAsync("Chatbot")
     }
 
     <!-- (Optional) jQuery if you use MVC validation/unobtrusive scripts elsewhere -->
@@ -545,20 +629,29 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 const geolocatorModal = document.getElementById('geolocatorModal');
+                const geolocatorLoginModal = document.getElementById('geolocatorLoginPromptModal');
                 const destinationModal = document.getElementById('destinationReachedModal');
                 const emergencyModal = document.getElementById('emergencyModal');
+                const emergencyLoginModal = document.getElementById('emergencyLoginPromptModal');
                 const userProfileModal = document.getElementById('userProfileModal');
+                const chatbotModal = document.getElementById('chatbotModal');
 
                 if (geolocatorModal && !geolocatorModal.classList.contains('hidden')) {
                     closeGeolocatorModal();
+                } else if (geolocatorLoginModal && !geolocatorLoginModal.classList.contains('hidden')) {
+                    hideGeolocatorLoginPrompt();
                 } else if (destinationModal && !destinationModal.classList.contains('hidden')) {
                     closeDestinationReachedModal();
                 } else if (emergencyModal && !emergencyModal.classList.contains('hidden')) {
                     closeEmergencyModal();
+                } else if (emergencyLoginModal && !emergencyLoginModal.classList.contains('hidden')) {
+                    hideEmergencyLoginPrompt();
                 } else if (userProfileModal && !userProfileModal.classList.contains('hidden')) {
                     if (typeof window.hideProfileModal === 'function') {
                         window.hideProfileModal();
                     }
+                } else if (chatbotModal && !chatbotModal.classList.contains('hidden')) {
+                    closeChatbotModal();
                 }
             }
         });

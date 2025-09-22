@@ -62,8 +62,8 @@
 <body class="bg-gray-100 min-h-screen">
 
     <!-- Geolocator Button -->
-    <div id="geolocatorBtn" class="fixed bottom-52 right-4" style="z-index: 9999 !important;">
-        <button onclick="handleGeolocatorClick()" class="bg-amber-600 hover:bg-amber-800 text-white py-5 px-6 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110" aria-label="Journey Partner">
+    <div id="geolocatorBtn" class="fixed bottom-8 right-6" style="z-index: 9999 !important;">
+        <button onclick="handleGeolocatorClick()" class="bg-green-600 hover:bg-green-800 text-white py-5 px-6 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110" aria-label="Journey Partner">
             <i class="fas fa-location-dot text-[1.8rem]"></i>
         </button>
     </div>
@@ -853,12 +853,12 @@
             const btn = document.querySelector('#geolocatorBtn button');
             if (btn) {
                 if (isTracking) {
-                    btn.classList.remove('bg-amber-600', 'hover:bg-amber-800');
-                    btn.classList.add('bg-amber-600', 'hover:bg-amber-800');
+                    btn.classList.remove('bg-green-600', 'hover:bg-green-800');
+                    btn.classList.add('bg-green-600', 'hover:bg-green-800');
                     btn.innerHTML = '<i class="fas fa-location-dot text-[1.8rem] animate-pulse"></i>';
                 } else {
-                    btn.classList.remove('bg-amber-600', 'hover:bg-amber-800');
-                    btn.classList.add('bg-amber-600', 'hover:bg-amber-800');
+                    btn.classList.remove('bg-green-600', 'hover:bg-green-800');
+                    btn.classList.add('bg-green-600', 'hover:bg-green-800');
                     btn.innerHTML = '<i class="fas fa-location-dot text-[1.8rem]"></i>';
                 }
             }
